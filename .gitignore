@@ -13,6 +13,10 @@ godot-verify-temp.log
 # Blender backup files
 *.blend1
 
+# Python cache
+__pycache__/
+*.pyc
+
 # OS/editor noise
 .DS_Store
 Thumbs.db
