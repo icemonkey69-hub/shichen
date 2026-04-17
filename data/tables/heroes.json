@@ -1,0 +1,56 @@
+﻿[
+    {
+        "id":  "1",
+        "name":  "狂战士",
+        "ban":  null,
+        "description":  "狂战神陨落时散落人间的血脉，以愤怒为食，以伤疤为荣。",
+        "portrait_icon":  "1001",
+        "accent_color":  "#d9c48cff",
+        "bloodline_ids":  "2001|2002"
+    },
+    {
+        "id":  "2",
+        "name":  "铁卫",
+        "ban":  null,
+        "description":  "巨神城墙下的守门人后裔，誓言用盾牌守护最后的文明火种。",
+        "portrait_icon":  "1001",
+        "accent_color":  "#d973a4ff",
+        "bloodline_ids":  "2003|2004"
+    },
+    {
+        "id":  "3",
+        "name":  "影刃",
+        "ban":  null,
+        "description":  "影煞消散前留在世间的影子，行走于光明与黑暗的缝隙。",
+        "portrait_icon":  "1001",
+        "accent_color":  "#76c0e6ff",
+        "bloodline_ids":  "2001|2003"
+    },
+    {
+        "id":  "4",
+        "name":  "逐风者",
+        "ban":  1,
+        "description":  "狩命之眼注视过的凡人，箭矢永远追随着命运的风向。",
+        "portrait_icon":  "1001",
+        "accent_color":  "#b992ffff",
+        "bloodline_ids":  "2001|2002"
+    },
+    {
+        "id":  "5",
+        "name":  "咒徒",
+        "ban":  1,
+        "description":  "被咒厄之力侵蚀却未堕落的幸存者，诅咒是枷锁也是武器。",
+        "portrait_icon":  "1001",
+        "accent_color":  "#e0c98dff",
+        "bloodline_ids":  "2003|2004"
+    },
+    {
+        "id":  "6",
+        "name":  "霜裔",
+        "ban":  1,
+        "description":  "天灾降临后诞生的冰雪之子，血液里流淌着永冻的寒意。",
+        "portrait_icon":  "1001",
+        "accent_color":  "#f08a4bff",
+        "bloodline_ids":  "2001|2002"
+    }
+]

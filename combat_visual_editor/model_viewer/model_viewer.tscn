@@ -1,0 +1,595 @@
+[gd_scene format=3 uid="uid://b3guqi8pcedcx"]
+
+[ext_resource type="Script" uid="uid://c4mc8ae8y44m2" path="res://combat_visual_editor/model_viewer/model_viewer.gd" id="1_utajh"]
+
+[sub_resource type="Environment" id="Environment_kg7dp"]
+background_mode = 2
+background_color = Color(0.74902, 0.784314, 0.862745, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.913725, 0.941176, 0.984314, 1)
+ambient_light_energy = 0.9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0kki6"]
+albedo_color = Color(0.415686, 0.462745, 0.501961, 1)
+roughness = 0.95
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_0om3u"]
+size = Vector2(24, 24)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.0627451, 0.0823529, 0.105882, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.380392, 0.533333, 0.713726, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="ModelViewer" type="Node3D" unique_id=1582667460]
+script = ExtResource("1_utajh")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1348105709]
+environment = SubResource("Environment_kg7dp")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1711872436]
+transform = Transform3D(0.8660254, -0.35355338, 0.35355338, 0, 0.70710677, 0.70710677, -0.5, -0.6123724, 0.6123724, 0, 4, 0)
+light_energy = 2.2
+shadow_enabled = true
+
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=1390168446]
+material_override = SubResource("StandardMaterial3D_0kki6")
+mesh = SubResource("PlaneMesh_0om3u")
+
+[node name="PreviewPivot" type="Node3D" parent="." unique_id=485937255]
+
+[node name="SpawnRoot" type="Node3D" parent="PreviewPivot" unique_id=1641277783]
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=413595093]
+current = true
+fov = 45.0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2009339926]
+
+[node name="UiPanel" type="PanelContainer" parent="CanvasLayer" unique_id=1738631131]
+anchors_preset = -1
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -8.0
+offset_bottom = -16.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/UiPanel" unique_id=973515332]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer/UiPanel/MarginContainer" unique_id=1311549264]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer" unique_id=1214750377]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=923042047]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "怪物模型预览器"
+
+[node name="PackRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1879882193]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PackLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/PackRow" unique_id=2141391775]
+layout_mode = 2
+text = "资源池"
+
+[node name="PackOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/PackRow" unique_id=905786940]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CharacterRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1288224571]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CharacterLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/CharacterRow" unique_id=788100267]
+layout_mode = 2
+text = "角色"
+
+[node name="CharacterOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/CharacterRow" unique_id=1259685337]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WeaponRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=484331874]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="WeaponLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponRow" unique_id=1217018641]
+layout_mode = 2
+text = "右手武器"
+
+[node name="WeaponOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponRow" unique_id=959753993]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LeftWeaponRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=347448227]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LeftWeaponLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponRow" unique_id=1715348779]
+layout_mode = 2
+text = "左手武器"
+
+[node name="LeftWeaponOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponRow" unique_id=1639896323]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AnimationRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=564459587]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AnimationLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AnimationRow" unique_id=1906086529]
+layout_mode = 2
+text = "动作"
+
+[node name="AnimationOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AnimationRow" unique_id=595557872]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AnimationActionRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=516941564]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PlayButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AnimationActionRow" unique_id=1428792242]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "播放动作"
+
+[node name="StopButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AnimationActionRow" unique_id=1214666273]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "停止"
+
+[node name="LoopToggle" type="CheckButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AnimationActionRow" unique_id=97495464]
+layout_mode = 2
+button_pressed = true
+text = "循环"
+
+[node name="ExtraAnimationToggle" type="CheckButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=160400250]
+layout_mode = 2
+button_pressed = true
+text = "合并 Character_Animations_1.1 动作包"
+
+[node name="SpeedRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1007931539]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SpeedLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/SpeedRow" unique_id=1369060808]
+layout_mode = 2
+text = "动画速度"
+
+[node name="SpeedSlider" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/SpeedRow" unique_id=908321063]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.2
+max_value = 2.5
+step = 0.05
+value = 1.0
+
+[node name="SpeedValue" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/SpeedRow" unique_id=1463498484]
+layout_mode = 2
+text = "1.00x"
+
+[node name="HairColorRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1280717205]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HairColorLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/HairColorRow" unique_id=2063905102]
+layout_mode = 2
+text = "头发配色"
+
+[node name="HairColorOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/HairColorRow" unique_id=1330689643]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SkinColorRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=612249121]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SkinColorLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/SkinColorRow" unique_id=1642770465]
+layout_mode = 2
+text = "皮肤配色"
+
+[node name="SkinColorOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/SkinColorRow" unique_id=2089364026]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ClothColorRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1405757010]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ClothColorLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/ClothColorRow" unique_id=1466190767]
+layout_mode = 2
+text = "衣服配色"
+
+[node name="ClothColorOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/ClothColorRow" unique_id=621312218]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HatColorRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=391649867]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HatColorLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/HatColorRow" unique_id=1103182425]
+layout_mode = 2
+text = "帽子配色"
+
+[node name="HatColorOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/HatColorRow" unique_id=1758727287]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WeaponTuneTitle" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1771492773]
+layout_mode = 2
+text = "右手武器姿态微调"
+
+[node name="WeaponTunePosRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1567567492]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PosLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponTunePosRow" unique_id=1271512606]
+layout_mode = 2
+text = "位置XYZ"
+
+[node name="PosX" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponTunePosRow" unique_id=1231493120]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -0.6
+max_value = 0.6
+step = 0.005
+value = 0.4
+
+[node name="PosY" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponTunePosRow" unique_id=439617965]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -0.6
+max_value = 0.6
+step = 0.005
+value = 0.4
+
+[node name="PosZ" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponTunePosRow" unique_id=1831172376]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -0.6
+max_value = 0.6
+step = 0.005
+value = 0.4
+
+[node name="WeaponTuneRotRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=93283244]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="RotLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponTuneRotRow" unique_id=1517373356]
+layout_mode = 2
+text = "旋转XYZ"
+
+[node name="RotX" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponTuneRotRow" unique_id=1366138388]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -180.0
+max_value = 180.0
+
+[node name="RotY" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponTuneRotRow" unique_id=788694609]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -180.0
+max_value = 180.0
+
+[node name="RotZ" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponTuneRotRow" unique_id=1615574486]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -180.0
+max_value = 180.0
+
+[node name="WeaponTuneActionRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1512130325]
+layout_mode = 2
+
+[node name="WeaponTuneResetButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/WeaponTuneActionRow" unique_id=1912970519]
+layout_mode = 2
+text = "重置右手微调"
+
+[node name="LeftWeaponTuneTitle" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1573376932]
+layout_mode = 2
+text = "左手武器姿态微调"
+
+[node name="LeftWeaponTunePosRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=787260127]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LeftPosLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponTunePosRow" unique_id=1689607571]
+layout_mode = 2
+text = "位置XYZ"
+
+[node name="LeftPosX" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponTunePosRow" unique_id=1312753076]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -0.6
+max_value = 0.6
+step = 0.005
+value = 0.4
+
+[node name="LeftPosY" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponTunePosRow" unique_id=465023747]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -0.6
+max_value = 0.6
+step = 0.005
+value = 0.4
+
+[node name="LeftPosZ" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponTunePosRow" unique_id=258779760]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -0.6
+max_value = 0.6
+step = 0.005
+value = 0.4
+
+[node name="LeftWeaponTuneRotRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1508921746]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LeftRotLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponTuneRotRow" unique_id=263435569]
+layout_mode = 2
+text = "旋转XYZ"
+
+[node name="LeftRotX" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponTuneRotRow" unique_id=1048755082]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -180.0
+max_value = 180.0
+
+[node name="LeftRotY" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponTuneRotRow" unique_id=306942185]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -180.0
+max_value = 180.0
+
+[node name="LeftRotZ" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponTuneRotRow" unique_id=22860338]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -180.0
+max_value = 180.0
+
+[node name="LeftWeaponTuneActionRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=23207403]
+layout_mode = 2
+
+[node name="LeftWeaponTuneResetButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/LeftWeaponTuneActionRow" unique_id=1881390214]
+layout_mode = 2
+text = "重置左手微调"
+
+[node name="ScaleRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=891323235]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ScaleLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/ScaleRow" unique_id=1663640856]
+layout_mode = 2
+text = "体型"
+
+[node name="ScaleSlider" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/ScaleRow" unique_id=1640884659]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.7
+max_value = 1.4
+step = 0.05
+value = 1.0
+
+[node name="ActionRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1673978511]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RandomButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/ActionRow" unique_id=862026087]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "随机组合"
+
+[node name="ResetCameraButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/ActionRow" unique_id=1046308499]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "重置镜头"
+
+[node name="PausePreviewToggle" type="CheckButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/ActionRow" unique_id=345994421]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "暂停预览"
+
+[node name="GenerateRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=646601192]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="IdLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/GenerateRow" unique_id=2062041112]
+layout_mode = 2
+text = "配置ID"
+
+[node name="IdInput" type="LineEdit" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/GenerateRow" unique_id=203567264]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "例如 1001"
+
+[node name="GenerateButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/GenerateRow" unique_id=1684964645]
+layout_mode = 2
+text = "生成配置"
+
+[node name="GenerateNameRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=718439887]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/GenerateNameRow" unique_id=364939517]
+layout_mode = 2
+text = "模型备注"
+
+[node name="NameInput" type="LineEdit" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/GenerateNameRow" unique_id=128131503]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "例如 小骷髅（生成后显示为 1001-小骷髅）"
+
+[node name="SavedProfileRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1841405094]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SavedProfileLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/SavedProfileRow" unique_id=753714931]
+layout_mode = 2
+text = "已生成"
+
+[node name="SavedProfileOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/SavedProfileRow" unique_id=740178461]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LoadSavedProfileButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/SavedProfileRow" unique_id=1570951322]
+layout_mode = 2
+text = "载入"
+
+[node name="AttackPlanTitle" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1849414237]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "攻击编排"
+
+[node name="AttackSlotRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=213306176]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AttackSlotLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackSlotRow" unique_id=856733748]
+layout_mode = 2
+text = "槽位"
+
+[node name="AttackSlotOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackSlotRow" unique_id=77471472]
+layout_mode = 2
+size_flags_horizontal = 2
+
+[node name="AttackAnimLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackSlotRow" unique_id=1988972466]
+layout_mode = 2
+text = "动作"
+
+[node name="AttackAnimOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackSlotRow" unique_id=701852774]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AttackFrameRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=113943957]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HitFramesLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackFrameRow" unique_id=404209297]
+layout_mode = 2
+text = "伤害帧"
+
+[node name="HitFramesInput" type="LineEdit" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackFrameRow" unique_id=795306420]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "如 8,12,18"
+
+[node name="AttackFpsLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackFrameRow" unique_id=983189666]
+layout_mode = 2
+text = "FPS"
+
+[node name="AttackFpsInput" type="LineEdit" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackFrameRow" unique_id=1193704106]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "30"
+
+[node name="AttackMetaRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=337780524]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AttackFramePreviewLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackMetaRow" unique_id=1107951411]
+custom_minimum_size = Vector2(170, 0)
+layout_mode = 2
+text = "当前帧：-"
+
+[node name="AttackHitBoneLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackMetaRow" unique_id=243122692]
+layout_mode = 2
+text = "受击骨骼"
+
+[node name="AttackHitBoneOption" type="OptionButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackMetaRow" unique_id=1697595385]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AttackScrubRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=33397545]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AttackScrubLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackScrubRow" unique_id=1053025867]
+layout_mode = 2
+text = "帧拖动"
+
+[node name="AttackFrameSlider" type="HSlider" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackScrubRow" unique_id=1416040434]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+
+[node name="AttackFxRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1011187575]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AttackEffectLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackFxRow" unique_id=772619521]
+layout_mode = 2
+text = "特效ID"
+
+[node name="AttackEffectInput" type="LineEdit" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackFxRow" unique_id=1477642617]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "如 slash_small / blood_hit"
+
+[node name="AttackNoteRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1806305782]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AttackNoteLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackNoteRow" unique_id=661940160]
+layout_mode = 2
+text = "备注"
+
+[node name="AttackNoteInput" type="LineEdit" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackNoteRow" unique_id=126674874]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "如 前摇短、收招慢"
+
+[node name="AttackActionRow" type="HBoxContainer" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=198789457]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SaveAttackButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackActionRow" unique_id=232663356]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "保存当前槽位"
+
+[node name="AppendCurrentFrameButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackActionRow" unique_id=926602191]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "追加当前帧"
+
+[node name="ClearAttackButton" type="Button" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer/AttackActionRow" unique_id=1302389221]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "清空当前槽位"
+
+[node name="AutoRotateToggle" type="CheckButton" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=1985159883]
+layout_mode = 2
+button_pressed = true
+text = "自动旋转"
+
+[node name="InfoLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=2025674655]
+layout_mode = 2
+text = "状态：就绪（请在上方调整模型与动作）"
+autowrap_mode = 3
+
+[node name="HelpLabel" type="Label" parent="CanvasLayer/UiPanel/MarginContainer/ScrollContainer/VBoxContainer" unique_id=432869843]
+layout_mode = 2
+text = "右键拖拽：旋转视角
+滚轮：缩放镜头"
+autowrap_mode = 3

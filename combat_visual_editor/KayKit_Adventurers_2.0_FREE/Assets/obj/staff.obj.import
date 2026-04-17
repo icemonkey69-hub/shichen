@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://bxlpn1136ok6h"
+path="res://.godot/imported/staff.obj-99204996f14b2daccb975ffd0b185bde.mesh"
+
+[deps]
+
+files=["res://.godot/imported/staff.obj-99204996f14b2daccb975ffd0b185bde.mesh"]
+
+source_file="res://combat_visual_editor/KayKit_Adventurers_2.0_FREE/Assets/obj/staff.obj"
+dest_files=["res://.godot/imported/staff.obj-99204996f14b2daccb975ffd0b185bde.mesh", "res://.godot/imported/staff.obj-99204996f14b2daccb975ffd0b185bde.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

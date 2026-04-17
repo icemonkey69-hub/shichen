@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dh0of04gmdrph"
+path="res://.godot/imported/shield_round_color.obj-8351c1d0e0dc43577090b954f6d7f5a9.mesh"
+
+[deps]
+
+files=["res://.godot/imported/shield_round_color.obj-8351c1d0e0dc43577090b954f6d7f5a9.mesh"]
+
+source_file="res://combat_visual_editor/KayKit_Adventurers_2.0_FREE/Assets/obj/shield_round_color.obj"
+dest_files=["res://.godot/imported/shield_round_color.obj-8351c1d0e0dc43577090b954f6d7f5a9.mesh", "res://.godot/imported/shield_round_color.obj-8351c1d0e0dc43577090b954f6d7f5a9.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

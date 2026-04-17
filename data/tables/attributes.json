@@ -1,0 +1,1118 @@
+﻿[
+    {
+        "id":  "attack_power",
+        "name":  "攻击力",
+        "value_type":  "值",
+        "visibility":  "外显",
+        "formula":  "(基础攻击力 + 额外攻击力) * (1 + 攻击力增幅%) + 杀敌基础攻击 + 杀敌额外攻击 + 附加攻击力",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "attack_speed_percent",
+        "name":  "攻速",
+        "value_type":  "百分比",
+        "visibility":  "外显",
+        "formula":  "基础攻速% + 成长攻速% + 装备/技能攻速加成%",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "crit_rate",
+        "name":  "暴击率",
+        "value_type":  "百分比",
+        "visibility":  "外显",
+        "formula":  "基础暴击率% + 装备/技能暴击率%",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "max_health",
+        "name":  "生命值",
+        "value_type":  "值",
+        "visibility":  "外显",
+        "formula":  "基础生命 * (1 + 生命增幅%) * (1 + 额外生命%) * (1 + 最终生命%) + 附加生命值",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "armor",
+        "name":  "护甲",
+        "value_type":  "值",
+        "visibility":  "外显",
+        "formula":  "(基础护甲 + 护甲成长×等级 + 护甲增幅) * (1 + 额外护甲%) + 附加护甲",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "magic_resist",
+        "name":  "魔抗",
+        "value_type":  "值",
+        "visibility":  "外显",
+        "formula":  "(基础魔抗 + 魔抗成长×等级 + 魔抗增幅) * (1 + 额外魔抗%) + 附加魔抗",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "move_speed",
+        "name":  "移动速度",
+        "value_type":  "值",
+        "visibility":  "外显",
+        "formula":  "MIN(英雄初始移速 + 装备固定移速 + 附加移速, 移速上限)",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "gold",
+        "name":  "金币",
+        "value_type":  "值",
+        "visibility":  "外显",
+        "formula":  "当前持有（动态）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "crystal",
+        "name":  "水晶",
+        "value_type":  "值",
+        "visibility":  "外显",
+        "formula":  "当前持有（动态）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "kill_count",
+        "name":  "杀敌数",
+        "value_type":  "值",
+        "visibility":  "外显",
+        "formula":  "累计击杀数（动态）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "level",
+        "name":  "等级",
+        "value_type":  "值",
+        "visibility":  "外显",
+        "formula":  "当前英雄等级（由经验值决定）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "final_str",
+        "name":  "最终力量",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "(基础力量 + 杀敌力量) * (1 + 力量增幅% + 额外力量%) + 附加力量",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "final_agi",
+        "name":  "最终敏捷",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "(基础敏捷 + 杀敌敏捷) * (1 + 敏捷增幅% + 额外敏捷%) + 附加敏捷",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "final_int",
+        "name":  "最终智力",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "(基础智力 + 杀敌智力) * (1 + 智力增幅% + 额外智力%) + 附加智力",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "base_str",
+        "name":  "基础力量",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "英雄初始力量 + 装备/卡牌固定力量之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "base_agi",
+        "name":  "基础敏捷",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "英雄初始敏捷 + 装备/卡牌固定敏捷之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "base_int",
+        "name":  "基础智力",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "英雄初始智力 + 装备/卡牌固定智力之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "kill_str",
+        "name":  "杀敌力量",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每击杀一个敌人增加的力量（累计值，有上限，受增幅影响）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "kill_agi",
+        "name":  "杀敌敏捷",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每击杀一个敌人增加的敏捷（累计值，有上限，受增幅影响）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "kill_int",
+        "name":  "杀敌智力",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每击杀一个敌人增加的智力（累计值，有上限，受增幅影响）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "added_str",
+        "name":  "附加力量",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每秒/每波/事件等获得的不受增幅的力量",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "added_agi",
+        "name":  "附加敏捷",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "同上",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "added_int",
+        "name":  "附加智力",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "同上",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "str_percent",
+        "name":  "力量增幅",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的力量百分比加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "agi_percent",
+        "name":  "敏捷增幅",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的敏捷百分比加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "int_percent",
+        "name":  "智力增幅",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的智力百分比加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "str_extra_percent",
+        "name":  "额外力量",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的额外力量百分比加成（不同乘区）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "agi_extra_percent",
+        "name":  "额外敏捷",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的额外敏捷百分比加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "int_extra_percent",
+        "name":  "额外智力",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的额外智力百分比加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "base_attack_power",
+        "name":  "基础攻击力",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "英雄初始攻击力 + 对应主属性（力量英雄吃力量，敏捷英雄吃敏捷，智力英雄吃智力）",
+        "comment":  "confirmed_main_attr_only",
+        "enabled":  true
+    },
+    {
+        "id":  "bonus_attack_power",
+        "name":  "额外攻击力",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "装备/卡牌提供的固定额外攻击力之和（受攻击增幅影响）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "added_attack_power",
+        "name":  "附加攻击力",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每秒/每波/事件等获得的不受增幅的攻击力",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "attack_power_percent",
+        "name":  "攻击力增幅",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的攻击百分比加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "kill_base_attack_power",
+        "name":  "杀敌基础攻击",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每击杀一个敌人增加的固定攻击力（累计值，有上限，受攻击增幅影响）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "kill_bonus_attack_power",
+        "name":  "杀敌额外攻击",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每击杀一个敌人增加的额外攻击力（与杀敌基础攻击叠加，受攻击增幅影响）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "base_attack_speed_percent",
+        "name":  "基础攻速",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "英雄初始攻速（通常0%）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "growth_attack_speed_percent",
+        "name":  "成长攻速",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "等级 * 每级攻速成长 + 装备/卡牌固定攻速%",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "gear_skill_attack_speed_percent",
+        "name":  "装备/技能攻速加成",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "所有卡牌/武器/技能提供的攻速百分比累加",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "base_attack_interval",
+        "name":  "英雄基础攻击间隔",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每个英雄的固定值（如牛头人0.62）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "final_attack_interval",
+        "name":  "实际攻击间隔",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "英雄基础攻击间隔 / (1 + 攻速%)",
+        "comment":  "confirmed_final_attack_interval",
+        "enabled":  true
+    },
+    {
+        "id":  "base_crit_rate",
+        "name":  "基础暴击率",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "英雄初始暴击率（通常0%）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "gear_skill_crit_rate",
+        "name":  "装备/技能暴击率",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "所有卡牌/武器/技能提供的暴击率累加",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "crit_damage",
+        "name":  "暴击伤害",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "200% * (1 + 暴击伤害增幅%) + 暴击率溢出转换值",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "crit_damage_percent",
+        "name":  "暴击伤害增幅",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的暴伤增幅百分比之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "crit_overflow_bonus",
+        "name":  "暴击率溢出转换值",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "由卡牌效果（如无尽战刃）提供，每溢出1%暴击率转换为3%暴击伤害",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "base_health",
+        "name":  "基础生命",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "英雄初始生命 + 装备/卡牌固定生命值之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "added_health",
+        "name":  "附加生命值",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每秒/每波/事件等获得的不受增幅的生命值",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "health_percent",
+        "name":  "生命增幅",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的生命百分比加成（乘区1）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "extra_health_percent",
+        "name":  "额外生命",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的生命百分比加成（乘区2）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "final_health_percent",
+        "name":  "最终生命",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的生命百分比加成（乘区3）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "health_regen",
+        "name":  "生命恢复",
+        "value_type":  "值/秒",
+        "visibility":  "隐藏",
+        "formula":  "(英雄初始恢复 + 装备固定恢复) * (1 + 生命恢复%) + 附加生命恢复",
+        "comment":  "confirmed_no_str_regen",
+        "enabled":  true
+    },
+    {
+        "id":  "on_hit_heal",
+        "name":  "攻击回复",
+        "value_type":  "值/次",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的固定攻击回复之和 * (1 + 攻击回复百分比%) + 附加攻击回复",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "base_armor",
+        "name":  "基础护甲",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "英雄初始护甲 + 装备/卡牌固定护甲值",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "armor_growth",
+        "name":  "护甲成长",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每级增加的固定护甲值",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "armor_bonus_flat",
+        "name":  "护甲增幅",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的固定护甲加成（加算）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "armor_percent",
+        "name":  "额外护甲",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的护甲百分比加成（乘区）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "added_armor",
+        "name":  "附加护甲",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每秒/每波等获得的不受增幅的护甲",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "base_magic_resist",
+        "name":  "基础魔抗",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "英雄初始魔抗 + 装备/卡牌固定魔抗值",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "magic_resist_growth",
+        "name":  "魔抗成长",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每级增加的固定魔抗值",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "magic_resist_bonus_flat",
+        "name":  "魔抗增幅",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的固定魔抗加成（加算）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "magic_resist_percent",
+        "name":  "额外魔抗",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的魔抗百分比加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "added_magic_resist",
+        "name":  "附加魔抗",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每秒/每波等获得的不受增幅的魔抗",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "dodge_power",
+        "name":  "闪避能力",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的闪避能力（闪避值）之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "dodge_percent_bonus",
+        "name":  "闪避百分比加成",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的直接闪避率加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "dodge_rate",
+        "name":  "闪避率",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "闪避能力/(闪避能力+100) + 闪避百分比加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "physical_pen_flat",
+        "name":  "物理穿透固定",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的固定物理穿透之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "physical_pen_percent",
+        "name":  "物理穿透百分比",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的百分比物理穿透",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "magic_pen_flat",
+        "name":  "法术穿透固定",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的固定法术穿透之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "magic_pen_percent",
+        "name":  "法术穿透百分比",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的百分比法术穿透",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "basic_attack_damage_percent",
+        "name":  "普攻伤害",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的普攻伤害百分比之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "skill_damage_percent",
+        "name":  "技能伤害",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的技能伤害百分比之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "physical_damage_percent",
+        "name":  "物理伤害提升",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的全物理伤害独立乘区",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "magic_damage_percent",
+        "name":  "法术伤害提升",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的全法术伤害独立乘区",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "final_damage_percent",
+        "name":  "最终伤害",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的最终伤害百分比之和（稀有独立乘区）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "split_percent",
+        "name":  "分裂",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的分裂百分比之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "life_steal",
+        "name":  "吸血",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的吸血百分比之和（物理伤害）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "spell_vamp",
+        "name":  "法术吸血",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的法术吸血百分比之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "gold_gain_percent",
+        "name":  "金币获取率",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的金币获取百分比之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "crystal_gain_percent",
+        "name":  "水晶获取率",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的水晶获取百分比之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "exp_gain_percent",
+        "name":  "经验获取率",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的经验获取百分比之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "bonus_gold_per_kill",
+        "name":  "杀敌额外金币",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每击杀一个敌人额外获得的固定金币（不受金币获取率加成）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "gold_per_second",
+        "name":  "每秒基础金币",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的每秒自动获得金币固定值（受金币获取率加成）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "crystal_per_second",
+        "name":  "每秒水晶",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的每秒自动获得水晶固定值（受水晶获取率加成）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "cooldown_value",
+        "name":  "冷却值",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的冷却值之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "cooldown_reduction",
+        "name":  "冷却缩减",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "MIN(技能急速 / (技能急速 + 100), 85%)",
+        "comment":  "confirmed_from_skill_haste",
+        "enabled":  true
+    },
+    {
+        "id":  "skill_haste",
+        "name":  "技能急速",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的技能急速累计值",
+        "comment":  "confirmed_skill_haste_source",
+        "enabled":  true
+    },
+    {
+        "id":  "weapon_cast_rate_percent",
+        "name":  "武器释放频率",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的武器释放频率百分比之和",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "weapon_damage_ratio",
+        "name":  "武器伤害系数",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "通用武器伤害系数加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "weapon_final_damage_percent",
+        "name":  "武器最终伤害",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "武器专属最终乘区加成",
+        "comment":  "confirmed_weapon_final_damage",
+        "enabled":  true
+    },
+    {
+        "id":  "barrage_weapon_damage_ratio",
+        "name":  "弹幕武器伤害系数",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "弹幕武器专属系数加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "projectile_weapon_damage_ratio",
+        "name":  "飞行物武器伤害系数",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "飞行物武器专属系数加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "enchant_weapon_damage_ratio",
+        "name":  "附魔武器伤害系数",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "附魔武器专属系数加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "rune_weapon_damage_ratio",
+        "name":  "符文武器伤害系数",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "符文武器专属系数加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "weapon_interval_reduce_percent",
+        "name":  "武器释放间隔",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "通用武器释放间隔减少百分比",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "barrage_interval_reduce_percent",
+        "name":  "弹幕释放间隔",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "减少弹幕武器CD的百分比",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "projectile_interval_reduce_percent",
+        "name":  "飞行物释放间隔",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "减少飞行物武器CD的百分比",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "rune_interval_reduce_percent",
+        "name":  "符文释放间隔",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "减少符文武器CD的百分比",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "barrage_double_cast_rate",
+        "name":  "弹幕双重施法",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "弹幕武器双重施法概率",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "barrage_instant_cast_rate",
+        "name":  "弹幕直接释放",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "弹幕武器直接释放概率（无需CD）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "projectile_triple_cast_rate",
+        "name":  "飞行物三重施法",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "飞行物武器三重施法概率",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "enchant_on_attack_rate",
+        "name":  "附魔普攻释放",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "附魔武器通过普攻触发的概率",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "rune_auto_cast_rate",
+        "name":  "符文武器每秒释放",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "符文武器每秒自动释放概率",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "pet_attack_inherit_percent",
+        "name":  "战宠继承攻击",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "战宠继承召唤者攻击力的额外百分比",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "pet_attack_speed_percent",
+        "name":  "战宠攻击速度",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "战宠攻击速度加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "pet_final_damage_percent",
+        "name":  "战宠最终伤害",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "战宠独立伤害加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "pet_duration_seconds",
+        "name":  "战宠持续时间",
+        "value_type":  "秒",
+        "visibility":  "隐藏",
+        "formula":  "战宠存在时间加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "pet_armor",
+        "name":  "战宠护甲",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "战宠护甲加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "pet_magic_resist",
+        "name":  "战宠魔抗",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "战宠魔抗加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "pet_attack_interval",
+        "name":  "战宠攻击间隔",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "战宠基础攻击间隔（可被百分比缩减）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "primary_attr_per_second",
+        "name":  "每秒主属性",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每秒自动增加的附加力量/敏捷/智力（根据英雄主属性类型）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "attack_power_per_second",
+        "name":  "每秒攻击力",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每秒自动增加的附加攻击力",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "health_per_second",
+        "name":  "每秒生命值",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每秒自动增加的附加生命值",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "primary_attr_per_wave",
+        "name":  "每波主属性",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每波结束时增加的附加力量/敏捷/智力",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "primary_attr_per_kill",
+        "name":  "杀敌主属性",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每击杀一个敌人增加的附加力量/敏捷/智力（不受增幅）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "bonus_exp_per_kill",
+        "name":  "杀敌额外经验",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每击杀一个敌人额外获得的固定经验（不受经验获取率加成）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "kill_count_per_second",
+        "name":  "每秒杀敌数",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "每秒自动增加的杀敌数",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "max_mana",
+        "name":  "最大法力值",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "英雄初始法力 + 装备固定法力之和（可受百分比加成）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "mana_regen",
+        "name":  "法力回复",
+        "value_type":  "值/秒",
+        "visibility":  "隐藏",
+        "formula":  "(英雄初始法力回复 + 装备固定法力回复) * (1 + 法力回复百分比%) + 附加法力回复",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "mana_regen_percent",
+        "name":  "法力回复百分比",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "装备/技能提供的法力回复百分比加成",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    },
+    {
+        "id":  "q_mana_cost_percent_reduce",
+        "name":  "Q技能蓝耗百分比减少",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "按百分比降低 Q 技能蓝耗",
+        "comment":  "confirmed_q_only",
+        "enabled":  true
+    },
+    {
+        "id":  "q_mana_cost_flat_reduce",
+        "name":  "Q技能蓝耗固定减少",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "按固定值降低 Q 技能蓝耗",
+        "comment":  "confirmed_q_only",
+        "enabled":  true
+    },
+    {
+        "id":  "r_mana_cost_percent_reduce",
+        "name":  "R技能蓝耗百分比减少",
+        "value_type":  "百分比",
+        "visibility":  "隐藏",
+        "formula":  "按百分比降低 R 技能蓝耗",
+        "comment":  "confirmed_r_only",
+        "enabled":  true
+    },
+    {
+        "id":  "r_mana_cost_flat_reduce",
+        "name":  "R技能蓝耗固定减少",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "按固定值降低 R 技能蓝耗",
+        "comment":  "confirmed_r_only",
+        "enabled":  true
+    },
+    {
+        "id":  "move_speed_cap",
+        "name":  "移速上限",
+        "value_type":  "值",
+        "visibility":  "隐藏",
+        "formula":  "移动速度最大上限（默认550）",
+        "comment":  "sync_from_master",
+        "enabled":  true
+    }
+]

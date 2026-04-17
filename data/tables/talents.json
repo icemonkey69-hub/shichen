@@ -1,0 +1,42 @@
+﻿[
+    {
+        "id":  "weapon_slot",
+        "name":  "武器槽位",
+        "effect":  "weapon_slot:+1",
+        "unlock_condition":  "clear_wave_10",
+        "cost":  500,
+        "max_level":  3
+    },
+    {
+        "id":  "passive_refresh",
+        "name":  "被动刷新次数",
+        "effect":  "passive_refresh:+1",
+        "unlock_condition":  "clear_wave_20",
+        "cost":  1000,
+        "max_level":  3
+    },
+    {
+        "id":  "hero_refresh",
+        "name":  "英雄刷新次数",
+        "effect":  "hero_refresh:+1",
+        "unlock_condition":  "clear_wave_5",
+        "cost":  300,
+        "max_level":  2
+    },
+    {
+        "id":  "shop_refresh",
+        "name":  "商店刷新次数",
+        "effect":  "shop_refresh:+1",
+        "unlock_condition":  "buy_weapon_5",
+        "cost":  400,
+        "max_level":  3
+    },
+    {
+        "id":  "auto_challenge",
+        "name":  "自动挑战",
+        "effect":  "auto_challenge:true",
+        "unlock_condition":  "clear_wave_30",
+        "cost":  2000,
+        "max_level":  1
+    }
+]

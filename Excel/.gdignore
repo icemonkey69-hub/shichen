@@ -1,0 +1,2 @@
+# Keep planner-facing source tables clean.
+# Godot should not import files in this directory as translation resources.

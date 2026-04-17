@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://pickup.gd" id="1_1n0sv"]
+
+[node name="Pickup" type="Node2D"]
+script = ExtResource("1_1n0sv")
+
+[node name="Shadow" type="Polygon2D" parent="."]
+position = Vector2(0, 6)
+color = Color(0.35, 0.24, 0.08, 0.5)
+polygon = PackedVector2Array(-8, 0, -4, -4, 4, -4, 8, 0, 4, 4, -4, 4)
+
+[node name="Orb" type="Polygon2D" parent="."]
+color = Color(0.95, 0.81, 0.22, 1)
+polygon = PackedVector2Array(0, -9, 7, 0, 0, 9, -7, 0)

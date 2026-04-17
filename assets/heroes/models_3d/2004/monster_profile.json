@@ -1,0 +1,78 @@
+{
+	"animation_label": "近战 空手 攻击 拳击 A | Melee Unarmed Attack Punch A",
+	"animation_name": "Melee_Unarmed_Attack_Punch_A",
+	"attack_plan": [
+		{
+			"animation_label": "近战 1 H 攻击 劈砍 | Melee 1H Attack Chop",
+			"animation_name": "Melee_1H_Attack_Chop",
+			"effect_id": "",
+			"fps": 30.0,
+			"hit_bone": "",
+			"hit_frames": [
+				18
+			],
+			"hit_seconds": [
+				0.6
+			],
+			"note": "",
+			"slot": 1
+		},
+		{
+			"animation_label": "近战 空手 攻击 拳击 A | Melee Unarmed Attack Punch A",
+			"animation_name": "Melee_Unarmed_Attack_Punch_A",
+			"effect_id": "",
+			"fps": 30.0,
+			"hit_bone": "",
+			"hit_frames": [
+				16
+			],
+			"hit_seconds": [
+				0.533333333333333
+			],
+			"note": "",
+			"slot": 2
+		}
+	],
+	"character_name": "Adventurers(冒险者) / Barbarian",
+	"character_path": "res://combat_visual_editor/KayKit_Adventurers_2.0_FREE/Characters/gltf/Barbarian.glb",
+	"cloth_preset_key": "wine",
+	"cloth_preset_label": "Wine",
+	"cloth_tint_html": "ff8fadff",
+	"generated_at_local": "2026-04-16T05:26:56",
+	"hair_preset_key": "brown",
+	"hair_preset_label": "Brown",
+	"hair_tint_html": "94613dff",
+	"hat_preset_key": "red",
+	"hat_preset_label": "Red",
+	"hat_tint_html": "ff7a7aff",
+	"left_weapon_name": "",
+	"left_weapon_path": "",
+	"left_weapon_tune_pos_x": 0.0,
+	"left_weapon_tune_pos_y": 0.0,
+	"left_weapon_tune_pos_z": 0.0,
+	"left_weapon_tune_rot_x": 0.0,
+	"left_weapon_tune_rot_y": 0.0,
+	"left_weapon_tune_rot_z": 0.0,
+	"loop": true,
+	"pack_id": "adventurers",
+	"pack_label": "Adventurers 2.0 FREE",
+	"profile_display_name": "2004",
+	"profile_id": "2004",
+	"profile_name": "狂战士双手斧",
+	"right_weapon_name": "Adventurers(冒险者) / 单手剑 | sword 1handed",
+	"right_weapon_path": "res://combat_visual_editor/KayKit_Adventurers_2.0_FREE/Assets/gltf/sword_1handed.gltf",
+	"scale": 1.15,
+	"skin_preset_key": "deep",
+	"skin_preset_label": "Deep",
+	"skin_tint_html": "c28f70ff",
+	"speed": 1.15,
+	"use_extra_animation_pack": true,
+	"weapon_name": "Adventurers(冒险者) / 单手剑 | sword 1handed",
+	"weapon_path": "res://combat_visual_editor/KayKit_Adventurers_2.0_FREE/Assets/gltf/sword_1handed.gltf",
+	"weapon_tune_pos_x": 0.0,
+	"weapon_tune_pos_y": 0.0,
+	"weapon_tune_pos_z": 0.0,
+	"weapon_tune_rot_x": 0.0,
+	"weapon_tune_rot_y": 0.0,
+	"weapon_tune_rot_z": 0.0
+}

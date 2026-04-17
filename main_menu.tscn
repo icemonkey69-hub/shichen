@@ -1,0 +1,421 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://main_menu.gd" id="1_7im03"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.0745098, 0.101961, 0.0901961, 0.96)
+border_color = Color(0.803922, 0.717647, 0.380392, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_backpack"]
+bg_color = Color(0.0392157, 0.054902, 0.0509804, 0.98)
+border_color = Color(0.858824, 0.760784, 0.439216, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_archive_panel"]
+bg_color = Color(0.0941176, 0.129412, 0.117647, 0.98)
+border_color = Color(0.835294, 0.745098, 0.470588, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_archive_button"]
+bg_color = Color(0.145098, 0.192157, 0.176471, 1)
+border_color = Color(0.94902, 0.847059, 0.521569, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_archive_hover"]
+bg_color = Color(0.196078, 0.25098, 0.227451, 1)
+border_color = Color(1, 0.909804, 0.611765, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_detail"]
+bg_color = Color(0.0901961, 0.113725, 0.105882, 0.98)
+border_color = Color(0.341176, 0.368627, 0.329412, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_icon"]
+bg_color = Color(0.121569, 0.141176, 0.133333, 1)
+border_color = Color(0.462745, 0.435294, 0.32549, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7im03")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0627451, 0.0901961, 0.0745098, 1)
+
+[node name="AccentTop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -320.0
+offset_top = 46.0
+offset_right = 320.0
+offset_bottom = 52.0
+grow_horizontal = 2
+color = Color(0.752941, 0.686275, 0.4, 0.92)
+
+[node name="CenterPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -150.0
+offset_right = 250.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="CenterPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 38
+text = "英雄战歌 2"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CenterPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Vampire-like Demo"
+horizontal_alignment = 1
+
+[node name="SpacerTop" type="Control" parent="CenterPanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="CenterPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 44)
+text = "开始游戏"
+
+[node name="ArchiveButton" type="Button" parent="CenterPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_styles/normal = SubResource("StyleBoxFlat_archive_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_archive_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_archive_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_archive_hover")
+theme_override_font_sizes/font_size = 22
+text = "[神权]"
+
+[node name="Hint" type="Label" parent="CenterPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "当前先专注战斗主流程收口。"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BackpackOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.45)
+
+[node name="CardBackpackPanel" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -318.0
+offset_right = 540.0
+offset_bottom = 318.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 5
+theme_override_styles/panel = SubResource("StyleBoxFlat_backpack")
+
+[node name="Header" type="HBoxContainer" parent="CardBackpackPanel"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 18.0
+offset_right = 1058.0
+offset_bottom = 56.0
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="CardBackpackPanel/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "神权背包"
+
+[node name="Subtitle" type="Label" parent="CardBackpackPanel/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "鼠标悬停卡牌即可查看详情"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="CardBackpackPanel/Header"]
+layout_mode = 2
+custom_minimum_size = Vector2(92, 36)
+text = "关闭"
+
+[node name="Body" type="HBoxContainer" parent="CardBackpackPanel"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 70.0
+offset_right = 1058.0
+offset_bottom = 620.0
+theme_override_constants/separation = 18
+
+[node name="LeftPane" type="VBoxContainer" parent="CardBackpackPanel/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="FilterBar" type="HBoxContainer" parent="CardBackpackPanel/Body/LeftPane"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FilterAll" type="Button" parent="CardBackpackPanel/Body/LeftPane/FilterBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(72, 34)
+text = "全部"
+
+[node name="FilterTier1" type="Button" parent="CardBackpackPanel/Body/LeftPane/FilterBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(62, 34)
+text = "1阶"
+
+[node name="FilterTier2" type="Button" parent="CardBackpackPanel/Body/LeftPane/FilterBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(62, 34)
+text = "2阶"
+
+[node name="FilterTier3" type="Button" parent="CardBackpackPanel/Body/LeftPane/FilterBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(62, 34)
+text = "3阶"
+
+[node name="FilterTier4" type="Button" parent="CardBackpackPanel/Body/LeftPane/FilterBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(62, 34)
+text = "4阶"
+
+[node name="FilterTier5" type="Button" parent="CardBackpackPanel/Body/LeftPane/FilterBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(62, 34)
+text = "5阶"
+
+[node name="FilterTier6" type="Button" parent="CardBackpackPanel/Body/LeftPane/FilterBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(62, 34)
+text = "6阶"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CardBackpackPanel/Body/LeftPane"]
+custom_minimum_size = Vector2(0, 500)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ScrollContent" type="MarginContainer" parent="CardBackpackPanel/Body/LeftPane/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_right = 12
+
+[node name="CardGrid" type="GridContainer" parent="CardBackpackPanel/Body/LeftPane/ScrollContainer/ScrollContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 7
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+
+[node name="EmptyLabel" type="Label" parent="CardBackpackPanel/Body/LeftPane"]
+visible = false
+layout_mode = 2
+text = "卡牌表为空。"
+horizontal_alignment = 1
+
+[node name="RightPane" type="Panel" parent="CardBackpackPanel/Body"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_detail")
+
+[node name="DetailHeader" type="HBoxContainer" parent="CardBackpackPanel/Body/RightPane"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 282.0
+offset_bottom = 48.0
+theme_override_constants/separation = 8
+
+[node name="DetailTitle" type="Label" parent="CardBackpackPanel/Body/RightPane/DetailHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "卡牌背包"
+
+[node name="TierBadge" type="Label" parent="CardBackpackPanel/Body/RightPane/DetailHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "等待选择"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="IconPanel" type="Panel" parent="CardBackpackPanel/Body/RightPane"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 60.0
+offset_right = 282.0
+offset_bottom = 236.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_icon")
+
+[node name="Icon" type="TextureRect" parent="CardBackpackPanel/Body/RightPane/IconPanel"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 14.0
+offset_right = -14.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Placeholder" type="Label" parent="CardBackpackPanel/Body/RightPane/IconPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 36
+text = "神权"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Meta" type="GridContainer" parent="CardBackpackPanel/Body/RightPane"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 252.0
+offset_right = 282.0
+offset_bottom = 324.0
+columns = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 8
+
+[node name="NameLabel" type="Label" parent="CardBackpackPanel/Body/RightPane/Meta"]
+layout_mode = 2
+text = "名称"
+
+[node name="NameValue" type="Label" parent="CardBackpackPanel/Body/RightPane/Meta"]
+layout_mode = 2
+text = "-"
+
+[node name="IdLabel" type="Label" parent="CardBackpackPanel/Body/RightPane/Meta"]
+layout_mode = 2
+text = "ID"
+
+[node name="IdValue" type="Label" parent="CardBackpackPanel/Body/RightPane/Meta"]
+layout_mode = 2
+text = "-"
+
+[node name="DescriptionTitle" type="Label" parent="CardBackpackPanel/Body/RightPane"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 344.0
+offset_right = 282.0
+offset_bottom = 370.0
+theme_override_font_sizes/font_size = 16
+text = "描述"
+
+[node name="Description" type="RichTextLabel" parent="CardBackpackPanel/Body/RightPane"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 376.0
+offset_right = 282.0
+offset_bottom = 530.0
+bbcode_enabled = false
+scroll_active = true
+fit_content = false
+text = "把鼠标放到左侧卡牌上，这里会显示名称、阶级和描述。"

@@ -1,0 +1,38 @@
+﻿[
+    {
+        "id":  "basic_arrow",
+        "name":  "基础箭矢",
+        "sprite":  "res://assets/projectiles/basic_arrow.png",
+        "move_speed":  780,
+        "lifetime":  1.4,
+        "collision_radius":  8,
+        "base_damage":  10,
+        "pierce_count":  0,
+        "hit_effect":  "hit_small",
+        "tint_color":  "#ffffff"
+    },
+    {
+        "id":  "ice_shard",
+        "name":  "冰锥",
+        "sprite":  "res://assets/projectiles/ice_shard.png",
+        "move_speed":  640,
+        "lifetime":  1.2,
+        "collision_radius":  10,
+        "base_damage":  12,
+        "pierce_count":  1,
+        "hit_effect":  "hit_frost",
+        "tint_color":  "#bfe9ff"
+    },
+    {
+        "id":  "fire_orb",
+        "name":  "火球",
+        "sprite":  "res://assets/projectiles/fire_orb.png",
+        "move_speed":  520,
+        "lifetime":  1.8,
+        "collision_radius":  12,
+        "base_damage":  18,
+        "pierce_count":  0,
+        "hit_effect":  "hit_fire",
+        "tint_color":  "#ffb066"
+    }
+]

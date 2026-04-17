@@ -1,0 +1,63 @@
+{
+    "animation_label": "远程 单手 射击 | Ranged_1H_Shoot",
+    "animation_name": "Ranged_1H_Shoot",
+    "attack_plan": [
+        {
+            "animation_label": "远程 单手 射击 | Ranged_1H_Shoot",
+            "animation_name": "Ranged_1H_Shoot",
+            "effect_id": "",
+            "fps": 30.0,
+            "hit_bone": "",
+            "hit_frames": [
+                18
+            ],
+            "hit_seconds": [
+                0.6
+            ],
+            "note": "",
+            "slot": 1
+        }
+    ],
+    "character_name": "Rogue",
+    "character_path": "res://combat_visual_editor/KayKit_Skeletons_1.1_FREE/characters/gltf/Skeleton_Rogue.glb",
+    "cloth_preset_key": "wine",
+    "cloth_preset_label": "酒红服饰",
+    "cloth_tint_html": "ff8fadff",
+    "generated_at_local": "2026-04-15T00:36:54",
+    "hair_preset_key": "default",
+    "hair_preset_label": "原始材质",
+    "hair_tint_html": "ffffffff",
+    "hat_preset_key": "purple",
+    "hat_preset_label": "原始材质",
+    "hat_tint_html": "eb9effff",
+    "loop": true,
+    "pack_id": "skeletons",
+    "pack_label": "骷髅 1.1 FREE",
+    "profile_display_name": "1002-远程低级骷髅弩兵",
+    "profile_id": "1002",
+    "profile_name": "远程低级骷髅弩兵",
+    "scale": 0.95,
+    "skin_preset_key": "light",
+    "skin_preset_label": "原始材质",
+    "skin_tint_html": "fffff2ff",
+    "speed": 1.0,
+    "use_extra_animation_pack": true,
+    "weapon_name": "骷髅 / 弩 | crossbow",
+    "weapon_path": "res://combat_visual_editor/KayKit_Skeletons_1.1_FREE/assets/gltf/Skeleton_Crossbow.gltf",
+    "weapon_tune_pos_x": 0.0850000008940697,
+    "weapon_tune_pos_y": -0.100000001490116,
+    "weapon_tune_pos_z": 0.0450000017881393,
+    "weapon_tune_rot_x": -180.0,
+    "weapon_tune_rot_y": -89.0,
+    "weapon_tune_rot_z": 11.0,
+    "right_weapon_path": "res://combat_visual_editor/KayKit_Skeletons_1.1_FREE/assets/gltf/Skeleton_Crossbow.gltf",
+    "right_weapon_name": "骷髅 / 弩 | crossbow",
+    "left_weapon_path": "",
+    "left_weapon_name": "",
+    "left_weapon_tune_pos_x": 0,
+    "left_weapon_tune_pos_y": 0,
+    "left_weapon_tune_pos_z": 0,
+    "left_weapon_tune_rot_x": 0,
+    "left_weapon_tune_rot_y": 0,
+    "left_weapon_tune_rot_z": 0
+}

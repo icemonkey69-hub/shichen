@@ -1,0 +1,62 @@
+﻿[
+    {
+        "id":  "blood_blade",
+        "name":  "血刃",
+        "quality":  1,
+        "type":  "blade",
+        "cooldown":  1.2,
+        "trigger_type":  "projectile",
+        "projectile_id":  "basic_arrow",
+        "param1":  1,
+        "param2":  0,
+        "ui_icon":  "res://assets/weapons/icons/blood_blade_icon.png",
+        "ui_color":  "#d84b5b",
+        "drop_weight":  100,
+        "description":  "向最近敌人发射一枚血刃"
+    },
+    {
+        "id":  "frost_ring",
+        "name":  "霜环",
+        "quality":  2,
+        "type":  "magic",
+        "cooldown":  4.5,
+        "trigger_type":  "aoe",
+        "projectile_id":  null,
+        "param1":  180,
+        "param2":  24,
+        "ui_icon":  "res://assets/weapons/icons/frost_ring_icon.png",
+        "ui_color":  "#7fd6ff",
+        "drop_weight":  60,
+        "description":  "对周围敌人造成范围冰霜伤害"
+    },
+    {
+        "id":  "wolf_totem",
+        "name":  "狼灵图腾",
+        "quality":  3,
+        "type":  "summon",
+        "cooldown":  8,
+        "trigger_type":  "summon",
+        "projectile_id":  null,
+        "param1":  1,
+        "param2":  12,
+        "ui_icon":  "res://assets/weapons/icons/wolf_totem_icon.png",
+        "ui_color":  "#caa56a",
+        "drop_weight":  30,
+        "description":  "召唤一只短暂存在的狼灵协助战斗"
+    },
+    {
+        "id":  "war_banner",
+        "name":  "战旗",
+        "quality":  4,
+        "type":  "aura",
+        "cooldown":  0,
+        "trigger_type":  "passive",
+        "projectile_id":  null,
+        "param1":  0.12,
+        "param2":  0,
+        "ui_icon":  "res://assets/weapons/icons/war_banner_icon.png",
+        "ui_color":  "#f0d36a",
+        "drop_weight":  20,
+        "description":  "提供持续属性加成"
+    }
+]

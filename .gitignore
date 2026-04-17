@@ -1,0 +1,18 @@
+# Godot 4+ cache/import/output
+.godot/
+.godot_user_data/
+.import/
+/android/
+
+# Local logs/temp
+*.log
+*.tmp
+*.temp
+godot-verify-temp.log
+
+# Blender backup files
+*.blend1
+
+# OS/editor noise
+.DS_Store
+Thumbs.db

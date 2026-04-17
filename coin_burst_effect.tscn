@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://coin_burst_effect.gd" id="1_h5t8w"]
+
+[node name="CoinBurstEffect" type="Node2D"]
+script = ExtResource("1_h5t8w")

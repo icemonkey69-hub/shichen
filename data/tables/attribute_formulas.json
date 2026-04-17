@@ -1,0 +1,394 @@
+﻿[
+    {
+        "id":  "formula_001",
+        "category":  "基础防御",
+        "formula":  "物理减伤率 = 护甲 / (护甲 + 100)",
+        "comment":  "sync_from_master",
+        "targets":  "护甲",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_002",
+        "category":  "基础防御",
+        "formula":  "魔法减伤率 = 魔抗 / (魔抗 + 100)",
+        "comment":  "sync_from_master",
+        "targets":  "魔抗",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_003",
+        "category":  "基础防御",
+        "formula":  "实际承受物理伤害比例 = 1 - 物理减伤率",
+        "comment":  "confirmed_no_damage_resist",
+        "targets":  "护甲",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_004",
+        "category":  "基础防御",
+        "formula":  "实际承受魔法伤害比例 = 1 - 魔法减伤率",
+        "comment":  "confirmed_no_damage_resist",
+        "targets":  "魔抗",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_005",
+        "category":  "穿透计算",
+        "formula":  "实际护甲 = MAX(0, 目标护甲 - 物理穿透固定) * (1 - 物理穿透百分比%)",
+        "comment":  "sync_from_master",
+        "targets":  "物理穿透固定, 物理穿透百分比",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_006",
+        "category":  "穿透计算",
+        "formula":  "实际魔抗 = MAX(0, 目标魔抗 - 法术穿透固定) * (1 - 法术穿透百分比%)",
+        "comment":  "sync_from_master",
+        "targets":  "法术穿透固定, 法术穿透百分比",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_007",
+        "category":  "暴击相关",
+        "formula":  "最终暴击率 = 基础暴击率% + 装备/技能暴击率% + 暴击几率收益提高效果",
+        "comment":  "sync_from_master",
+        "targets":  "暴击率",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_008",
+        "category":  "暴击相关",
+        "formula":  "暴击伤害系数 = 200% * (1 + 暴击伤害增幅%) + 暴击率溢出转换值",
+        "comment":  "sync_from_master",
+        "targets":  "暴击伤害, 暴击伤害增幅, 暴击率溢出转换值",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_009",
+        "category":  "暴击相关",
+        "formula":  "无尽战刃效果：每溢出1%暴击率转换为3%暴击伤害",
+        "comment":  "sync_from_master",
+        "targets":  "暴击率溢出转换值",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_010",
+        "category":  "暴击相关",
+        "formula":  "浪客之道效果：暴击几率收益提高100%，暴击增幅降低15%",
+        "comment":  "sync_from_master",
+        "targets":  "暴击率, 暴击伤害",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_011",
+        "category":  "普通攻击",
+        "formula":  "普攻最终伤害 = 攻击力 × (1 + 普攻伤害%) × (1 + 物理伤害提升%) × (1 + 最终伤害%) × 暴击系数 × 实际承受物理伤害比例",
+        "comment":  "sync_from_master",
+        "targets":  "攻击力, 普攻伤害, 物理伤害提升, 最终伤害",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_012",
+        "category":  "技能伤害",
+        "formula":  "技能伤害 = 基数 × 技能系数 × (1 + 技能伤害%) × (1 + 对应伤害提升%) × (1 + 最终伤害%) × 暴击系数（若可暴击） × 对应实际承伤比例",
+        "comment":  "confirmed_unified_skill_formula",
+        "targets":  "技能伤害",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_013",
+        "category":  "武器伤害（主属性*系数）",
+        "formula":  "武器伤害 = 英雄主属性 × (武器基础系数 + 武器伤害系数加成) × (1 + 武器最终伤害%) × (1 + 对应增伤乘区)",
+        "comment":  "confirmed_weapon_final_damage",
+        "targets":  "武器伤害系数, 武器最终伤害",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_014",
+        "category":  "分裂伤害",
+        "formula":  "分裂伤害 = 本次普攻最终伤害 × 分裂%",
+        "comment":  "sync_from_master",
+        "targets":  "分裂",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_015",
+        "category":  "吸血",
+        "formula":  "物理吸血回复 = 实际造成的物理伤害 × 吸血%",
+        "comment":  "sync_from_master",
+        "targets":  "吸血",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_016",
+        "category":  "吸血",
+        "formula":  "法术吸血回复 = 实际造成的魔法伤害 × 法术吸血%",
+        "comment":  "sync_from_master",
+        "targets":  "法术吸血",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_017",
+        "category":  "固定回复",
+        "formula":  "攻击回复 = 攻击回复值（每次普攻固定回血）",
+        "comment":  "sync_from_master",
+        "targets":  "攻击回复",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_018",
+        "category":  "固定回复",
+        "formula":  "生命恢复 = (英雄初始恢复 + 装备固定恢复) × (1 + 生命恢复%) + 附加生命恢复",
+        "comment":  "confirmed_no_str_regen",
+        "targets":  "生命恢复, 生命恢复%",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_019",
+        "category":  "闪避",
+        "formula":  "闪避率 = 闪避能力 / (闪避能力 + 100) + 闪避百分比加成",
+        "comment":  "sync_from_master",
+        "targets":  "闪避能力, 闪避百分比加成",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_020",
+        "category":  "冷却缩减",
+        "formula":  "技能冷却缩减 = MIN(技能急速 / (技能急速 + 100), 85%)",
+        "comment":  "confirmed_skill_haste_formula",
+        "targets":  "技能急速",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_021",
+        "category":  "冷却缩减",
+        "formula":  "武器实际CD = 初始冷却 / (1 + 武器释放频率%) × (1 - 释放间隔减少%)",
+        "comment":  "sync_from_master",
+        "targets":  "武器释放频率, 弹幕释放间隔等",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_022",
+        "category":  "特殊转换（卡牌/武器效果）",
+        "formula":  "魔纹长剑：每1点主属性额外增加1的攻击力",
+        "comment":  "sync_from_master",
+        "targets":  "攻击力",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_023",
+        "category":  "特殊转换",
+        "formula":  "毁灭之锤：每1点力量额外提供4最大生命值",
+        "comment":  "sync_from_master",
+        "targets":  "生命值",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_024",
+        "category":  "特殊转换",
+        "formula":  "坚定步伐：每20点智力额外提供1点最大法力值",
+        "comment":  "sync_from_master",
+        "targets":  "最大法力值",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_025",
+        "category":  "特殊转换",
+        "formula":  "风暴号角：每150点敏捷额外增加1点闪避",
+        "comment":  "sync_from_master",
+        "targets":  "闪避能力",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_026",
+        "category":  "特殊转换",
+        "formula":  "泰坦核心：每2500点最大生命值提供1%攻击力",
+        "comment":  "sync_from_master",
+        "targets":  "攻击力增幅",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_027",
+        "category":  "特殊转换",
+        "formula":  "泰坦心脏：每3500点最大生命值提供1%主属性增幅",
+        "comment":  "sync_from_master",
+        "targets":  "力量增幅/敏捷增幅/智力增幅",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_028",
+        "category":  "特殊转换",
+        "formula":  "吸血鬼伯爵：每15点攻击回复增加1%攻击力",
+        "comment":  "sync_from_master",
+        "targets":  "攻击力增幅",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_029",
+        "category":  "特殊转换",
+        "formula":  "魔切：每15点最大法力值额外增加1%普攻伤害",
+        "comment":  "sync_from_master",
+        "targets":  "普攻伤害",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_030",
+        "category":  "特殊转换",
+        "formula":  "大天使之杖：每20点最大法力值额外增加1%主属性",
+        "comment":  "sync_from_master",
+        "targets":  "主属性增幅",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_031",
+        "category":  "特殊转换",
+        "formula":  "护心镜：每5点护甲提供1%的主属性",
+        "comment":  "sync_from_master",
+        "targets":  "主属性增幅",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_032",
+        "category":  "特殊转换",
+        "formula":  "尖刺铠甲：每1点护甲，物理穿透+0.1",
+        "comment":  "sync_from_master",
+        "targets":  "物理穿透固定",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_033",
+        "category":  "特殊转换",
+        "formula":  "飞毛腿：每1点额外移动速度主属性+0.3%",
+        "comment":  "sync_from_master",
+        "targets":  "主属性增幅",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_034",
+        "category":  "特殊转换",
+        "formula":  "魔法铠甲：每1点护甲，基础主属性+0.8",
+        "comment":  "sync_from_master",
+        "targets":  "基础力量等",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_035",
+        "category":  "特殊转换",
+        "formula":  "巨神之力：每500点基础力量，独立增伤+0.6%",
+        "comment":  "sync_from_master",
+        "targets":  "最终伤害",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_036",
+        "category":  "特殊转换",
+        "formula":  "迅捷利刃：每500点基础敏捷，物理穿透+0.6%",
+        "comment":  "sync_from_master",
+        "targets":  "物理穿透百分比",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_037",
+        "category":  "特殊转换",
+        "formula":  "毁灭神杖：每500点基础智力，法术穿透+1%",
+        "comment":  "sync_from_master",
+        "targets":  "法术穿透百分比",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_038",
+        "category":  "特殊转换",
+        "formula":  "魔化武器：每500点主属性增加1%武器释放频率",
+        "comment":  "sync_from_master",
+        "targets":  "武器释放频率",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_039",
+        "category":  "特殊转换",
+        "formula":  "海洋之神：法力回复+15*[附魔]武器数量",
+        "comment":  "sync_from_master",
+        "targets":  "法力回复",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_040",
+        "category":  "特殊转换",
+        "formula":  "凌波微步：每次成功的闪避提高0.4点主属性",
+        "comment":  "sync_from_master",
+        "targets":  "附加力量等",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_041",
+        "category":  "特殊转换",
+        "formula":  "符文秘籍：[符文]释放后主属性+2",
+        "comment":  "sync_from_master",
+        "targets":  null,
+        "enabled":  true
+    },
+    {
+        "id":  "formula_042",
+        "category":  "特殊转换",
+        "formula":  "成长宝石：武器释放后主属性+0.2",
+        "comment":  "sync_from_master",
+        "targets":  null,
+        "enabled":  true
+    },
+    {
+        "id":  "formula_043",
+        "category":  "特殊转换",
+        "formula":  "长者书籍：使用特殊技能(Q)后,主属性+1",
+        "comment":  "sync_from_master",
+        "targets":  null,
+        "enabled":  true
+    },
+    {
+        "id":  "formula_044",
+        "category":  "特殊转换",
+        "formula":  "贪婪之壶：每秒主属性+5, 每秒攻击力+50, 每秒金币-50",
+        "comment":  "sync_from_master",
+        "targets":  "附加力量, 附加攻击力, 每秒基础金币",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_045",
+        "category":  "特殊转换",
+        "formula":  "狩猎者长矛：杀敌基础攻击力+0.4",
+        "comment":  "sync_from_master",
+        "targets":  "杀敌基础攻击",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_046",
+        "category":  "特殊转换",
+        "formula":  "点金手：普攻2%秒杀小兵并获得300金币",
+        "comment":  "sync_from_master",
+        "targets":  "无属性转换",
+        "enabled":  true
+    },
+    {
+        "id":  "formula_047",
+        "category":  "特殊转换",
+        "formula":  "血色药瓶：每普攻50次,获得一瓶药水治疗",
+        "comment":  "sync_from_master",
+        "targets":  null,
+        "enabled":  true
+    },
+    {
+        "id":  "formula_048",
+        "category":  "特殊转换",
+        "formula":  "双生戏法：视为额外拥有1张同名卡牌",
+        "comment":  "sync_from_master",
+        "targets":  null,
+        "enabled":  true
+    },
+    {
+        "id":  "formula_049",
+        "category":  "特殊转换",
+        "formula":  "残缺的宝图/武器匣残片：集齐获得新物品",
+        "comment":  "sync_from_master",
+        "targets":  null,
+        "enabled":  true
+    }
+]

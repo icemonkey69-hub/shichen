@@ -1,0 +1,80 @@
+{
+	"animation_label": "近战 Dualwield 攻击 斩击 | Melee Dualwield Attack Slice",
+	"animation_name": "Melee_Dualwield_Attack_Slice",
+	"attack_plan": [
+		{
+			"animation_label": "近战 Dualwield 攻击 劈砍 | Melee Dualwield Attack Chop",
+			"animation_name": "Melee_Dualwield_Attack_Chop",
+			"effect_id": "",
+			"fps": 30.0,
+			"hit_bone": "",
+			"hit_frames": [
+				15,
+				28
+			],
+			"hit_seconds": [
+				0.5,
+				0.933333333333333
+			],
+			"note": "",
+			"slot": 1
+		},
+		{
+			"animation_label": "近战 Dualwield 攻击 斩击 | Melee Dualwield Attack Slice",
+			"animation_name": "Melee_Dualwield_Attack_Slice",
+			"effect_id": "",
+			"fps": 30.0,
+			"hit_bone": "",
+			"hit_frames": [
+				20
+			],
+			"hit_seconds": [
+				0.666666666666667
+			],
+			"note": "",
+			"slot": 2
+		}
+	],
+	"character_name": "Adventurers(冒险者) / Barbarian",
+	"character_path": "res://combat_visual_editor/KayKit_Adventurers_2.0_FREE/Characters/gltf/Barbarian.glb",
+	"cloth_preset_key": "default",
+	"cloth_preset_label": "Default",
+	"cloth_tint_html": "ffffffff",
+	"generated_at_local": "2026-04-16T05:20:42",
+	"hair_preset_key": "default",
+	"hair_preset_label": "Default",
+	"hair_tint_html": "ffffffff",
+	"hat_preset_key": "default",
+	"hat_preset_label": "Default",
+	"hat_tint_html": "ffffffff",
+	"left_weapon_name": "Skeletons(骷髅) / 斧 | axe",
+	"left_weapon_path": "res://combat_visual_editor/KayKit_Skeletons_1.1_FREE/assets/gltf/Skeleton_Axe.gltf",
+	"left_weapon_tune_pos_x": -0.00499999988824129,
+	"left_weapon_tune_pos_y": 0.0,
+	"left_weapon_tune_pos_z": 0.0,
+	"left_weapon_tune_rot_x": 0.0,
+	"left_weapon_tune_rot_y": -1.0,
+	"left_weapon_tune_rot_z": 0.0,
+	"loop": true,
+	"pack_id": "adventurers",
+	"pack_label": "Adventurers 2.0 FREE",
+	"profile_display_name": "2003",
+	"profile_id": "2003",
+	"profile_name": "狂战士双手斧",
+	"right_weapon_name": "Skeletons(骷髅) / 斧 | axe",
+	"right_weapon_path": "res://combat_visual_editor/KayKit_Skeletons_1.1_FREE/assets/gltf/Skeleton_Axe.gltf",
+	"scale": 1.15,
+	"skin_preset_key": "default",
+	"skin_preset_label": "Default",
+	"skin_tint_html": "ffffffff",
+	"speed": 1.1,
+	"use_extra_animation_pack": true,
+	"weapon_name": "Skeletons(骷髅) / 斧 | axe",
+	"weapon_path": "res://combat_visual_editor/KayKit_Skeletons_1.1_FREE/assets/gltf/Skeleton_Axe.gltf",
+	"weapon_tune_pos_x": 0.0,
+	"weapon_tune_pos_y": 0.0,
+	"weapon_tune_pos_z": 0.0,
+	"weapon_tune_rot_x": 0.0,
+	"weapon_tune_rot_y": 0.0,
+	"weapon_tune_rot_z": 0.0
+}
