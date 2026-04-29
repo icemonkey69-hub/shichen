@@ -21,6 +21,7 @@ const CombatInfoFormatterScript := preload("res://systems/combat_info_formatter.
 const KillRewardAmountCalculatorScript := preload("res://systems/kill_reward_amount_calculator.gd")
 const RewardPickupSplitterScript := preload("res://systems/reward_pickup_splitter.gd")
 const ThresholdRewardPickerScript := preload("res://systems/threshold_reward_picker.gd")
+const CardIconResolverScript := preload("res://systems/card_icon_resolver.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const DEFAULT_RESPAWN_SECONDS := 5.0
@@ -34,8 +35,6 @@ const RUN_RECORD_SAVE_PATH := "user://run_record.json"
 const DEBUG_CHEAT_KILL_RADIUS := 800.0
 const PASSIVE_TICK_SECONDS := 0.2
 const SELECTION_TOOLTIP_DELAY_SEC := 0.08
-const CARD_ICON_FALLBACK_DIR := "res://assets/ui/icons/cards"
-const CARD_ICON_EXTENSIONS := ["png", "webp", "jpg", "jpeg", "svg"]
 const WAVE_INFO_SCENE := preload("res://scenes/ui/波次信息.tscn")
 const BOSS_HEALTH_SCENE := preload("res://scenes/ui/Boss血条.tscn")
 const WAVE_BANNER_SCENE := preload("res://scenes/ui/波次横幅.tscn")
@@ -612,7 +611,7 @@ var card_collection_overlay: CardCollectionOverlayUi
 var card_collection_sort_mode := CARD_COLLECTION_SORT_QUALITY
 var card_collection_selected_stack_key := ""
 var card_collection_visible := false
-var card_icon_texture_cache: Dictionary = {}
+var card_icon_resolver: CardIconResolver
 var card_choice_overlay: CardChoiceOverlayUi
 var card_choice_overlay_visible := false
 var card_choice_rows: Array[Dictionary] = []
@@ -662,6 +661,7 @@ func _ready() -> void:
 	weapon_growth_runtime = WeaponGrowthRuntimeScript.new()
 	card_choice_drop_runtime = CardChoiceDropRuntimeScript.new()
 	level_runtime = LevelRuntimeScript.new()
+	card_icon_resolver = CardIconResolverScript.new(CARD_CHOICE_DEMO_ICON_BY_ID, CARD_CHOICE_DEMO_ICON_BY_NAME)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	player.process_mode = Node.PROCESS_MODE_PAUSABLE
 	enemies.process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -5446,42 +5446,9 @@ func _get_card_tier_colors(tier: int) -> Dictionary:
 
 
 func _resolve_card_icon(card_row: Dictionary) -> Texture2D:
-	var raw_icon_value = card_row.get("icon", "")
-	if raw_icon_value == null:
+	if card_icon_resolver == null:
 		return null
-	var raw_icon := String(raw_icon_value).strip_edges()
-	if raw_icon.is_empty():
-		var fallback_id := String(card_row.get("id", "")).strip_edges()
-		if CARD_CHOICE_DEMO_ICON_BY_ID.has(fallback_id):
-			raw_icon = String(CARD_CHOICE_DEMO_ICON_BY_ID.get(fallback_id, "")).strip_edges()
-		var fallback_name := String(card_row.get("name", "")).strip_edges()
-		if raw_icon.is_empty() and CARD_CHOICE_DEMO_ICON_BY_NAME.has(fallback_name):
-			raw_icon = String(CARD_CHOICE_DEMO_ICON_BY_NAME.get(fallback_name, "")).strip_edges()
-		if raw_icon.is_empty():
-			return null
-	if card_icon_texture_cache.has(raw_icon):
-		return card_icon_texture_cache.get(raw_icon, null) as Texture2D
-	var candidates := _build_card_icon_candidates(raw_icon)
-	for candidate in candidates:
-		if ResourceLoader.exists(candidate):
-			var texture := load(candidate) as Texture2D
-			card_icon_texture_cache[raw_icon] = texture
-			return texture
-	card_icon_texture_cache[raw_icon] = null
-	return null
-
-
-func _build_card_icon_candidates(icon_ref: String) -> Array[String]:
-	var normalized_ref := icon_ref.strip_edges()
-	if normalized_ref.is_empty():
-		return []
-	if normalized_ref.begins_with("res://") or normalized_ref.begins_with("uid://"):
-		return [normalized_ref]
-	var candidates: Array[String] = []
-	candidates.append("%s/%s" % [CARD_ICON_FALLBACK_DIR, normalized_ref])
-	for ext in CARD_ICON_EXTENSIONS:
-		candidates.append("%s/%s.%s" % [CARD_ICON_FALLBACK_DIR, normalized_ref, ext])
-	return candidates
+	return card_icon_resolver.resolve(card_row)
 
 
 func _build_card_placeholder_text(card_name: String) -> String:
