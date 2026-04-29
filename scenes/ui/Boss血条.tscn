@@ -1,0 +1,86 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/Boss血条.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="1_frame"]
+bg_color = Color(0.12, 0.06, 0.03, 0.96)
+border_color = Color(0.78, 0.59, 0.21, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="2_bar_bg"]
+bg_color = Color(0.18, 0.08, 0.06, 0.9)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="3_bar_fill"]
+bg_color = Color(0.78, 0.13, 0.11, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[node name="Boss血条" type="Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -420.0
+offset_top = 100.0
+offset_right = 420.0
+offset_bottom = 160.0
+grow_horizontal = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="背景" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.05, 0.02, 0.94)
+
+[node name="面板" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("1_frame")
+
+[node name="标题" type="Label" parent="面板"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 6.0
+offset_bottom = 28.0
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 0.9, 0.62, 1)
+text = "Boss"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="血条" type="ProgressBar" parent="面板"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 32.0
+offset_right = -20.0
+offset_bottom = 52.0
+theme_override_styles/background = SubResource("2_bar_bg")
+theme_override_styles/fill = SubResource("3_bar_fill")
+show_percentage = false

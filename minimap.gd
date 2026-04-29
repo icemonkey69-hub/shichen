@@ -12,11 +12,20 @@ class_name Minimap
 @export var player_radius := 3.2
 @export var enemy_radius := 2.4
 @export var boss_radius := 4.2
+@export var refresh_interval := 0.12
 
 var player: Node2D
+var refresh_accumulator := 0.0
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if not visible:
+		return
+	if refresh_interval > 0.0:
+		refresh_accumulator += delta
+		if refresh_accumulator < refresh_interval:
+			return
+		refresh_accumulator = 0.0
 	queue_redraw()
 
 

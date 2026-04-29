@@ -19,7 +19,7 @@ func invalidate() -> void:
 
 func load_rows(tree: SceneTree, table_name: StringName, sort_key: String) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
-	var data_table := get_data_table_node(tree)
+	var data_table: Node = get_data_table_node(tree)
 	if data_table == null or not data_table.has_table(table_name):
 		return rows
 
@@ -33,3 +33,13 @@ func load_rows(tree: SceneTree, table_name: StringName, sort_key: String) -> Arr
 			return float(a.get(sort_key, 0)) < float(b.get(sort_key, 0))
 		)
 	return rows
+
+
+func load_row(tree: SceneTree, table_name: StringName, row_id: Variant) -> Dictionary:
+	var data_table: Node = get_data_table_node(tree)
+	if data_table == null or not data_table.has_table(table_name):
+		return {}
+	var raw_row: Variant = data_table.call("get_row", table_name, row_id)
+	if raw_row is Dictionary:
+		return (raw_row as Dictionary).duplicate(true)
+	return {}

@@ -1,73 +1,45 @@
 ﻿extends Node3D
 
+const AI_MODEL_ROOT := "E:/Godot/model_3D/Ai_Model"
+const AI_WEAPON_ROOT := "E:/Godot/model_3D/Ai_weapons"
+const BLENDER_EXE := "E:/Blender/blender.exe"
+const EXTERNAL_IMPORT_CACHE_DIR := "E:/Godot/model_3D/F6_Cache"
+const FBX_TO_GLB_SCRIPT := "res://tools/model_viewer_fbx_to_glb.py"
+const RUNTIME_CONSTANTS_TABLE_PATH := "res://data/tables/runtime_constants.json"
+const RUNTIME_WEAPON_SOCKET_TARGET_EXTENT_KEY := "model3d_weapon_socket_target_extent"
+const RUNTIME_WEAPON_SOCKET_TARGET_EXTENT_ID := "5"
 const PACKS: Array[Dictionary] = [
 	{
-		"id": "skeletons",
-		"label": "Skeletons 1.1 FREE",
-		"characters_dir": "res://combat_visual_editor/KayKit_Skeletons_1.1_FREE/characters/gltf",
-		"weapons_dir": "res://combat_visual_editor/KayKit_Skeletons_1.1_FREE/assets/gltf",
-		"animations_dir": "res://combat_visual_editor/KayKit_Skeletons_1.1_FREE/Animations/gltf/Rig_Medium",
-	},
-	{
-		"id": "adventurers",
-		"label": "Adventurers 2.0 FREE",
-		"characters_dir": "res://combat_visual_editor/KayKit_Adventurers_2.0_FREE/Characters/gltf",
-		"weapons_dir": "res://combat_visual_editor/KayKit_Adventurers_2.0_FREE/Assets/gltf",
-		"animations_dir": "res://combat_visual_editor/KayKit_Adventurers_2.0_FREE/Animations/gltf/Rig_Medium",
-	},
-	{
-		"id": "newmodel",
-		"label": "NewModel (Mixamo Import)",
-		"characters_dir": "res://combat_visual_editor/newmodel/characters",
-		"weapons_dir": "",
+		"id": "ai_model",
+		"label": "AI Model Pipeline",
+		"characters_dir": AI_MODEL_ROOT,
+		"weapons_dir": AI_WEAPON_ROOT,
 		"animations_dir": "",
 	},
 ]
-const SHARED_MEDIUM_ANIMATIONS_DIR := "res://combat_visual_editor/KayKit_Character_Animations_1.1/Animations/gltf/Rig_Medium"
 const GENERATED_CONFIG_ROOT := "res://assets/heroes/models_3d"
 const ATTACK_SLOT_COUNT := 6
 const ATTACK_DEFAULT_FPS := 30.0
 const MODEL_FOCUS_POINT := Vector3(0.0, 1.0, 0.0)
 const UNIFIED_PACK_ID := "all_in_one"
-const UNIFIED_PACK_LABEL := "All Packs (Unified)"
+const UNIFIED_PACK_LABEL := "AI Model Pipeline"
 const UI_PANEL_MARGIN := 16.0
 const UI_PANEL_GAP := 12.0
 const UI_PANEL_MIN_WIDTH := 360.0
-const HAT_NODE_HINTS := ["hat", "hood", "cap", "mask", "helm", "helmet"]
-const HAIR_NODE_HINTS := ["hair", "beard", "brow", "mustache", "mohawk"]
-const SKIN_NODE_HINTS := ["head", "face", "skin", "ear", "nose", "jaw", "skull", "neck", "hand"]
-const CLOTH_NODE_HINTS := ["body", "cloak", "cape", "robe", "cloth", "coat", "armor", "torso", "leg", "pants", "skirt", "shoulder", "boot", "shoe"]
-const EYE_NODE_HINTS := ["eye", "eyes", "pupil"]
-const SKELETON_BONE_NODE_HINTS := ["arm", "leg", "body", "head", "jaw", "skull", "spine", "rib", "pelvis", "hand", "foot"]
-
-const HAT_COLOR_PRESETS: Array[Dictionary] = [
-	{"label": "Default", "key": "default", "color": Color(1.0, 1.0, 1.0, 1.0)},
-	{"label": "Blue", "key": "blue", "color": Color(0.45, 0.72, 1.18, 1.0)},
-	{"label": "Green", "key": "green", "color": Color(0.52, 1.12, 0.62, 1.0)},
-	{"label": "Red", "key": "red", "color": Color(1.22, 0.48, 0.48, 1.0)},
-	{"label": "Purple", "key": "purple", "color": Color(0.92, 0.62, 1.22, 1.0)},
-]
-const HAIR_COLOR_PRESETS: Array[Dictionary] = [
-	{"label": "Default", "key": "default", "color": Color(1.0, 1.0, 1.0, 1.0)},
-	{"label": "Blonde", "key": "blonde", "color": Color(1.20, 1.02, 0.58, 1.0)},
-	{"label": "Brown", "key": "brown", "color": Color(0.58, 0.38, 0.24, 1.0)},
-	{"label": "White", "key": "white", "color": Color(1.15, 1.15, 1.15, 1.0)},
-	{"label": "Blue", "key": "blue", "color": Color(0.52, 0.74, 1.20, 1.0)},
-]
-const SKIN_COLOR_PRESETS: Array[Dictionary] = [
-	{"label": "Default", "key": "default", "color": Color(1.0, 1.0, 1.0, 1.0)},
-	{"label": "Light", "key": "light", "color": Color(1.18, 1.03, 0.95, 1.0)},
-	{"label": "Warm", "key": "warm", "color": Color(1.12, 0.90, 0.76, 1.0)},
-	{"label": "Deep", "key": "deep", "color": Color(0.76, 0.56, 0.44, 1.0)},
-	{"label": "Cold", "key": "cold", "color": Color(0.84, 0.86, 0.94, 1.0)},
-]
-const CLOTH_COLOR_PRESETS: Array[Dictionary] = [
-	{"label": "Default", "key": "default", "color": Color(1.0, 1.0, 1.0, 1.0)},
-	{"label": "Navy", "key": "navy", "color": Color(0.58, 0.72, 1.20, 1.0)},
-	{"label": "Olive", "key": "olive", "color": Color(0.66, 0.90, 0.54, 1.0)},
-	{"label": "Wine", "key": "wine", "color": Color(1.08, 0.56, 0.68, 1.0)},
-	{"label": "Golden", "key": "golden", "color": Color(1.06, 0.98, 0.66, 1.0)},
-]
+const WEAPON_POS_TUNE_MIN := -20.0
+const WEAPON_POS_TUNE_MAX := 20.0
+const WEAPON_POS_TUNE_STEP := 0.01
+const WEAPON_ROT_TUNE_MIN := -720.0
+const WEAPON_ROT_TUNE_MAX := 720.0
+const WEAPON_ROT_TUNE_STEP := 0.1
+const WEAPON_SCALE_TUNE_MIN := 0.01
+const WEAPON_SCALE_TUNE_MAX := 50.0
+const WEAPON_SCALE_TUNE_STEP := 0.01
+const DEFAULT_WEAPON_SOCKET_TARGET_EXTENT := 0.95
+const WEAPON_TUNE_UNITS := "godot_units"
+const LEGACY_WEAPON_TUNE_POSITION_SCALE := 0.01
+const LEGACY_WEAPON_TUNE_POSITION_THRESHOLD := 5.0
+const WEAPON_ELONGATED_GRIP_RATIO := 1.6
 
 const WEAPON_TERM_CN := {}
 const ANIMATION_TERM_CN := {}
@@ -95,6 +67,21 @@ const LEFT_HAND_BONE_HINTS := [
 	"handslot_l",
 	"mixamorig:lefthand",
 	"bip001lhand",
+]
+const HIT_BONE_HINTS := [
+	"chest",
+	"upperchest",
+	"spine2",
+	"spine02",
+	"spine_02",
+	"spine1",
+	"spine01",
+	"spine_01",
+	"spine",
+	"torso",
+	"body",
+	"hips",
+	"pelvis",
 ]
 
 @onready var preview_pivot: Node3D = $PreviewPivot
@@ -169,12 +156,16 @@ var _current_left_weapon_instance: Node3D = null
 var _current_left_weapon_path := ""
 var _weapon_base_position := Vector3.ZERO
 var _weapon_base_rotation_degrees := Vector3.ZERO
+var _weapon_base_scale := Vector3.ONE
 var _weapon_offset_position := Vector3.ZERO
 var _weapon_offset_rotation_degrees := Vector3.ZERO
+var _weapon_offset_scale := Vector3.ONE
 var _left_weapon_base_position := Vector3.ZERO
 var _left_weapon_base_rotation_degrees := Vector3.ZERO
+var _left_weapon_base_scale := Vector3.ONE
 var _left_weapon_offset_position := Vector3.ZERO
 var _left_weapon_offset_rotation_degrees := Vector3.ZERO
+var _left_weapon_offset_scale := Vector3.ONE
 var _is_syncing_weapon_tune_controls := false
 var _attach_note := ""
 var _animation_note := ""
@@ -190,17 +181,29 @@ var _attack_configs: Array[Dictionary] = []
 var _is_syncing_attack_panel := false
 var _is_syncing_attack_scrub_slider := false
 var _attack_edit_profile_id := ""
+var _runtime_constant_float_cache: Dictionary = {}
 
-var _is_dragging := false
+var _is_camera_dragging := false
+var _is_model_dragging := false
 var _yaw := deg_to_rad(30.0)
 var _pitch := deg_to_rad(14.0)
 var _distance := 5.8
+var weapon_scale_x_slider: HSlider = null
+var weapon_scale_y_slider: HSlider = null
+var weapon_scale_z_slider: HSlider = null
+var left_weapon_scale_x_slider: HSlider = null
+var left_weapon_scale_y_slider: HSlider = null
+var left_weapon_scale_z_slider: HSlider = null
 
 
 func _ready() -> void:
 	randomize()
+	_apply_pipeline_labels()
+	_hide_removed_pipeline_controls()
+	_add_axis_labels_to_weapon_tune_rows()
+	_create_weapon_scale_controls()
+	_configure_weapon_tune_ranges()
 	_populate_pack_options()
-	_populate_hat_color_options()
 	_select_first_available_pack()
 	_connect_signals()
 	_configure_option_button_width_behavior()
@@ -223,10 +226,134 @@ func _ready() -> void:
 		return
 
 	_refresh_pack_data()
-func _process(delta: float) -> void:
+
+
+func _apply_pipeline_labels() -> void:
+	if is_instance_valid(extra_animation_toggle):
+		extra_animation_toggle.text = "合并当前模型文件夹内动作"
+
+
+func _hide_removed_pipeline_controls() -> void:
+	for control in [
+		hair_color_option.get_parent(),
+		skin_color_option.get_parent(),
+		cloth_color_option.get_parent(),
+		hat_color_option.get_parent(),
+		auto_rotate_toggle,
+	]:
+		if control is CanvasItem:
+			(control as CanvasItem).visible = false
+	auto_rotate_toggle.set_pressed_no_signal(false)
+
+
+func _add_axis_labels_to_weapon_tune_rows() -> void:
+	_add_axis_labels_before_sliders(weapon_pos_x_slider, weapon_pos_y_slider, weapon_pos_z_slider)
+	_add_axis_labels_before_sliders(weapon_rot_x_slider, weapon_rot_y_slider, weapon_rot_z_slider)
+	_add_axis_labels_before_sliders(left_weapon_pos_x_slider, left_weapon_pos_y_slider, left_weapon_pos_z_slider)
+	_add_axis_labels_before_sliders(left_weapon_rot_x_slider, left_weapon_rot_y_slider, left_weapon_rot_z_slider)
+
+
+func _add_axis_labels_before_sliders(x_slider: HSlider, y_slider: HSlider, z_slider: HSlider) -> void:
+	var row := x_slider.get_parent()
+	if row == null or row.has_meta("axis_labels_added"):
+		return
+	row.set_meta("axis_labels_added", true)
+	for item in [
+		{"slider": x_slider, "label": "X"},
+		{"slider": y_slider, "label": "Y"},
+		{"slider": z_slider, "label": "Z"},
+	]:
+		var slider := item["slider"] as HSlider
+		var axis_label := Label.new()
+		axis_label.text = str(item["label"])
+		axis_label.custom_minimum_size = Vector2(12.0, 0.0)
+		row.add_child(axis_label)
+		row.move_child(axis_label, slider.get_index())
+
+
+func _create_weapon_scale_controls() -> void:
+	if weapon_scale_x_slider != null:
+		return
+	var vbox := weapon_tune_reset_button.get_parent().get_parent()
+	var right_row := _create_slider_xyz_row("缩放XYZ")
+	weapon_scale_x_slider = right_row.get_node("ScaleX") as HSlider
+	weapon_scale_y_slider = right_row.get_node("ScaleY") as HSlider
+	weapon_scale_z_slider = right_row.get_node("ScaleZ") as HSlider
+	vbox.add_child(right_row)
+	vbox.move_child(right_row, weapon_tune_reset_button.get_parent().get_index())
+
+	var left_row := _create_slider_xyz_row("缩放XYZ")
+	left_weapon_scale_x_slider = left_row.get_node("ScaleX") as HSlider
+	left_weapon_scale_y_slider = left_row.get_node("ScaleY") as HSlider
+	left_weapon_scale_z_slider = left_row.get_node("ScaleZ") as HSlider
+	vbox.add_child(left_row)
+	vbox.move_child(left_row, left_weapon_tune_reset_button.get_parent().get_index())
+
+
+func _create_slider_xyz_row(label_text: String) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+
+	var label := Label.new()
+	label.text = label_text
+	row.add_child(label)
+
+	for axis in ["X", "Y", "Z"]:
+		var axis_label := Label.new()
+		axis_label.text = axis
+		axis_label.custom_minimum_size = Vector2(12.0, 0.0)
+		row.add_child(axis_label)
+		var slider := HSlider.new()
+		slider.name = "Scale%s" % axis
+		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		slider.min_value = WEAPON_SCALE_TUNE_MIN
+		slider.max_value = WEAPON_SCALE_TUNE_MAX
+		slider.step = WEAPON_SCALE_TUNE_STEP
+		slider.value = 1.0
+		row.add_child(slider)
+	return row
+
+
+func _configure_weapon_tune_ranges() -> void:
+	for slider in [
+		weapon_pos_x_slider,
+		weapon_pos_y_slider,
+		weapon_pos_z_slider,
+		left_weapon_pos_x_slider,
+		left_weapon_pos_y_slider,
+		left_weapon_pos_z_slider,
+	]:
+		slider.min_value = WEAPON_POS_TUNE_MIN
+		slider.max_value = WEAPON_POS_TUNE_MAX
+		slider.step = WEAPON_POS_TUNE_STEP
+	for slider in [
+		weapon_rot_x_slider,
+		weapon_rot_y_slider,
+		weapon_rot_z_slider,
+		left_weapon_rot_x_slider,
+		left_weapon_rot_y_slider,
+		left_weapon_rot_z_slider,
+	]:
+		slider.min_value = WEAPON_ROT_TUNE_MIN
+		slider.max_value = WEAPON_ROT_TUNE_MAX
+		slider.step = WEAPON_ROT_TUNE_STEP
+	for slider in [
+		weapon_scale_x_slider,
+		weapon_scale_y_slider,
+		weapon_scale_z_slider,
+		left_weapon_scale_x_slider,
+		left_weapon_scale_y_slider,
+		left_weapon_scale_z_slider,
+	]:
+		if slider == null:
+			continue
+		slider.min_value = WEAPON_SCALE_TUNE_MIN
+		slider.max_value = WEAPON_SCALE_TUNE_MAX
+		slider.step = WEAPON_SCALE_TUNE_STEP
+
+
+func _process(_delta: float) -> void:
 	_update_ui_panel_layout()
-	if auto_rotate_toggle.button_pressed and not _is_preview_paused:
-		preview_pivot.rotate_y(delta * 0.75)
 	_update_attack_frame_preview_label_clean()
 
 
@@ -237,10 +364,6 @@ func _configure_option_button_width_behavior() -> void:
 		weapon_option,
 		left_weapon_option,
 		animation_option,
-		hair_color_option,
-		skin_color_option,
-		cloth_color_option,
-		hat_color_option,
 		saved_profile_option,
 		attack_slot_option,
 		attack_anim_option,
@@ -279,8 +402,10 @@ func _update_ui_panel_layout() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouse_button := event as InputEventMouseButton
-		if mouse_button.button_index == MOUSE_BUTTON_RIGHT:
-			_is_dragging = mouse_button.pressed
+		if mouse_button.button_index == MOUSE_BUTTON_LEFT:
+			_is_model_dragging = mouse_button.pressed
+		elif mouse_button.button_index == MOUSE_BUTTON_RIGHT:
+			_is_camera_dragging = mouse_button.pressed
 		elif mouse_button.pressed and mouse_button.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_distance = max(2.5, _distance - 0.4)
 			_update_camera()
@@ -288,11 +413,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			_distance = min(12.0, _distance + 0.4)
 			_update_camera()
 
-	if event is InputEventMouseMotion and _is_dragging:
+	if event is InputEventMouseMotion and _is_camera_dragging:
 		var mouse_motion := event as InputEventMouseMotion
 		_yaw -= mouse_motion.relative.x * 0.01
 		_pitch = clamp(_pitch - mouse_motion.relative.y * 0.008, deg_to_rad(-35.0), deg_to_rad(70.0))
 		_update_camera()
+	elif event is InputEventMouseMotion and _is_model_dragging:
+		var mouse_motion := event as InputEventMouseMotion
+		preview_pivot.rotate_y(-mouse_motion.relative.x * 0.01)
 
 
 func _populate_pack_options() -> void:
@@ -327,14 +455,27 @@ func _dir_exists(path: String) -> bool:
 	return DirAccess.open(path) != null
 
 
+func _is_scene_file_name(file_name: String) -> bool:
+	var lower_name := file_name.to_lower()
+	return lower_name.ends_with(".glb") or lower_name.ends_with(".gltf") or lower_name.ends_with(".fbx")
+
+
+func _is_project_resource_path(path: String) -> bool:
+	return path.begins_with("res://") or path.begins_with("user://")
+
+
+func _normalize_match_path(path: String) -> String:
+	return path.replace("\\", "/").to_lower()
+
+
 func _refresh_pack_data() -> void:
 	_character_paths.clear()
 	_weapon_paths.clear()
 	for pack in PACKS:
 		if not _is_valid_pack(pack):
 			continue
-		_append_unique_paths(_character_paths, _collect_scene_files(pack.get("characters_dir", "")))
-		_append_unique_paths(_weapon_paths, _collect_scene_files(pack.get("weapons_dir", "")))
+		_append_unique_paths(_character_paths, _collect_character_model_files(pack.get("characters_dir", "")))
+		_append_unique_paths(_weapon_paths, _collect_preview_weapon_files(pack.get("weapons_dir", "")))
 	_character_paths.sort()
 	_weapon_paths.sort()
 	_rebuild_animation_scene_paths()
@@ -365,18 +506,122 @@ func _collect_scene_files(dir_path: String) -> Array[String]:
 	if not _dir_exists(dir_path):
 		return paths
 
-	var file_names := DirAccess.get_files_at(dir_path)
-	file_names.sort()
+	var pending_dirs: Array[String] = [dir_path]
+	while not pending_dirs.is_empty():
+		var current_dir: String = pending_dirs.pop_front()
+		var child_dirs := DirAccess.get_directories_at(current_dir)
+		child_dirs.sort()
+		for child_dir in child_dirs:
+			if child_dir.begins_with("."):
+				continue
+			pending_dirs.append("%s/%s" % [current_dir, child_dir])
 
-	for file_name in file_names:
-		var lower_name := file_name.to_lower()
-		if lower_name.ends_with(".glb") or lower_name.ends_with(".gltf"):
-			var full_path := "%s/%s" % [dir_path, file_name]
-			if not ResourceLoader.exists(full_path, "PackedScene"):
+		var file_names := DirAccess.get_files_at(current_dir)
+		file_names.sort()
+		for file_name in file_names:
+			if not _is_scene_file_name(file_name):
+				continue
+			var full_path := "%s/%s" % [current_dir, file_name]
+			if _is_project_resource_path(full_path) and full_path.get_extension().to_lower() != "fbx":
+				if not ResourceLoader.exists(full_path, "PackedScene") and not FileAccess.file_exists(full_path):
+					continue
+			elif not FileAccess.file_exists(full_path):
 				continue
 			paths.append(full_path)
 
+	paths.sort()
 	return paths
+
+
+func _collect_character_model_files(root_dir: String) -> Array[String]:
+	var scene_files := _collect_scene_files(root_dir)
+	var files_by_folder: Dictionary = {}
+	for path in scene_files:
+		var folder := path.get_base_dir()
+		if not files_by_folder.has(folder):
+			files_by_folder[folder] = []
+		var folder_files := files_by_folder[folder] as Array
+		folder_files.append(path)
+
+	var result: Array[String] = []
+	for folder in files_by_folder.keys():
+		var folder_files: Array = files_by_folder[folder]
+		result.append_array(_select_primary_character_files(str(folder), folder_files))
+	result.sort()
+	return result
+
+
+func _collect_preview_weapon_files(root_dir: String) -> Array[String]:
+	var result: Array[String] = []
+	for path in _collect_scene_files(root_dir):
+		if _is_low_runtime_asset_path(path):
+			continue
+		result.append(path)
+	result.sort()
+	return result
+
+
+func _select_primary_character_files(folder: String, files: Array) -> Array[String]:
+	var result: Array[String] = []
+	if files.is_empty():
+		return result
+	var sorted_files: Array[String] = []
+	for file in files:
+		sorted_files.append(str(file))
+	sorted_files.sort()
+
+	var folder_name := folder.get_file().to_lower()
+	for file in sorted_files:
+		var base_name := file.get_file().get_basename().to_lower()
+		if base_name.ends_with("_low_benti"):
+			continue
+		if base_name == "%s_benti" % folder_name:
+			result.append(file)
+	for file in sorted_files:
+		if result.has(file):
+			continue
+		var base_name := file.get_file().get_basename().to_lower()
+		if base_name.ends_with("_benti") and not base_name.ends_with("_low_benti"):
+			result.append(file)
+
+	# New F6 pipeline: the real body must be marked with *_benti.
+	# Incomplete folders are ignored so *_Idle and other action files never become the body.
+	return result
+
+
+func _is_low_runtime_asset_path(path: String) -> bool:
+	var base_name := path.get_file().get_basename().to_lower()
+	return base_name.ends_with("_low") or base_name.ends_with("_low_benti")
+
+
+func _looks_like_action_file(path: String) -> bool:
+	var base_name := path.get_file().get_basename().to_lower()
+	var action_hints := [
+		"idle",
+		"run",
+		"walk",
+		"attack",
+		"death",
+		"die",
+		"hit",
+		"hurt",
+		"jump",
+		"fall",
+		"cast",
+		"spell",
+		"slash",
+		"shoot",
+		"punch",
+		"kick",
+		"dodge",
+		"block",
+		"victory",
+		"dance",
+	]
+	for hint in action_hints:
+		if base_name.contains(hint):
+			return true
+	return false
 
 
 func _populate_model_options() -> void:
@@ -397,19 +642,8 @@ func _populate_model_options() -> void:
 		character_option.select(0)
 	weapon_option.select(0)
 	left_weapon_option.select(0)
-func _populate_hat_color_options() -> void:
-	_populate_preset_option(hair_color_option, HAIR_COLOR_PRESETS)
-	_populate_preset_option(skin_color_option, SKIN_COLOR_PRESETS)
-	_populate_preset_option(cloth_color_option, CLOTH_COLOR_PRESETS)
-	_populate_preset_option(hat_color_option, HAT_COLOR_PRESETS)
 
 
-func _populate_preset_option(option: OptionButton, presets: Array[Dictionary]) -> void:
-	option.clear()
-	for preset in presets:
-		var fallback_label := str(preset.get("key", "default"))
-		option.add_item(_clean_ui_text(str(preset.get("label", "")), fallback_label))
-	option.select(0)
 func _populate_animation_options(animation_names: Array[String]) -> void:
 	_animation_names = animation_names.duplicate()
 	_animation_display_names.clear()
@@ -447,16 +681,15 @@ func _connect_signals() -> void:
 	loop_toggle.toggled.connect(_on_loop_toggled)
 	extra_animation_toggle.toggled.connect(_on_extra_animation_toggled)
 	speed_slider.value_changed.connect(_on_speed_changed)
-	hair_color_option.item_selected.connect(_on_style_color_changed)
-	skin_color_option.item_selected.connect(_on_style_color_changed)
-	cloth_color_option.item_selected.connect(_on_style_color_changed)
-	hat_color_option.item_selected.connect(_on_hat_color_selected)
 	weapon_pos_x_slider.value_changed.connect(_on_weapon_tune_slider_changed)
 	weapon_pos_y_slider.value_changed.connect(_on_weapon_tune_slider_changed)
 	weapon_pos_z_slider.value_changed.connect(_on_weapon_tune_slider_changed)
 	weapon_rot_x_slider.value_changed.connect(_on_weapon_tune_slider_changed)
 	weapon_rot_y_slider.value_changed.connect(_on_weapon_tune_slider_changed)
 	weapon_rot_z_slider.value_changed.connect(_on_weapon_tune_slider_changed)
+	weapon_scale_x_slider.value_changed.connect(_on_weapon_tune_slider_changed)
+	weapon_scale_y_slider.value_changed.connect(_on_weapon_tune_slider_changed)
+	weapon_scale_z_slider.value_changed.connect(_on_weapon_tune_slider_changed)
 	weapon_tune_reset_button.pressed.connect(_on_weapon_tune_reset_pressed)
 	left_weapon_pos_x_slider.value_changed.connect(_on_left_weapon_tune_slider_changed)
 	left_weapon_pos_y_slider.value_changed.connect(_on_left_weapon_tune_slider_changed)
@@ -464,6 +697,9 @@ func _connect_signals() -> void:
 	left_weapon_rot_x_slider.value_changed.connect(_on_left_weapon_tune_slider_changed)
 	left_weapon_rot_y_slider.value_changed.connect(_on_left_weapon_tune_slider_changed)
 	left_weapon_rot_z_slider.value_changed.connect(_on_left_weapon_tune_slider_changed)
+	left_weapon_scale_x_slider.value_changed.connect(_on_left_weapon_tune_slider_changed)
+	left_weapon_scale_y_slider.value_changed.connect(_on_left_weapon_tune_slider_changed)
+	left_weapon_scale_z_slider.value_changed.connect(_on_left_weapon_tune_slider_changed)
 	left_weapon_tune_reset_button.pressed.connect(_on_left_weapon_tune_reset_pressed)
 	scale_slider.value_changed.connect(_on_scale_changed)
 	generate_button.pressed.connect(_on_generate_profile_pressed)
@@ -493,10 +729,6 @@ func _set_controls_enabled(enabled: bool) -> void:
 	loop_toggle.disabled = not enabled
 	extra_animation_toggle.disabled = not enabled
 	speed_slider.editable = enabled
-	hair_color_option.disabled = not enabled
-	skin_color_option.disabled = not enabled
-	cloth_color_option.disabled = not enabled
-	hat_color_option.disabled = not enabled
 	_set_weapon_tune_enabled(enabled and _current_weapon_instance != null, enabled and _current_left_weapon_instance != null)
 	scale_slider.editable = enabled
 	generate_id_input.editable = enabled
@@ -588,16 +820,6 @@ func _on_pause_preview_toggled(pressed: bool) -> void:
 	_update_info()
 
 
-func _on_style_color_changed(_index: int) -> void:
-	_apply_style_colors()
-	_update_info()
-
-
-func _on_hat_color_selected(_index: int) -> void:
-	_apply_style_colors()
-	_update_info()
-
-
 func _on_weapon_tune_slider_changed(_value: float) -> void:
 	if _is_syncing_weapon_tune_controls:
 		return
@@ -610,6 +832,11 @@ func _on_weapon_tune_slider_changed(_value: float) -> void:
 		weapon_rot_x_slider.value,
 		weapon_rot_y_slider.value,
 		weapon_rot_z_slider.value
+	)
+	_weapon_offset_scale = Vector3(
+		weapon_scale_x_slider.value,
+		weapon_scale_y_slider.value,
+		weapon_scale_z_slider.value
 	)
 	_apply_weapon_tune_to_current_weapon()
 	_update_info()
@@ -627,6 +854,11 @@ func _on_left_weapon_tune_slider_changed(_value: float) -> void:
 		left_weapon_rot_x_slider.value,
 		left_weapon_rot_y_slider.value,
 		left_weapon_rot_z_slider.value
+	)
+	_left_weapon_offset_scale = Vector3(
+		left_weapon_scale_x_slider.value,
+		left_weapon_scale_y_slider.value,
+		left_weapon_scale_z_slider.value
 	)
 	_apply_left_weapon_tune_to_current_weapon()
 	_update_info()
@@ -652,6 +884,7 @@ func _on_scale_changed(_value: float) -> void:
 
 
 func _on_generate_profile_pressed() -> void:
+	_sync_current_attack_slot_for_profile_save()
 	var parsed := _parse_profile_id_and_name(generate_id_input.text, generate_name_input.text)
 	var profile_id := str(parsed.get("id", "")).strip_edges()
 	var profile_name := _sanitize_profile_name(str(parsed.get("name", "")))
@@ -735,7 +968,7 @@ func _populate_attack_slot_options() -> void:
 		attack_anim_option.add_item("Not Set")
 		attack_anim_option.set_item_metadata(0, "")
 	if attack_hit_bone_option.item_count == 0:
-		attack_hit_bone_option.add_item("Auto Hand Bone")
+		attack_hit_bone_option.add_item("默认胸口")
 		attack_hit_bone_option.set_item_metadata(0, "")
 	_refresh_attack_slot_labels_clean()
 	_sync_attack_panel_from_slot(0)
@@ -916,9 +1149,11 @@ func _collect_attack_config_from_panel(slot_index: int) -> Dictionary:
 	if attack_anim_option.selected >= 0 and attack_anim_option.selected < attack_anim_option.item_count:
 		animation_name = str(attack_anim_option.get_item_metadata(attack_anim_option.selected))
 	var hit_frames := _parse_hit_frames_text(attack_hit_frames_input.text)
+	if animation_name.is_empty() and _attack_panel_has_meaningful_data(hit_frames):
+		animation_name = _infer_attack_animation_name_for_panel()
 	var fps := _safe_parse_float(attack_fps_input.text, ATTACK_DEFAULT_FPS)
 	var hit_bone := ""
-	if attack_hit_bone_option.selected > 0 and attack_hit_bone_option.selected < attack_hit_bone_option.item_count:
+	if attack_hit_bone_option.selected >= 0 and attack_hit_bone_option.selected < attack_hit_bone_option.item_count:
 		hit_bone = str(attack_hit_bone_option.get_item_metadata(attack_hit_bone_option.selected))
 	existing_config["slot"] = slot_index + 1
 	existing_config["animation_name"] = animation_name
@@ -929,6 +1164,50 @@ func _collect_attack_config_from_panel(slot_index: int) -> Dictionary:
 	existing_config["effect_id"] = attack_effect_input.text.strip_edges()
 	existing_config["note"] = attack_note_input.text.strip_edges()
 	return existing_config
+
+
+func _attack_panel_has_meaningful_data(hit_frames: Array[int]) -> bool:
+	if not hit_frames.is_empty():
+		return true
+	if not attack_effect_input.text.strip_edges().is_empty():
+		return true
+	if not attack_note_input.text.strip_edges().is_empty():
+		return true
+	return false
+
+
+func _infer_attack_animation_name_for_panel() -> String:
+	if animation_option.selected >= 0 and animation_option.selected < _animation_names.size():
+		var current_animation := _animation_names[animation_option.selected]
+		if _looks_like_attack_animation_name(current_animation):
+			return current_animation
+	for animation_name in _animation_names:
+		if _looks_like_attack_animation_name(animation_name):
+			return animation_name
+	if animation_option.selected >= 0 and animation_option.selected < _animation_names.size():
+		return _animation_names[animation_option.selected]
+	return ""
+
+
+func _looks_like_attack_animation_name(animation_name: String) -> bool:
+	var normalized := animation_name.to_lower()
+	for token in ["attack", "atk", "slash", "swing", "strike", "hit", "crush"]:
+		if normalized.contains(token):
+			return true
+	return false
+
+
+func _sync_current_attack_slot_for_profile_save() -> void:
+	if attack_slot_option.selected < 0 or attack_slot_option.selected >= ATTACK_SLOT_COUNT:
+		return
+	var slot_index := clampi(attack_slot_option.selected, 0, ATTACK_SLOT_COUNT - 1)
+	var config := _collect_attack_config_from_panel(slot_index)
+	var animation_name := _extract_release_animation_name(config)
+	var frames := _extract_frame_array(config.get("hit_frames", []))
+	if animation_name.is_empty() and frames.is_empty() and str(config.get("effect_id", "")).is_empty() and str(config.get("note", "")).is_empty():
+		return
+	_attack_configs[slot_index] = config
+	_refresh_attack_slot_labels_clean()
 
 
 func _refresh_attack_slot_labels() -> void:
@@ -943,9 +1222,13 @@ func _select_attack_animation_option_by_name(animation_name: String) -> void:
 
 func _refresh_attack_hit_bone_options(select_bone: String = "") -> void:
 	attack_hit_bone_option.clear()
-	attack_hit_bone_option.add_item("Auto Hand Bone")
-	attack_hit_bone_option.set_item_metadata(0, "")
 	var skeleton := _find_first_skeleton(_character_instance)
+	var default_hit_bone := _find_default_hit_bone(skeleton)
+	var default_label := "默认胸口"
+	if not default_hit_bone.is_empty():
+		default_label = "默认胸口 / %s" % default_hit_bone
+	attack_hit_bone_option.add_item(default_label)
+	attack_hit_bone_option.set_item_metadata(0, default_hit_bone)
 	if skeleton != null:
 		for i in range(skeleton.get_bone_count()):
 			var bone_name := skeleton.get_bone_name(i)
@@ -1282,10 +1565,6 @@ func _on_random_pressed() -> void:
 	character_option.select(randi() % _character_paths.size())
 	weapon_option.select(randi() % _weapon_paths.size())
 	left_weapon_option.select(randi() % _weapon_paths.size())
-	hair_color_option.select(randi() % HAIR_COLOR_PRESETS.size())
-	skin_color_option.select(randi() % SKIN_COLOR_PRESETS.size())
-	cloth_color_option.select(randi() % CLOTH_COLOR_PRESETS.size())
-	hat_color_option.select(randi() % HAT_COLOR_PRESETS.size())
 	scale_slider.value = snapped(randf_range(0.85, 1.25), 0.05)
 	_apply_selection()
 
@@ -1342,6 +1621,9 @@ func _set_weapon_tune_enabled(right_enabled: bool, left_enabled: bool) -> void:
 	weapon_rot_x_slider.editable = right_enabled
 	weapon_rot_y_slider.editable = right_enabled
 	weapon_rot_z_slider.editable = right_enabled
+	weapon_scale_x_slider.editable = right_enabled
+	weapon_scale_y_slider.editable = right_enabled
+	weapon_scale_z_slider.editable = right_enabled
 	weapon_tune_reset_button.disabled = not right_enabled
 	left_weapon_pos_x_slider.editable = left_enabled
 	left_weapon_pos_y_slider.editable = left_enabled
@@ -1349,6 +1631,9 @@ func _set_weapon_tune_enabled(right_enabled: bool, left_enabled: bool) -> void:
 	left_weapon_rot_x_slider.editable = left_enabled
 	left_weapon_rot_y_slider.editable = left_enabled
 	left_weapon_rot_z_slider.editable = left_enabled
+	left_weapon_scale_x_slider.editable = left_enabled
+	left_weapon_scale_y_slider.editable = left_enabled
+	left_weapon_scale_z_slider.editable = left_enabled
 	left_weapon_tune_reset_button.disabled = not left_enabled
 
 
@@ -1360,9 +1645,13 @@ func _reset_weapon_tune_controls(update_note: bool) -> void:
 	weapon_rot_x_slider.value = 0.0
 	weapon_rot_y_slider.value = 0.0
 	weapon_rot_z_slider.value = 0.0
+	weapon_scale_x_slider.value = 1.0
+	weapon_scale_y_slider.value = 1.0
+	weapon_scale_z_slider.value = 1.0
 	_is_syncing_weapon_tune_controls = false
 	_weapon_offset_position = Vector3.ZERO
 	_weapon_offset_rotation_degrees = Vector3.ZERO
+	_weapon_offset_scale = Vector3.ONE
 	_refresh_weapon_tune_note()
 	if update_note:
 		return
@@ -1376,9 +1665,13 @@ func _reset_left_weapon_tune_controls(update_note: bool) -> void:
 	left_weapon_rot_x_slider.value = 0.0
 	left_weapon_rot_y_slider.value = 0.0
 	left_weapon_rot_z_slider.value = 0.0
+	left_weapon_scale_x_slider.value = 1.0
+	left_weapon_scale_y_slider.value = 1.0
+	left_weapon_scale_z_slider.value = 1.0
 	_is_syncing_weapon_tune_controls = false
 	_left_weapon_offset_position = Vector3.ZERO
 	_left_weapon_offset_rotation_degrees = Vector3.ZERO
+	_left_weapon_offset_scale = Vector3.ONE
 	_refresh_weapon_tune_note()
 	if update_note:
 		return
@@ -1388,18 +1681,22 @@ func _capture_weapon_base_transform() -> void:
 	if _current_weapon_instance == null:
 		_weapon_base_position = Vector3.ZERO
 		_weapon_base_rotation_degrees = Vector3.ZERO
+		_weapon_base_scale = Vector3.ONE
 		return
 	_weapon_base_position = _current_weapon_instance.position
 	_weapon_base_rotation_degrees = _current_weapon_instance.rotation_degrees
+	_weapon_base_scale = _current_weapon_instance.scale
 
 
 func _capture_left_weapon_base_transform() -> void:
 	if _current_left_weapon_instance == null:
 		_left_weapon_base_position = Vector3.ZERO
 		_left_weapon_base_rotation_degrees = Vector3.ZERO
+		_left_weapon_base_scale = Vector3.ONE
 		return
 	_left_weapon_base_position = _current_left_weapon_instance.position
 	_left_weapon_base_rotation_degrees = _current_left_weapon_instance.rotation_degrees
+	_left_weapon_base_scale = _current_left_weapon_instance.scale
 
 
 func _apply_weapon_tune_to_current_weapon() -> void:
@@ -1408,6 +1705,7 @@ func _apply_weapon_tune_to_current_weapon() -> void:
 		return
 	_current_weapon_instance.position = _weapon_base_position + _weapon_offset_position
 	_current_weapon_instance.rotation_degrees = _weapon_base_rotation_degrees + _weapon_offset_rotation_degrees
+	_current_weapon_instance.scale = _multiply_vector3(_weapon_base_scale, _weapon_offset_scale)
 	_refresh_weapon_tune_note()
 
 
@@ -1417,23 +1715,91 @@ func _apply_left_weapon_tune_to_current_weapon() -> void:
 		return
 	_current_left_weapon_instance.position = _left_weapon_base_position + _left_weapon_offset_position
 	_current_left_weapon_instance.rotation_degrees = _left_weapon_base_rotation_degrees + _left_weapon_offset_rotation_degrees
+	_current_left_weapon_instance.scale = _multiply_vector3(_left_weapon_base_scale, _left_weapon_offset_scale)
 	_refresh_weapon_tune_note()
 
 
+func _multiply_vector3(a: Vector3, b: Vector3) -> Vector3:
+	return Vector3(a.x * b.x, a.y * b.y, a.z * b.z)
+
+
+func _load_runtime_weapon_socket_target_extent() -> float:
+	return _load_runtime_constant_float(
+		RUNTIME_WEAPON_SOCKET_TARGET_EXTENT_ID,
+		RUNTIME_WEAPON_SOCKET_TARGET_EXTENT_KEY,
+		DEFAULT_WEAPON_SOCKET_TARGET_EXTENT
+	)
+
+
+func _load_runtime_constant_float(row_id: String, row_key: String, fallback_value: float) -> float:
+	var cache_key := "%s|%s" % [row_id, row_key]
+	if _runtime_constant_float_cache.has(cache_key):
+		return float(_runtime_constant_float_cache.get(cache_key, fallback_value))
+	if not FileAccess.file_exists(RUNTIME_CONSTANTS_TABLE_PATH):
+		var missing_file_value := maxf(fallback_value, 0.0001)
+		_runtime_constant_float_cache[cache_key] = missing_file_value
+		return missing_file_value
+	var file := FileAccess.open(RUNTIME_CONSTANTS_TABLE_PATH, FileAccess.READ)
+	if file == null:
+		var missing_open_value := maxf(fallback_value, 0.0001)
+		_runtime_constant_float_cache[cache_key] = missing_open_value
+		return missing_open_value
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if parsed is not Array:
+		var invalid_table_value := maxf(fallback_value, 0.0001)
+		_runtime_constant_float_cache[cache_key] = invalid_table_value
+		return invalid_table_value
+	for row_variant in parsed as Array:
+		if row_variant is not Dictionary:
+			continue
+		var row := row_variant as Dictionary
+		var current_id := String(row.get("id", "")).strip_edges()
+		var current_key := String(row.get("key", "")).strip_edges()
+		if current_id != row_id and current_key != row_key:
+			continue
+		var raw_value: Variant = row.get("value", fallback_value)
+		var parsed_value := _parse_runtime_float(raw_value, fallback_value)
+		var final_value := maxf(parsed_value, 0.0001)
+		_runtime_constant_float_cache[cache_key] = final_value
+		return final_value
+	var fallback := maxf(fallback_value, 0.0001)
+	_runtime_constant_float_cache[cache_key] = fallback
+	return fallback
+
+
+func _parse_runtime_float(raw_value: Variant, fallback_value: float) -> float:
+	if raw_value is int or raw_value is float:
+		return float(raw_value)
+	var text := String(raw_value).strip_edges()
+	if text.is_empty():
+		return fallback_value
+	if text.is_valid_float():
+		return float(text)
+	if text.is_valid_int():
+		return float(int(text))
+	return fallback_value
+
+
 func _refresh_weapon_tune_note() -> void:
-	_weapon_tune_note = "锟斤拷锟斤拷微锟斤拷锟斤拷锟斤拷锟斤拷位锟斤拷(%.3f, %.3f, %.3f) 锟斤拷转(%.1f, %.1f, %.1f)锟斤拷锟斤拷锟斤拷位锟斤拷(%.3f, %.3f, %.3f) 锟斤拷转(%.1f, %.1f, %.1f)" % [
+	_weapon_tune_note = "右手 位移(%.3f, %.3f, %.3f) 旋转(%.1f, %.1f, %.1f) 缩放(%.2f, %.2f, %.2f)；左手 位移(%.3f, %.3f, %.3f) 旋转(%.1f, %.1f, %.1f) 缩放(%.2f, %.2f, %.2f)" % [
 		_weapon_offset_position.x,
 		_weapon_offset_position.y,
 		_weapon_offset_position.z,
 		_weapon_offset_rotation_degrees.x,
 		_weapon_offset_rotation_degrees.y,
 		_weapon_offset_rotation_degrees.z,
+		_weapon_offset_scale.x,
+		_weapon_offset_scale.y,
+		_weapon_offset_scale.z,
 		_left_weapon_offset_position.x,
 		_left_weapon_offset_position.y,
 		_left_weapon_offset_position.z,
 		_left_weapon_offset_rotation_degrees.x,
 		_left_weapon_offset_rotation_degrees.y,
 		_left_weapon_offset_rotation_degrees.z,
+		_left_weapon_offset_scale.x,
+		_left_weapon_offset_scale.y,
+		_left_weapon_offset_scale.z,
 	]
 
 
@@ -1454,17 +1820,12 @@ func _apply_selection() -> void:
 		info_label.text = "No character selected."
 		return
 
-	var character_scene := load(_character_paths[selected_character]) as PackedScene
-	if character_scene == null:
-		info_label.text = "锟斤拷色锟斤拷锟斤拷锟斤拷锟斤拷失锟杰★拷"
+	var character_node := _instantiate_scene_as_node3d(_character_paths[selected_character])
+	if character_node == null:
+		info_label.text = "角色模型加载失败：%s" % _character_paths[selected_character]
 		return
 
-	var character_node := character_scene.instantiate()
-	if character_node is not Node3D:
-		info_label.text = "锟斤拷色锟斤拷锟节点不锟斤拷 Node3D锟斤拷"
-		return
-
-	_character_instance = character_node as Node3D
+	_character_instance = character_node
 	spawn_root.add_child(_character_instance)
 	_character_instance.scale = Vector3.ONE * scale_slider.value
 
@@ -1538,26 +1899,116 @@ func _selected_weapon_path(option: OptionButton) -> String:
 	return _weapon_paths[option.selected]
 
 
+func _instantiate_scene_as_node3d(scene_path: String, animation_only: bool = false) -> Node3D:
+	var resolved_path := _resolve_importable_scene_path(scene_path, animation_only)
+	if resolved_path.is_empty():
+		return null
+
+	if _is_project_resource_path(resolved_path):
+		var packed_scene := load(resolved_path) as PackedScene
+		if packed_scene != null:
+			var packed_instance := packed_scene.instantiate()
+			return _coerce_to_node3d(packed_instance)
+
+	var gltf_document := GLTFDocument.new()
+	var gltf_state := GLTFState.new()
+	var error := gltf_document.append_from_file(resolved_path, gltf_state)
+	if error != OK:
+		push_warning("GLTF/GLB import failed: %s (%s)" % [resolved_path, error])
+		return null
+	var generated_scene := gltf_document.generate_scene(gltf_state)
+	return _coerce_to_node3d(generated_scene)
+
+
+func _resolve_importable_scene_path(scene_path: String, animation_only: bool = false) -> String:
+	if scene_path.is_empty():
+		return ""
+	var extension := scene_path.get_extension().to_lower()
+	if extension != "fbx" and not animation_only:
+		return scene_path
+	var source_path := ProjectSettings.globalize_path(scene_path) if _is_project_resource_path(scene_path) else scene_path
+	if not FileAccess.file_exists(source_path):
+		return ""
+	if not FileAccess.file_exists(BLENDER_EXE):
+		if extension != "fbx":
+			return scene_path
+		push_warning("Blender not found, cannot preview FBX: %s" % BLENDER_EXE)
+		return ""
+
+	var cache_abs := ProjectSettings.globalize_path(EXTERNAL_IMPORT_CACHE_DIR) if _is_project_resource_path(EXTERNAL_IMPORT_CACHE_DIR) else EXTERNAL_IMPORT_CACHE_DIR
+	var mkdir_error := DirAccess.make_dir_recursive_absolute(cache_abs)
+	if mkdir_error != OK:
+		push_warning("Create FBX cache directory failed: %s" % cache_abs)
+		return ""
+
+	var mode_suffix := "_anim" if animation_only else "_full"
+	var output_path := "%s/%s%s.glb" % [cache_abs, _sanitize_cache_file_name(source_path), mode_suffix]
+	if FileAccess.file_exists(output_path):
+		return output_path
+
+	var script_abs := ProjectSettings.globalize_path(FBX_TO_GLB_SCRIPT)
+	if not FileAccess.file_exists(script_abs):
+		push_warning("FBX converter script missing: %s" % script_abs)
+		return ""
+
+	var output: Array = []
+	var args := PackedStringArray(["--background", "--python", script_abs, "--", source_path, output_path])
+	if animation_only:
+		args.append("--animation-only")
+	var exit_code := OS.execute(BLENDER_EXE, args, output, true, false)
+	if exit_code != 0 or not FileAccess.file_exists(output_path):
+		push_warning("FBX conversion failed: %s\n%s" % [source_path, "\n".join(output)])
+		return ""
+	return output_path
+
+
+func _coerce_to_node3d(node: Node) -> Node3D:
+	if node == null:
+		return null
+	if node is Node3D:
+		return node as Node3D
+	for child in node.get_children():
+		if child is Node3D:
+			node.remove_child(child)
+			node.queue_free()
+			return child as Node3D
+	node.queue_free()
+	return null
+
+
+func _sanitize_cache_file_name(scene_path: String) -> String:
+	var text := scene_path.replace("\\", "/")
+	var result := ""
+	for i in range(text.length()):
+		var part := text.substr(i, 1)
+		var code := part.unicode_at(0)
+		var is_digit := code >= 48 and code <= 57
+		var is_upper := code >= 65 and code <= 90
+		var is_lower := code >= 97 and code <= 122
+		if is_digit or is_upper or is_lower:
+			result += part
+		else:
+			result += "_"
+	if result.length() > 140:
+		result = result.substr(result.length() - 140, 140)
+	return result
+
+
 func _attach_weapon_to_character(weapon_path: String, skeleton: Skeleton3D, prefer_left_hand: bool) -> Dictionary:
 	var empty_result := {"instance": null, "note": ""}
 	var preferred_side_label := "左手" if prefer_left_hand else "右手"
 	if weapon_path.is_empty():
 		return empty_result
 
-	var weapon_scene := load(weapon_path) as PackedScene
-	if weapon_scene == null:
+	var weapon := _instantiate_scene_as_node3d(weapon_path)
+	if weapon == null:
 		return {"instance": null, "note": "%s武器资源加载失败" % preferred_side_label}
 
-	var weapon_node := weapon_scene.instantiate()
-	if weapon_node is not Node3D:
-		return {"instance": null, "note": "%s武器实例节点不是 Node3D" % preferred_side_label}
-	var weapon := weapon_node as Node3D
-
 	if skeleton == null:
-		_character_instance.add_child(weapon)
-		weapon.position = Vector3(0.35, 1.1, 0.0)
-		weapon.rotation_degrees = Vector3(0.0, 90.0, 0.0)
-		return {"instance": weapon, "note": "%s武器已挂到角色节点（未检测到骨骼）" % preferred_side_label}
+		var tune_root := _create_weapon_tune_root(_character_instance, weapon, prefer_left_hand)
+		tune_root.position = Vector3(0.35, 1.1, 0.0)
+		tune_root.rotation_degrees = Vector3(0.0, 90.0, 0.0)
+		return {"instance": tune_root, "note": "%s武器已挂到角色节点（未检测到骨骼）" % preferred_side_label}
 
 	var primary_bone := _find_left_hand_bone(skeleton) if prefer_left_hand else _find_right_hand_bone(skeleton)
 	var fallback_bone := _find_right_hand_bone(skeleton) if prefer_left_hand else _find_left_hand_bone(skeleton)
@@ -1568,16 +2019,16 @@ func _attach_weapon_to_character(weapon_path: String, skeleton: Skeleton3D, pref
 		used_fallback = true
 
 	if hand_bone_name.is_empty():
-		_character_instance.add_child(weapon)
-		weapon.position = Vector3(0.35, 1.1, 0.0)
-		weapon.rotation_degrees = Vector3(0.0, 90.0, 0.0)
-		return {"instance": weapon, "note": "%s武器已挂到角色节点（未检测到手部骨骼）" % preferred_side_label}
+		var tune_root := _create_weapon_tune_root(_character_instance, weapon, prefer_left_hand)
+		tune_root.position = Vector3(0.35, 1.1, 0.0)
+		tune_root.rotation_degrees = Vector3(0.0, 90.0, 0.0)
+		return {"instance": tune_root, "note": "%s武器已挂到角色节点（未检测到手部骨骼）" % preferred_side_label}
 
 	var socket := BoneAttachment3D.new()
 	socket.name = "WeaponSocket_L" if prefer_left_hand else "WeaponSocket_R"
 	socket.bone_name = hand_bone_name
 	skeleton.add_child(socket)
-	socket.add_child(weapon)
+	var tune_root := _create_weapon_tune_root(socket, weapon, prefer_left_hand)
 	_apply_weapon_socket_transform(weapon, weapon_path, hand_bone_name)
 
 	var actual_side_label := _hand_side_label_from_bone(hand_bone_name)
@@ -1585,9 +2036,17 @@ func _attach_weapon_to_character(weapon_path: String, skeleton: Skeleton3D, pref
 	if used_fallback:
 		fallback_note = "（未找到%s，已回退到%s）" % [preferred_side_label, actual_side_label]
 	return {
-		"instance": weapon,
+		"instance": tune_root,
 		"note": "%s绑定骨骼：%s%s" % [preferred_side_label, hand_bone_name, fallback_note],
 	}
+
+
+func _create_weapon_tune_root(parent: Node, weapon: Node3D, prefer_left_hand: bool) -> Node3D:
+	var tune_root := Node3D.new()
+	tune_root.name = "LeftWeaponTuneRoot" if prefer_left_hand else "RightWeaponTuneRoot"
+	parent.add_child(tune_root)
+	tune_root.add_child(weapon)
+	return tune_root
 
 
 func _hand_side_label_from_bone(hand_bone_name: String) -> String:
@@ -1603,13 +2062,13 @@ func _apply_weapon_socket_transform(weapon: Node3D, weapon_path: String, hand_bo
 	var lower_path := weapon_path.to_lower()
 	var handslot_mode := hand_bone_name.to_lower().contains("handslot")
 
-	weapon.scale = Vector3.ONE
+	_normalize_weapon_origin_for_socket(weapon)
+	weapon.scale = Vector3.ONE * _compute_weapon_socket_scale(weapon, _load_runtime_weapon_socket_target_extent())
 	if handslot_mode:
-		# For KayKit hand slots, identity transform is usually the intended orientation.
 		weapon.position = Vector3.ZERO
 		weapon.rotation_degrees = Vector3.ZERO
 	else:
-		weapon.position = Vector3(0.02, 0.02, 0.0)
+		weapon.position = Vector3(0.0, 0.0, 0.0)
 		weapon.rotation_degrees = Vector3(-90.0, 0.0, 90.0)
 
 	# Small per-category tweaks to reduce obvious clipping/inside-body issues.
@@ -1619,6 +2078,123 @@ func _apply_weapon_socket_transform(weapon: Node3D, weapon_path: String, hand_bo
 		weapon.position += Vector3(0.0, -0.01, 0.02)
 	elif lower_path.contains("sword") or lower_path.contains("dagger") or lower_path.contains("axe"):
 		weapon.position += Vector3(0.0, 0.0, 0.01)
+
+
+func _normalize_weapon_origin_for_socket(weapon: Node3D) -> void:
+	var meshes := _collect_mesh_instances(weapon)
+	if meshes.is_empty():
+		return
+
+	var has_bounds := false
+	var min_bounds := Vector3(INF, INF, INF)
+	var max_bounds := Vector3(-INF, -INF, -INF)
+	var root_inverse := weapon.global_transform.affine_inverse()
+	for mesh_instance in meshes:
+		var mesh := mesh_instance.mesh
+		if mesh == null:
+			continue
+		var aabb := mesh.get_aabb()
+		for corner in [
+			Vector3(aabb.position.x, aabb.position.y, aabb.position.z),
+			Vector3(aabb.position.x + aabb.size.x, aabb.position.y, aabb.position.z),
+			Vector3(aabb.position.x, aabb.position.y + aabb.size.y, aabb.position.z),
+			Vector3(aabb.position.x, aabb.position.y, aabb.position.z + aabb.size.z),
+			Vector3(aabb.position.x + aabb.size.x, aabb.position.y + aabb.size.y, aabb.position.z),
+			Vector3(aabb.position.x + aabb.size.x, aabb.position.y, aabb.position.z + aabb.size.z),
+			Vector3(aabb.position.x, aabb.position.y + aabb.size.y, aabb.position.z + aabb.size.z),
+			aabb.position + aabb.size,
+		]:
+			var local_point: Vector3 = root_inverse * mesh_instance.global_transform * corner
+			min_bounds = min_bounds.min(local_point)
+			max_bounds = max_bounds.max(local_point)
+			has_bounds = true
+
+	if not has_bounds:
+		return
+
+	var grip_point := _pick_weapon_grip_point(AABB(min_bounds, max_bounds - min_bounds))
+	for child in weapon.get_children():
+		if child is Node3D:
+			(child as Node3D).position -= grip_point
+
+
+func _pick_weapon_grip_point(bounds: AABB) -> Vector3:
+	var min_bounds := bounds.position
+	var max_bounds := bounds.position + bounds.size
+	var center := bounds.position + bounds.size * 0.5
+	var extents := [
+		{"axis": 0, "size": bounds.size.x},
+		{"axis": 1, "size": bounds.size.y},
+		{"axis": 2, "size": bounds.size.z},
+	]
+	extents.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return float(a.get("size", 0.0)) > float(b.get("size", 0.0))
+	)
+	var longest := float(extents[0].get("size", 0.0))
+	var second := maxf(float(extents[1].get("size", 0.0)), 0.0001)
+	var grip := center
+	if longest / second >= WEAPON_ELONGATED_GRIP_RATIO:
+		match int(extents[0].get("axis", 0)):
+			0:
+				grip.x = max_bounds.x
+			1:
+				grip.y = max_bounds.y
+			2:
+				grip.z = max_bounds.z
+		return grip
+	grip.z = min_bounds.z
+	return grip
+
+
+func _compute_weapon_socket_scale(weapon: Node3D, target_global_extent: float) -> float:
+	var local_bounds := _measure_node3d_local_bounds(weapon)
+	if local_bounds.size == Vector3.ZERO:
+		return 1.0
+	var max_local_extent := maxf(local_bounds.size.x, maxf(local_bounds.size.y, local_bounds.size.z))
+	if max_local_extent <= 0.0001:
+		return 1.0
+
+	var parent_scale := 1.0
+	var parent_node := weapon.get_parent()
+	if parent_node is Node3D:
+		parent_scale = _average_basis_scale((parent_node as Node3D).global_transform.basis)
+	if parent_scale <= 0.0001:
+		parent_scale = 1.0
+	return clampf(target_global_extent / (max_local_extent * parent_scale), 0.01, 500.0)
+
+
+func _average_basis_scale(basis: Basis) -> float:
+	return (basis.x.length() + basis.y.length() + basis.z.length()) / 3.0
+
+
+func _measure_node3d_local_bounds(root_node: Node3D) -> AABB:
+	var meshes := _collect_mesh_instances(root_node)
+	var has_bounds := false
+	var min_bounds := Vector3(INF, INF, INF)
+	var max_bounds := Vector3(-INF, -INF, -INF)
+	var root_inverse := root_node.global_transform.affine_inverse()
+	for mesh_instance in meshes:
+		var mesh := mesh_instance.mesh
+		if mesh == null:
+			continue
+		var aabb := mesh.get_aabb()
+		for corner in [
+			Vector3(aabb.position.x, aabb.position.y, aabb.position.z),
+			Vector3(aabb.position.x + aabb.size.x, aabb.position.y, aabb.position.z),
+			Vector3(aabb.position.x, aabb.position.y + aabb.size.y, aabb.position.z),
+			Vector3(aabb.position.x, aabb.position.y, aabb.position.z + aabb.size.z),
+			Vector3(aabb.position.x + aabb.size.x, aabb.position.y + aabb.size.y, aabb.position.z),
+			Vector3(aabb.position.x + aabb.size.x, aabb.position.y, aabb.position.z + aabb.size.z),
+			Vector3(aabb.position.x, aabb.position.y + aabb.size.y, aabb.position.z + aabb.size.z),
+			aabb.position + aabb.size,
+		]:
+			var local_point: Vector3 = root_inverse * mesh_instance.global_transform * corner
+			min_bounds = min_bounds.min(local_point)
+			max_bounds = max_bounds.max(local_point)
+			has_bounds = true
+	if not has_bounds:
+		return AABB()
+	return AABB(min_bounds, max_bounds - min_bounds)
 
 
 func _setup_preview_animations() -> void:
@@ -1635,30 +2211,11 @@ func _setup_preview_animations() -> void:
 
 	var animation_library := AnimationLibrary.new()
 	var loaded_names: Array[String] = []
-	var local_animation_count := 0
 	var selected_character_path := _selected_character_path()
-	var selected_pack := _find_pack_by_resource_path(selected_character_path)
-	var selected_pack_id := str(selected_pack.get("id", ""))
-	var is_newmodel_character := selected_pack_id == "newmodel"
 
-	# Prefer character-embedded animations first. If names overlap,
-	# external Rig_Medium library entries are skipped, keeping custom
-	# model-specific retargeted clips.
-	for local_player_node in _find_animation_players(_character_instance):
-		var local_player := local_player_node as AnimationPlayer
-		for animation_name in local_player.get_animation_list():
-			if animation_library.has_animation(animation_name):
-				continue
-			var source_animation := local_player.get_animation(animation_name)
-			if source_animation == null:
-				continue
-			var copied := source_animation.duplicate(true) as Animation
-			animation_library.add_animation(animation_name, copied)
-			loaded_names.append(animation_name)
-			local_animation_count += 1
-
-	if not is_newmodel_character:
-		for scene_path in _animation_scene_paths:
+	var same_folder_animation_paths := _collect_animation_scene_paths_for_character(selected_character_path)
+	if extra_animation_toggle.button_pressed:
+		for scene_path in same_folder_animation_paths:
 			var names := _merge_animations_from_scene(scene_path, animation_library)
 			for merged_anim_name in names:
 				if not loaded_names.has(merged_anim_name):
@@ -1676,43 +2233,100 @@ func _setup_preview_animations() -> void:
 	_update_selected_animation_loop_mode()
 	_play_selected_animation()
 
-	var source_label := "锟斤拷锟斤拷锟斤拷源锟斤拷全锟斤拷锟斤拷源锟斤拷"
-	if is_newmodel_character:
-		source_label = "Custom model local animations only"
-	elif extra_animation_toggle.button_pressed and _dir_exists(SHARED_MEDIUM_ANIMATIONS_DIR):
-		source_label = "锟斤拷锟斤拷锟斤拷源锟斤拷全锟斤拷锟斤拷源锟斤拷 + Character_Animations_1.1"
-	if local_animation_count > 0:
-		source_label = "角色内置动作优先 + %s" % source_label
-	_animation_source_note = "%s锟斤拷锟斤拷 %d 锟斤拷锟斤拷 (内置 %d)" % [source_label, loaded_names.size(), local_animation_count]
+	_animation_source_note = "同文件夹动作：共 %d 个动作（动作文件 %d，本体不作为动作读取）" % [
+		loaded_names.size(),
+		same_folder_animation_paths.size(),
+	]
+
+
+func _collect_animation_scene_paths_for_character(character_path: String) -> Array[String]:
+	if character_path.is_empty():
+		return []
+	var folder := character_path.get_base_dir()
+	var selected_match := _normalize_match_path(character_path)
+	var paths: Array[String] = []
+	for path in _collect_scene_files(folder):
+		if _normalize_match_path(path) == selected_match:
+			continue
+		if _is_benti_model_file(folder, path):
+			continue
+		paths.append(path)
+	return paths
+
+
+func _is_benti_model_file(folder: String, path: String) -> bool:
+	var folder_name := folder.get_file().to_lower()
+	var base_name := path.get_file().get_basename().to_lower()
+	return base_name == "%s_benti" % folder_name or base_name.ends_with("_benti")
 
 
 func _merge_animations_from_scene(scene_path: String, target_library: AnimationLibrary) -> Array[String]:
 	var added: Array[String] = []
-	var scene := load(scene_path) as PackedScene
-	if scene == null:
-		return added
-
-	var instance := scene.instantiate()
+	var instance := _instantiate_scene_as_node3d(scene_path, true)
 	if instance == null:
 		return added
 
+	var file_animation_name := scene_path.get_file().get_basename()
+	var candidates: Array[Dictionary] = []
 	var players := _find_animation_players(instance)
 	for player in players:
 		var source_player := player as AnimationPlayer
 		for animation_name in source_player.get_animation_list():
-			if target_library.has_animation(animation_name):
-				continue
-
 			var source_animation := source_player.get_animation(animation_name)
 			if source_animation == null:
 				continue
+			candidates.append({
+				"name": animation_name,
+				"animation": source_animation,
+			})
 
-			var copied := source_animation.duplicate(true) as Animation
-			target_library.add_animation(animation_name, copied)
-			added.append(animation_name)
+	var chosen_animation := _choose_animation_from_file_candidates(file_animation_name, candidates)
+	if chosen_animation != null:
+		var target_animation_name := _dedupe_animation_name(file_animation_name, target_library)
+		var copied := chosen_animation.duplicate(true) as Animation
+		target_library.add_animation(target_animation_name, copied)
+		added.append(target_animation_name)
 
 	instance.queue_free()
 	return added
+
+
+func _choose_animation_from_file_candidates(file_animation_name: String, candidates: Array[Dictionary]) -> Animation:
+	if candidates.is_empty():
+		return null
+	var best_score := -999999.0
+	var best_animation: Animation = null
+	var file_tokens := _split_identifier_tokens(file_animation_name)
+	for candidate in candidates:
+		var candidate_name := str(candidate.get("name", ""))
+		var candidate_animation := candidate.get("animation", null) as Animation
+		if candidate_animation == null:
+			continue
+		var score := candidate_animation.length
+		var normalized_name := candidate_name.to_lower()
+		if normalized_name.contains("clip0"):
+			score -= 100.0
+		else:
+			score += 10.0
+		for token in file_tokens:
+			var normalized_token := token.to_lower()
+			if normalized_token.length() <= 1:
+				continue
+			if normalized_name.contains(normalized_token):
+				score += 50.0
+		if score > best_score:
+			best_score = score
+			best_animation = candidate_animation
+	return best_animation
+
+
+func _dedupe_animation_name(base_name: String, target_library: AnimationLibrary) -> String:
+	if not target_library.has_animation(base_name):
+		return base_name
+	var index := 2
+	while target_library.has_animation("%s_%d" % [base_name, index]):
+		index += 1
+	return "%s_%d" % [base_name, index]
 
 
 func _find_animation_players(root: Node) -> Array:
@@ -1733,23 +2347,10 @@ func _rebuild_animation_scene_paths() -> void:
 			continue
 		_append_unique_paths(_animation_scene_paths, _collect_scene_files(pack.get("animations_dir", "")))
 	_animation_scene_paths.sort()
-	if extra_animation_toggle.button_pressed and _dir_exists(SHARED_MEDIUM_ANIMATIONS_DIR):
-		var shared_paths := _collect_scene_files(SHARED_MEDIUM_ANIMATIONS_DIR)
-		for path in shared_paths:
-			if not _animation_scene_paths.has(path):
-				_animation_scene_paths.append(path)
 
 
 func _build_animation_display_name(raw_name: String) -> String:
-	var english_label := raw_name.replace("_", " ").replace("-", " ").strip_edges()
-	if english_label.is_empty():
-		english_label = raw_name
-	var translated := _clean_ui_text(_translate_animation_name(raw_name), "")
-	if translated.is_empty():
-		return english_label
-	if translated.to_lower() == english_label.to_lower():
-		return english_label
-	return "%s | %s" % [translated, english_label]
+	return raw_name
 func _translate_animation_name(raw_name: String) -> String:
 	var tokens := _split_identifier_tokens(raw_name)
 	if tokens.is_empty():
@@ -1763,79 +2364,7 @@ func _translate_animation_name(raw_name: String) -> String:
 		zh_parts.append(str(token_map.get(normalized, token)))
 	return " ".join(zh_parts).strip_edges()
 func _apply_style_colors() -> void:
-	if _character_instance == null:
-		return
-
-	var hair_preset := _get_selected_preset(hair_color_option, HAIR_COLOR_PRESETS)
-	var skin_preset := _get_selected_preset(skin_color_option, SKIN_COLOR_PRESETS)
-	var cloth_preset := _get_selected_preset(cloth_color_option, CLOTH_COLOR_PRESETS)
-	var hat_preset := _get_selected_preset(hat_color_option, HAT_COLOR_PRESETS)
-
-	var hair_key := str(hair_preset.get("key", "default"))
-	var skin_key := str(skin_preset.get("key", "default"))
-	var cloth_key := str(cloth_preset.get("key", "default"))
-	var hat_key := str(hat_preset.get("key", "default"))
-
-	var hair_color := _preset_color(hair_preset)
-	var skin_color := _preset_color(skin_preset)
-	var cloth_color := _preset_color(cloth_preset)
-	var hat_color := _preset_color(hat_preset)
-	var character_path_lower := _selected_character_path().to_lower()
-	var is_skeleton_character := character_path_lower.contains("kaykit_skeletons") or character_path_lower.contains("skeleton_")
-
-	var recolored_surface_count := 0
-	for mesh_instance in _collect_mesh_instances(_character_instance):
-		var mesh := mesh_instance.mesh
-		if mesh == null:
-			continue
-
-		var mesh_name := String(mesh_instance.name)
-		var tint_color := Color(1.0, 1.0, 1.0, 1.0)
-		var use_tint := false
-
-		if _is_eye_mesh_name(mesh_name):
-			use_tint = false
-		elif is_skeleton_character and _is_skeleton_bone_mesh_name(mesh_name) and skin_key != "default":
-			tint_color = skin_color
-			use_tint = true
-		elif _is_hat_mesh_name(mesh_name) and hat_key != "default":
-			tint_color = hat_color
-			use_tint = true
-		elif _is_hair_mesh_name(mesh_name) and hair_key != "default":
-			tint_color = hair_color
-			use_tint = true
-		elif _is_skin_mesh_name(mesh_name) and skin_key != "default":
-			tint_color = skin_color
-			use_tint = true
-		elif _is_cloth_mesh_name(mesh_name) and cloth_key != "default":
-			# For skeleton characters, bone meshes should follow skin tint instead of cloth tint.
-			if not (is_skeleton_character and _is_skeleton_bone_mesh_name(mesh_name)):
-				tint_color = cloth_color
-				use_tint = true
-
-		for i in range(mesh.get_surface_count()):
-			if not use_tint:
-				mesh_instance.set_surface_override_material(i, null)
-				continue
-
-			var base_material := mesh.surface_get_material(i)
-			if base_material == null:
-				base_material = mesh_instance.get_active_material(i)
-			var tinted_material := _create_tinted_material(base_material, tint_color)
-			mesh_instance.set_surface_override_material(i, tinted_material)
-			recolored_surface_count += 1
-
-	var skeleton_rule_note := ""
-	if is_skeleton_character:
-		skeleton_rule_note = "锟斤拷锟斤拷锟矫癸拷锟斤拷锟斤拷锟斤拷皮锟斤拷色"
-	_style_color_note = "锟斤拷郏锟酵凤拷锟絒%s] 皮锟斤拷[%s] 锟铰凤拷[%s] 帽锟斤拷[%s]锟斤拷锟窖革拷锟斤拷 %d 锟斤拷锟斤拷%s锟斤拷" % [
-		str(hair_preset.get("label", "原始锟斤拷锟斤拷")),
-		str(skin_preset.get("label", "原始锟斤拷锟斤拷")),
-		str(cloth_preset.get("label", "原始锟斤拷锟斤拷")),
-		str(hat_preset.get("label", "原始锟斤拷锟斤拷")),
-		recolored_surface_count,
-		skeleton_rule_note,
-	]
+	_style_color_note = ""
 
 
 func _selected_character_path() -> String:
@@ -1844,19 +2373,48 @@ func _selected_character_path() -> String:
 	return ""
 
 
-func _get_selected_preset(option: OptionButton, presets: Array[Dictionary]) -> Dictionary:
-	if presets.is_empty():
-		return {}
-	var index := clampi(option.selected, 0, presets.size() - 1)
-	return presets[index]
+func _runtime_character_path_for(character_path: String) -> String:
+	var low_path := _derive_low_character_path(character_path)
+	if not low_path.is_empty() and FileAccess.file_exists(low_path):
+		return low_path
+	return character_path
 
 
-func _preset_color(preset: Dictionary) -> Color:
-	var color := Color(1.0, 1.0, 1.0, 1.0)
-	var value: Variant = preset.get("color", color)
-	if value is Color:
-		color = value
-	return color
+func _runtime_weapon_path_for(weapon_path: String) -> String:
+	var low_path := _derive_low_weapon_path(weapon_path)
+	if not low_path.is_empty() and FileAccess.file_exists(low_path):
+		return low_path
+	return weapon_path
+
+
+func _derive_low_character_path(character_path: String) -> String:
+	character_path = character_path.strip_edges()
+	if character_path.is_empty():
+		return ""
+	var extension := character_path.get_extension()
+	if extension.is_empty():
+		return ""
+	var base_name := character_path.get_file().get_basename()
+	var lower_base := base_name.to_lower()
+	if lower_base.ends_with("_low_benti"):
+		return character_path
+	if not lower_base.ends_with("_benti"):
+		return ""
+	var name_without_benti := base_name.substr(0, base_name.length() - 6)
+	return "%s/%s_low_benti.%s" % [character_path.get_base_dir(), name_without_benti, extension]
+
+
+func _derive_low_weapon_path(weapon_path: String) -> String:
+	weapon_path = weapon_path.strip_edges()
+	if weapon_path.is_empty():
+		return ""
+	var extension := weapon_path.get_extension()
+	if extension.is_empty():
+		return ""
+	var base_name := weapon_path.get_file().get_basename()
+	if base_name.to_lower().ends_with("_low"):
+		return weapon_path
+	return "%s/%s_low.%s" % [weapon_path.get_base_dir(), base_name, extension]
 
 
 func _collect_mesh_instances(root: Node) -> Array[MeshInstance3D]:
@@ -1868,52 +2426,6 @@ func _collect_mesh_instances(root: Node) -> Array[MeshInstance3D]:
 		result.append_array(_collect_mesh_instances(child))
 
 	return result
-
-
-func _is_hat_mesh_name(mesh_name: String) -> bool:
-	return _mesh_name_contains_hints(mesh_name, HAT_NODE_HINTS)
-
-
-func _is_hair_mesh_name(mesh_name: String) -> bool:
-	return _mesh_name_contains_hints(mesh_name, HAIR_NODE_HINTS)
-
-
-func _is_skin_mesh_name(mesh_name: String) -> bool:
-	return _mesh_name_contains_hints(mesh_name, SKIN_NODE_HINTS)
-
-
-func _is_cloth_mesh_name(mesh_name: String) -> bool:
-	return _mesh_name_contains_hints(mesh_name, CLOTH_NODE_HINTS)
-
-
-func _is_eye_mesh_name(mesh_name: String) -> bool:
-	return _mesh_name_contains_hints(mesh_name, EYE_NODE_HINTS)
-
-
-func _is_skeleton_bone_mesh_name(mesh_name: String) -> bool:
-	return _mesh_name_contains_hints(mesh_name, SKELETON_BONE_NODE_HINTS)
-
-
-func _mesh_name_contains_hints(mesh_name: String, hints: Array) -> bool:
-	var normalized := mesh_name.to_lower()
-	for hint in hints:
-		if normalized.contains(str(hint)):
-			return true
-	return false
-
-
-func _create_tinted_material(base_material: Material, tint_color: Color) -> Material:
-	if base_material == null:
-		var material := StandardMaterial3D.new()
-		material.albedo_color = tint_color
-		return material
-
-	if base_material is BaseMaterial3D:
-		var copied := (base_material as BaseMaterial3D).duplicate(true) as BaseMaterial3D
-		copied.albedo_color = tint_color
-		return copied
-
-	return base_material
 
 
 func _save_current_profile(profile_id: String, profile_name: String) -> String:
@@ -1954,27 +2466,6 @@ func _build_profile_data(profile_id: String, profile_name: String) -> Dictionary
 	if animation_option.selected >= 0 and animation_option.selected < _animation_display_names.size():
 		animation_label = _animation_display_names[animation_option.selected]
 
-	var hat_preset: Dictionary = HAT_COLOR_PRESETS[clampi(hat_color_option.selected, 0, HAT_COLOR_PRESETS.size() - 1)]
-	var hair_preset: Dictionary = HAIR_COLOR_PRESETS[clampi(hair_color_option.selected, 0, HAIR_COLOR_PRESETS.size() - 1)]
-	var skin_preset: Dictionary = SKIN_COLOR_PRESETS[clampi(skin_color_option.selected, 0, SKIN_COLOR_PRESETS.size() - 1)]
-	var cloth_preset: Dictionary = CLOTH_COLOR_PRESETS[clampi(cloth_color_option.selected, 0, CLOTH_COLOR_PRESETS.size() - 1)]
-	var hat_color := Color(1.0, 1.0, 1.0, 1.0)
-	var hair_color := Color(1.0, 1.0, 1.0, 1.0)
-	var skin_color := Color(1.0, 1.0, 1.0, 1.0)
-	var cloth_color := Color(1.0, 1.0, 1.0, 1.0)
-	var color_variant: Variant = hat_preset.get("color", hat_color)
-	if color_variant is Color:
-		hat_color = color_variant
-	color_variant = hair_preset.get("color", hair_color)
-	if color_variant is Color:
-		hair_color = color_variant
-	color_variant = skin_preset.get("color", skin_color)
-	if color_variant is Color:
-		skin_color = color_variant
-	color_variant = cloth_preset.get("color", cloth_color)
-	if color_variant is Color:
-		cloth_color = color_variant
-
 	var source_pack := _find_pack_by_resource_path(character_path)
 	var data := {
 		"profile_id": profile_id,
@@ -1984,43 +2475,44 @@ func _build_profile_data(profile_id: String, profile_name: String) -> Dictionary
 		"pack_label": str(source_pack.get("label", UNIFIED_PACK_LABEL)),
 		"character_path": character_path,
 		"character_name": _display_character_name_from_path(character_path) if not character_path.is_empty() else "",
+		"preview_character_path": character_path,
+		"runtime_character_path": _runtime_character_path_for(character_path),
 		"weapon_path": right_weapon_path,
 		"weapon_name": _display_weapon_name_from_path(right_weapon_path) if not right_weapon_path.is_empty() else "",
 		"right_weapon_path": right_weapon_path,
 		"right_weapon_name": _display_weapon_name_from_path(right_weapon_path) if not right_weapon_path.is_empty() else "",
+		"preview_right_weapon_path": right_weapon_path,
+		"runtime_right_weapon_path": _runtime_weapon_path_for(right_weapon_path),
 		"left_weapon_path": left_weapon_path,
 		"left_weapon_name": _display_weapon_name_from_path(left_weapon_path) if not left_weapon_path.is_empty() else "",
+		"preview_left_weapon_path": left_weapon_path,
+		"runtime_left_weapon_path": _runtime_weapon_path_for(left_weapon_path),
 		"animation_name": animation_name,
 		"animation_label": animation_label,
 		"use_extra_animation_pack": extra_animation_toggle.button_pressed,
 		"loop": loop_toggle.button_pressed,
 		"speed": speed_slider.value,
 		"scale": scale_slider.value,
+		"weapon_tune_units": WEAPON_TUNE_UNITS,
 		"weapon_tune_pos_x": _weapon_offset_position.x,
 		"weapon_tune_pos_y": _weapon_offset_position.y,
 		"weapon_tune_pos_z": _weapon_offset_position.z,
 		"weapon_tune_rot_x": _weapon_offset_rotation_degrees.x,
 		"weapon_tune_rot_y": _weapon_offset_rotation_degrees.y,
 		"weapon_tune_rot_z": _weapon_offset_rotation_degrees.z,
+		"weapon_tune_scale_x": _weapon_offset_scale.x,
+		"weapon_tune_scale_y": _weapon_offset_scale.y,
+		"weapon_tune_scale_z": _weapon_offset_scale.z,
 		"left_weapon_tune_pos_x": _left_weapon_offset_position.x,
 		"left_weapon_tune_pos_y": _left_weapon_offset_position.y,
 		"left_weapon_tune_pos_z": _left_weapon_offset_position.z,
 		"left_weapon_tune_rot_x": _left_weapon_offset_rotation_degrees.x,
 		"left_weapon_tune_rot_y": _left_weapon_offset_rotation_degrees.y,
 		"left_weapon_tune_rot_z": _left_weapon_offset_rotation_degrees.z,
+		"left_weapon_tune_scale_x": _left_weapon_offset_scale.x,
+		"left_weapon_tune_scale_y": _left_weapon_offset_scale.y,
+		"left_weapon_tune_scale_z": _left_weapon_offset_scale.z,
 		"attack_plan": _build_attack_plan_payload(),
-		"hair_preset_key": str(hair_preset.get("key", "default")),
-		"hair_preset_label": str(hair_preset.get("label", "原始锟斤拷锟斤拷")),
-		"hair_tint_html": hair_color.to_html(true),
-		"skin_preset_key": str(skin_preset.get("key", "default")),
-		"skin_preset_label": str(skin_preset.get("label", "原始锟斤拷锟斤拷")),
-		"skin_tint_html": skin_color.to_html(true),
-		"cloth_preset_key": str(cloth_preset.get("key", "default")),
-		"cloth_preset_label": str(cloth_preset.get("label", "原始锟斤拷锟斤拷")),
-		"cloth_tint_html": cloth_color.to_html(true),
-		"hat_preset_key": str(hat_preset.get("key", "default")),
-		"hat_preset_label": str(hat_preset.get("label", "原始锟斤拷锟斤拷")),
-		"hat_tint_html": hat_color.to_html(true),
 		"generated_at_local": Time.get_datetime_string_from_system(),
 	}
 	return data
@@ -2066,7 +2558,7 @@ func _parse_profile_id_and_name(raw_id_input: String, raw_name_input: String) ->
 	var ascii_split := _split_profile_id_name_ascii(profile_id)
 	if not ascii_split.is_empty():
 		return ascii_split
-	# Keep legacy separators fallback below for backward compatibility.
+	# Keep older generated ID separators readable for existing saved profiles.
 
 	for separator in ["-", "锟斤拷", "锟斤拷", "_"]:
 		var sep_index := profile_id.find(separator)
@@ -2242,13 +2734,6 @@ func _find_pack_index_by_id(pack_id: String) -> int:
 	return -1
 
 
-func _find_preset_index_by_key(presets: Array[Dictionary], key: String) -> int:
-	for i in range(presets.size()):
-		if str(presets[i].get("key", "")) == key:
-			return i
-	return 0
-
-
 func _find_character_index_by_name(character_name: String) -> int:
 	var target := character_name.strip_edges().to_lower()
 	if target.is_empty():
@@ -2264,18 +2749,26 @@ func _find_character_index_by_name(character_name: String) -> int:
 
 
 func _load_weapon_tune_from_payload(payload: Dictionary) -> void:
-	var pos_x := float(payload.get("weapon_tune_pos_x", 0.0))
-	var pos_y := float(payload.get("weapon_tune_pos_y", 0.0))
-	var pos_z := float(payload.get("weapon_tune_pos_z", 0.0))
+	var right_position := _read_weapon_tune_position(payload, "weapon")
+	var pos_x := right_position.x
+	var pos_y := right_position.y
+	var pos_z := right_position.z
 	var rot_x := float(payload.get("weapon_tune_rot_x", 0.0))
 	var rot_y := float(payload.get("weapon_tune_rot_y", 0.0))
 	var rot_z := float(payload.get("weapon_tune_rot_z", 0.0))
-	var left_pos_x := float(payload.get("left_weapon_tune_pos_x", 0.0))
-	var left_pos_y := float(payload.get("left_weapon_tune_pos_y", 0.0))
-	var left_pos_z := float(payload.get("left_weapon_tune_pos_z", 0.0))
+	var scale_x := float(payload.get("weapon_tune_scale_x", 1.0))
+	var scale_y := float(payload.get("weapon_tune_scale_y", 1.0))
+	var scale_z := float(payload.get("weapon_tune_scale_z", 1.0))
+	var left_position := _read_weapon_tune_position(payload, "left_weapon")
+	var left_pos_x := left_position.x
+	var left_pos_y := left_position.y
+	var left_pos_z := left_position.z
 	var left_rot_x := float(payload.get("left_weapon_tune_rot_x", 0.0))
 	var left_rot_y := float(payload.get("left_weapon_tune_rot_y", 0.0))
 	var left_rot_z := float(payload.get("left_weapon_tune_rot_z", 0.0))
+	var left_scale_x := float(payload.get("left_weapon_tune_scale_x", 1.0))
+	var left_scale_y := float(payload.get("left_weapon_tune_scale_y", 1.0))
+	var left_scale_z := float(payload.get("left_weapon_tune_scale_z", 1.0))
 
 	_is_syncing_weapon_tune_controls = true
 	weapon_pos_x_slider.value = pos_x
@@ -2284,20 +2777,41 @@ func _load_weapon_tune_from_payload(payload: Dictionary) -> void:
 	weapon_rot_x_slider.value = rot_x
 	weapon_rot_y_slider.value = rot_y
 	weapon_rot_z_slider.value = rot_z
+	weapon_scale_x_slider.value = scale_x
+	weapon_scale_y_slider.value = scale_y
+	weapon_scale_z_slider.value = scale_z
 	left_weapon_pos_x_slider.value = left_pos_x
 	left_weapon_pos_y_slider.value = left_pos_y
 	left_weapon_pos_z_slider.value = left_pos_z
 	left_weapon_rot_x_slider.value = left_rot_x
 	left_weapon_rot_y_slider.value = left_rot_y
 	left_weapon_rot_z_slider.value = left_rot_z
+	left_weapon_scale_x_slider.value = left_scale_x
+	left_weapon_scale_y_slider.value = left_scale_y
+	left_weapon_scale_z_slider.value = left_scale_z
 	_is_syncing_weapon_tune_controls = false
 
 	_weapon_offset_position = Vector3(pos_x, pos_y, pos_z)
 	_weapon_offset_rotation_degrees = Vector3(rot_x, rot_y, rot_z)
+	_weapon_offset_scale = Vector3(scale_x, scale_y, scale_z)
 	_left_weapon_offset_position = Vector3(left_pos_x, left_pos_y, left_pos_z)
 	_left_weapon_offset_rotation_degrees = Vector3(left_rot_x, left_rot_y, left_rot_z)
+	_left_weapon_offset_scale = Vector3(left_scale_x, left_scale_y, left_scale_z)
 	_apply_weapon_tune_to_current_weapon()
 	_apply_left_weapon_tune_to_current_weapon()
+
+
+func _read_weapon_tune_position(payload: Dictionary, prefix: String) -> Vector3:
+	var tune_position := Vector3(
+		float(payload.get("%s_tune_pos_x" % prefix, 0.0)),
+		float(payload.get("%s_tune_pos_y" % prefix, 0.0)),
+		float(payload.get("%s_tune_pos_z" % prefix, 0.0))
+	)
+	if str(payload.get("weapon_tune_units", "")).strip_edges() == WEAPON_TUNE_UNITS:
+		return tune_position
+	if tune_position.length() > LEGACY_WEAPON_TUNE_POSITION_THRESHOLD:
+		return tune_position * LEGACY_WEAPON_TUNE_POSITION_SCALE
+	return tune_position
 
 
 func _load_profile_by_id(profile_id: String) -> void:
@@ -2338,11 +2852,6 @@ func _load_profile_by_id(profile_id: String) -> void:
 	if left_weapon_index < 0:
 		left_weapon_index = 0
 	left_weapon_option.select(left_weapon_index)
-
-	hair_color_option.select(_find_preset_index_by_key(HAIR_COLOR_PRESETS, str(payload.get("hair_preset_key", "default"))))
-	skin_color_option.select(_find_preset_index_by_key(SKIN_COLOR_PRESETS, str(payload.get("skin_preset_key", "default"))))
-	cloth_color_option.select(_find_preset_index_by_key(CLOTH_COLOR_PRESETS, str(payload.get("cloth_preset_key", "default"))))
-	hat_color_option.select(_find_preset_index_by_key(HAT_COLOR_PRESETS, str(payload.get("hat_preset_key", "default"))))
 
 	_apply_selection()
 
@@ -2471,6 +2980,15 @@ func _find_bone_by_hints(all_bones: Array[String], hints: Array) -> String:
 	return ""
 
 
+func _find_default_hit_bone(skeleton: Skeleton3D) -> String:
+	if skeleton == null:
+		return ""
+	var all_bones: Array[String] = []
+	for i in range(skeleton.get_bone_count()):
+		all_bones.append(skeleton.get_bone_name(i))
+	return _find_bone_by_hints(all_bones, HIT_BONE_HINTS)
+
+
 func _find_right_hand_bone(skeleton: Skeleton3D) -> String:
 	var all_bones: Array[String] = []
 	for i in range(skeleton.get_bone_count()):
@@ -2531,11 +3049,11 @@ func _display_weapon_name_from_path(path: String) -> String:
 		prefix = "%s / " % source_pack_label
 	return _clean_ui_text("%s%s" % [prefix, localized_label], english_label)
 func _find_pack_by_resource_path(path: String) -> Dictionary:
-	var lower_path := path.to_lower()
+	var lower_path := _normalize_match_path(path)
 	for pack in PACKS:
-		var chars_dir := str(pack.get("characters_dir", "")).to_lower()
-		var weapons_dir := str(pack.get("weapons_dir", "")).to_lower()
-		var anims_dir := str(pack.get("animations_dir", "")).to_lower()
+		var chars_dir := _normalize_match_path(str(pack.get("characters_dir", "")))
+		var weapons_dir := _normalize_match_path(str(pack.get("weapons_dir", "")))
+		var anims_dir := _normalize_match_path(str(pack.get("animations_dir", "")))
 		if (not chars_dir.is_empty() and lower_path.begins_with(chars_dir)) \
 			or (not weapons_dir.is_empty() and lower_path.begins_with(weapons_dir)) \
 			or (not anims_dir.is_empty() and lower_path.begins_with(anims_dir)):
@@ -2546,12 +3064,8 @@ func _find_pack_by_resource_path(path: String) -> Dictionary:
 func _short_pack_label_by_resource_path(path: String) -> String:
 	var pack := _find_pack_by_resource_path(path)
 	var pack_id := str(pack.get("id", ""))
-	if pack_id == "skeletons":
-		return "Skeletons(骷髅)"
-	if pack_id == "adventurers":
-		return "Adventurers(冒险者)"
-	if pack_id == "newmodel":
-		return "NewModel(自定义)"
+	if pack_id == "ai_model":
+		return "AI模型"
 	return ""
 func _update_info() -> void:
 	var status_lines: Array[String] = []
@@ -2810,4 +3324,3 @@ func _clean_ui_text(text: String, fallback: String = "") -> String:
 	if cleaned.is_empty():
 		return fallback
 	return cleaned
-

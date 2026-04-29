@@ -98,7 +98,7 @@ static func _sanitize_action_row(row: Dictionary) -> Dictionary:
 		if not direct_text.is_empty():
 			var direct_spec: Dictionary = _build_spec_from_text(direct_text)
 			if not direct_spec.is_empty():
-				sanitized[state_key] = direct_spec
+				sanitized[state_key] = _apply_state_metadata(row, state_key, direct_spec)
 				continue
 
 		var grouped_sequences: Array[PackedStringArray] = _collect_grouped_state_sequences(row, state_key)
@@ -107,6 +107,7 @@ static func _sanitize_action_row(row: Dictionary) -> Dictionary:
 				"mode": "random_sequence",
 				"sequences": grouped_sequences,
 			}
+			sanitized[state_key] = _apply_state_metadata(row, state_key, sanitized[state_key])
 			continue
 		if grouped_sequences.size() == 1:
 			var only_sequence: PackedStringArray = grouped_sequences[0]
@@ -120,6 +121,7 @@ static func _sanitize_action_row(row: Dictionary) -> Dictionary:
 					"mode": "sequence",
 					"clips": only_sequence,
 				}
+			sanitized[state_key] = _apply_state_metadata(row, state_key, sanitized[state_key])
 			continue
 
 		var numbered_values: PackedStringArray = _collect_numbered_state_values(row, state_key)
@@ -138,7 +140,24 @@ static func _sanitize_action_row(row: Dictionary) -> Dictionary:
 				"mode": default_mode,
 				"clips": numbered_values,
 			}
+		sanitized[state_key] = _apply_state_metadata(row, state_key, sanitized[state_key])
 	return sanitized
+
+
+static func _apply_state_metadata(row: Dictionary, state_key: String, spec: Dictionary) -> Dictionary:
+	var result: Dictionary = spec.duplicate(true)
+	var loop_key: String = "%s_loop" % state_key
+	if row.has(loop_key):
+		result["loop"] = _coerce_bool(row.get(loop_key, false))
+
+	if state_key == "jump":
+		var ignore_collision_frame: int = _coerce_int(row.get("jump_ignore_collision_frame", -1), -1)
+		if ignore_collision_frame >= 0:
+			result["ignore_collision_frame"] = ignore_collision_frame
+		var land_frame: int = _coerce_int(row.get("jump_land_frame", -1), -1)
+		if land_frame >= 0:
+			result["land_frame"] = land_frame
+	return result
 
 
 static func _build_spec_from_text(text: String) -> Dictionary:
@@ -329,6 +348,34 @@ static func _coerce_action_name(raw_value: Variant) -> String:
 	if lowered == "null" or lowered == "<null>" or lowered == "nil":
 		return ""
 	return text
+
+
+static func _coerce_bool(raw_value: Variant) -> bool:
+	if raw_value == null:
+		return false
+	if raw_value is bool:
+		return bool(raw_value)
+	if raw_value is int or raw_value is float:
+		return float(raw_value) != 0.0
+	var text: String = String(raw_value).strip_edges().to_lower()
+	return text in ["1", "true", "yes", "y", "on", "是", "启用"]
+
+
+static func _coerce_int(raw_value: Variant, fallback: int) -> int:
+	if raw_value == null:
+		return fallback
+	if raw_value is int:
+		return int(raw_value)
+	if raw_value is float:
+		return int(raw_value)
+	var text: String = String(raw_value).strip_edges()
+	if text.is_empty():
+		return fallback
+	if text.is_valid_int():
+		return int(text)
+	if text.is_valid_float():
+		return int(float(text))
+	return fallback
 
 
 static func _normalize_model_id(raw_value: Variant) -> String:

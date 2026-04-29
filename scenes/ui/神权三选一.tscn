@@ -1,0 +1,227 @@
+[gd_scene format=3 uid="uid://cypxt3iv4tvk0"]
+
+[ext_resource type="Texture2D" uid="uid://rgh5scmh3esq" path="res://assets/ui/card_choice/backgrounds/god_demon_choice_bg_v1.png" id="1_bg"]
+[ext_resource type="Script" uid="uid://brg7qe6ieeemw" path="res://scenes/ui/神权三选一.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dtvj7qyg228s1" path="res://assets/ui/card_choice/buttons/refresh_button_normal.png" id="2_btn"]
+[ext_resource type="Texture2D" uid="uid://l7jk04ww1ty4" path="res://assets/ui/card_choice/buttons/refresh_button_hover.png" id="3_btn_hover"]
+[ext_resource type="Texture2D" uid="uid://b3e3onxoddy0x" path="res://assets/ui/card_choice/buttons/refresh_button_disabled.png" id="4_btn_disabled"]
+[ext_resource type="PackedScene" uid="uid://cfji3a766lp6" path="res://scenes/ui/神权三选一卡牌.tscn" id="5_card"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.0705882, 0.0509804, 0.0392157, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.788235, 0.419608, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_refresh_anchor"]
+
+[node name="神权三选一" type="Control" unique_id=1187635156]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_script")
+
+[node name="遮罩" type="ColorRect" parent="." unique_id=391408007]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.52)
+
+[node name="主面板" type="Panel" parent="." unique_id=1753471093]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -610.0
+offset_top = -330.0
+offset_right = 610.0
+offset_bottom = 330.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="背景图" type="TextureRect" parent="主面板" unique_id=1396225231]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -110.0
+offset_top = -75.0
+offset_right = 110.0
+offset_bottom = 75.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="背景压暗" type="ColorRect" parent="主面板" unique_id=923096221]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.04, 0.03, 0.18)
+
+[node name="标题" type="Label" parent="主面板" unique_id=998626809]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -220.0
+offset_top = 18.0
+offset_right = 220.0
+offset_bottom = 64.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.898039, 0.576471, 1)
+theme_override_font_sizes/font_size = 34
+text = "神权选择"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="提示" type="Label" parent="主面板" unique_id=1277575711]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -320.0
+offset_top = 66.0
+offset_right = 320.0
+offset_bottom = 94.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.98, 0.94, 0.86, 0.92)
+theme_override_font_sizes/font_size = 16
+text = "从 3 张神权中选择 1 张，点击卡牌立即生效"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="卡牌行" type="HFlowContainer" parent="主面板" unique_id=210077134]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 42.0
+offset_top = 110.0
+offset_right = -42.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 18
+theme_override_constants/v_separation = 18
+alignment = 1
+
+[node name="卡牌一" parent="主面板/卡牌行" unique_id=698258191 instance=ExtResource("5_card")]
+layout_mode = 2
+
+[node name="卡牌二" parent="主面板/卡牌行" unique_id=910248635 instance=ExtResource("5_card")]
+layout_mode = 2
+
+[node name="卡牌三" parent="主面板/卡牌行" unique_id=853767439 instance=ExtResource("5_card")]
+layout_mode = 2
+
+[node name="卡牌四" parent="主面板/卡牌行" unique_id=1310916953 instance=ExtResource("5_card")]
+visible = false
+layout_mode = 2
+
+[node name="卡牌五" parent="主面板/卡牌行" unique_id=1752646550 instance=ExtResource("5_card")]
+visible = false
+layout_mode = 2
+
+[node name="卡牌六" parent="主面板/卡牌行" unique_id=1124763688 instance=ExtResource("5_card")]
+visible = false
+layout_mode = 2
+
+[node name="卡牌七" parent="主面板/卡牌行" unique_id=1004952251 instance=ExtResource("5_card")]
+visible = false
+layout_mode = 2
+
+[node name="卡牌八" parent="主面板/卡牌行" unique_id=1035553537 instance=ExtResource("5_card")]
+visible = false
+layout_mode = 2
+
+[node name="卡牌九" parent="主面板/卡牌行" unique_id=1609246787 instance=ExtResource("5_card")]
+visible = false
+layout_mode = 2
+
+[node name="详情区" type="Panel" parent="主面板" unique_id=68672381]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -186.0
+offset_top = -176.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_refresh_anchor")
+
+[node name="剩余刷新次数" type="Label" parent="主面板/详情区" unique_id=1527974678]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -2.4250002
+anchor_top = 1.105
+anchor_right = -2.4250002
+anchor_bottom = 1.105
+offset_left = -82.04996
+offset_top = -12.059998
+offset_right = 81.95004
+offset_bottom = 11.940002
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.98, 0.88, 0.62, 0.95)
+theme_override_font_sizes/font_size = 14
+text = "剩余刷新 0 次"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="刷新按钮" type="TextureButton" parent="主面板/详情区" unique_id=972168502]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -2.4310002
+anchor_top = 0.72300005
+anchor_right = -2.4310002
+anchor_bottom = 0.72300005
+offset_left = -58.00595
+offset_top = -58.048004
+offset_right = 57.99405
+offset_bottom = 57.951996
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("2_btn")
+texture_pressed = ExtResource("3_btn_hover")
+texture_hover = ExtResource("3_btn_hover")
+texture_disabled = ExtResource("4_btn_disabled")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="刷新文字" type="Label" parent="主面板/详情区/刷新按钮" unique_id=1266354870]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.96, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0.09, 0.06, 0.025, 0.95)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 19
+text = "刷新"
+horizontal_alignment = 1
+vertical_alignment = 1

@@ -1,0 +1,44 @@
+[
+    {
+        "id": "1",
+        "key": "card_choice_drop_cooldown_seconds",
+        "name": "卡包掉率冷却CD",
+        "value": "210",
+        "notes": "每隔多少秒执行一次卡包掉落判定；当前测试值为5秒"
+    },
+    {
+        "id": "2",
+        "key": "card_choice_drop_initial_chance_percent",
+        "name": "卡包掉率初始概率",
+        "value": "1",
+        "notes": "首轮与每次成功掉落后重置的基础概率，单位为百分比"
+    },
+    {
+        "id": "3",
+        "key": "card_choice_drop_chance_increase_percent",
+        "name": "卡包掉率提升概率值",
+        "value": "7",
+        "notes": "每次未掉落后追加到下次判定的概率值，单位为百分比"
+    },
+    {
+        "id": "4",
+        "key": "model3d_runtime_display_scale",
+        "name": "3D模型运行时显示倍率",
+        "value": "5",
+        "notes": "备用显示倍率；不参与F6人物/武器姿态配置，避免F6保存后进战斗发生二次缩放。"
+    },
+    {
+        "id": "5",
+        "key": "model3d_weapon_socket_target_extent",
+        "name": "3D武器挂点基准尺寸",
+        "value": "0.95",
+        "notes": "F6和战斗运行时共享；武器自动归一化后的基础目标尺寸，个别武器再用F6缩放微调。"
+    },
+    {
+        "id": "6",
+        "key": "model3d_weapon_tune_position_scale",
+        "name": "3D武器微调位移缩放",
+        "value": "0.01",
+        "notes": "废弃兼容项；新F6配置保存Godot真实位移单位，不再读取此倍率。"
+    }
+]

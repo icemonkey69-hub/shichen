@@ -1,0 +1,174 @@
+[gd_scene format=3 uid="uid://b63rj5k163lul"]
+
+[ext_resource type="Script" path="res://scenes/ui/武器成长面板.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="1_panel"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.055, 0.065, 0.078, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.54, 0.62, 0.68, 0.86)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="2_card"]
+content_margin_left = 8.0
+content_margin_top = 7.0
+content_margin_right = 8.0
+content_margin_bottom = 7.0
+bg_color = Color(0.095, 0.105, 0.12, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.36, 0.43, 0.48, 0.9)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="武器成长面板" type="Control" unique_id=78297242]
+visible = false
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -330.0
+offset_top = 84.0
+offset_right = -18.0
+offset_bottom = 322.0
+grow_horizontal = 0
+mouse_filter = 1
+script = ExtResource("1_script")
+
+[node name="面板" type="Panel" parent="." unique_id=1837530275]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("1_panel")
+
+[node name="内容" type="VBoxContainer" parent="面板" unique_id=264625769]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 8.0
+offset_right = -10.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="标题行" type="HBoxContainer" parent="面板/内容" unique_id=1244866654]
+layout_mode = 2
+
+[node name="标题" type="Label" parent="面板/内容/标题行" unique_id=431911962]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.92, 0.84, 1)
+theme_override_font_sizes/font_size = 17
+text = "剑&盾成长"
+
+[node name="金币" type="Label" parent="面板/内容" unique_id=472033818]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.82, 0.32, 1)
+theme_override_font_sizes/font_size = 14
+text = "金币 0"
+
+[node name="列表" type="HBoxContainer" parent="面板/内容" unique_id=1262985884]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="剑" type="PanelContainer" parent="面板/内容/列表" unique_id=1462972654]
+custom_minimum_size = Vector2(142, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("2_card")
+
+[node name="内容" type="VBoxContainer" parent="面板/内容/列表/剑" unique_id=1806967832]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="名称" type="Label" parent="面板/内容/列表/剑/内容" unique_id=1014193331]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "剑"
+
+[node name="等级" type="Label" parent="面板/内容/列表/剑/内容" unique_id=1715272389]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74, 0.8, 0.84, 1)
+theme_override_font_sizes/font_size = 13
+text = "0 / 0"
+
+[node name="当前" type="Label" parent="面板/内容/列表/剑/内容" unique_id=1705836816]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.84, 0.88, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
+
+[node name="下级" type="Label" parent="面板/内容/列表/剑/内容" unique_id=1549589581]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.64, 0.92, 0.72, 1)
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
+
+[node name="升级" type="Button" parent="面板/内容/列表/剑/内容" unique_id=907497285]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+focus_mode = 0
+text = "升级"
+
+[node name="盾" type="PanelContainer" parent="面板/内容/列表" unique_id=607872908]
+custom_minimum_size = Vector2(142, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("2_card")
+
+[node name="内容" type="VBoxContainer" parent="面板/内容/列表/盾" unique_id=1977818631]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="名称" type="Label" parent="面板/内容/列表/盾/内容" unique_id=1928611720]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "盾"
+
+[node name="等级" type="Label" parent="面板/内容/列表/盾/内容" unique_id=100844629]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74, 0.8, 0.84, 1)
+theme_override_font_sizes/font_size = 13
+text = "0 / 0"
+
+[node name="当前" type="Label" parent="面板/内容/列表/盾/内容" unique_id=400217444]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.84, 0.88, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
+
+[node name="下级" type="Label" parent="面板/内容/列表/盾/内容" unique_id=2081888925]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.64, 0.92, 0.72, 1)
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
+
+[node name="升级" type="Button" parent="面板/内容/列表/盾/内容" unique_id=966883692]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+focus_mode = 0
+text = "升级"

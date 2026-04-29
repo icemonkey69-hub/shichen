@@ -1,0 +1,207 @@
+[gd_scene format=3 uid="uid://c1nmobv6vkq57"]
+
+[ext_resource type="Script" uid="uid://ds4f1erixsy0d" path="res://scenes/ui/战斗HUD.gd" id="1_battle_hud"]
+[ext_resource type="Script" uid="uid://dmso5yt4sp6ds" path="res://minimap.gd" id="1_minimap"]
+[ext_resource type="PackedScene" uid="uid://b63rj5k163lul" path="res://scenes/ui/武器成长面板.tscn" id="3_weapon_growth"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_bg"]
+bg_color = Color(0.72, 0.72, 0.75, 0.34)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
+bg_color = Color(0.862745, 0.215686, 0.239216, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mp_bg"]
+bg_color = Color(0.72, 0.72, 0.75, 0.34)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mp_fill"]
+bg_color = Color(0.247059, 0.556863, 0.964706, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exp_bg"]
+bg_color = Color(0.72, 0.72, 0.75, 0.34)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exp_fill"]
+bg_color = Color(0.243137, 0.792157, 0.454902, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="战斗HUD" type="CanvasLayer" unique_id=1585211447]
+script = ExtResource("1_battle_hud")
+
+[node name="小地图" type="Control" parent="." unique_id=1443790112]
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -190.0
+offset_top = -190.0
+offset_right = -14.0
+offset_bottom = -14.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("1_minimap")
+
+[node name="头像面板" type="ColorRect" parent="." unique_id=1175829186]
+offset_left = 14.0
+offset_top = 14.0
+offset_right = 306.0
+offset_bottom = 142.0
+color = Color(0.0509804, 0.0666667, 0.054902, 0.82)
+
+[node name="头像" type="TextureRect" parent="头像面板" unique_id=247859698]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 54.0
+offset_bottom = 54.0
+stretch_mode = 5
+
+[node name="英雄名" type="Label" parent="头像面板" unique_id=748987466]
+layout_mode = 0
+offset_left = 68.0
+offset_top = 10.0
+offset_right = 282.0
+offset_bottom = 30.0
+text = "英雄名称"
+
+[node name="生命条" type="ProgressBar" parent="头像面板" unique_id=831596123]
+layout_mode = 0
+offset_left = 68.0
+offset_top = 36.0
+offset_right = 282.0
+offset_bottom = 54.0
+theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_hp_fill")
+value = 100.0
+show_percentage = false
+
+[node name="生命文本" type="Label" parent="头像面板/生命条" unique_id=1455158413]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_right = -8.0
+theme_override_font_sizes/font_size = 13
+text = "HP 100 / 100"
+vertical_alignment = 1
+
+[node name="法力条" type="ProgressBar" parent="头像面板" unique_id=535031909]
+layout_mode = 0
+offset_left = 68.0
+offset_top = 60.0
+offset_right = 282.0
+offset_bottom = 78.0
+theme_override_styles/background = SubResource("StyleBoxFlat_mp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_mp_fill")
+value = 100.0
+show_percentage = false
+
+[node name="法力文本" type="Label" parent="头像面板/法力条" unique_id=1780615336]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_right = -8.0
+theme_override_font_sizes/font_size = 13
+text = "MP 0 / 0"
+vertical_alignment = 1
+
+[node name="经验条" type="ProgressBar" parent="头像面板" unique_id=1020412131]
+layout_mode = 0
+offset_left = 68.0
+offset_top = 84.0
+offset_right = 282.0
+offset_bottom = 102.0
+theme_override_styles/background = SubResource("StyleBoxFlat_exp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_exp_fill")
+value = 100.0
+show_percentage = false
+
+[node name="经验文本" type="Label" parent="头像面板/经验条" unique_id=1958657393]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_right = -8.0
+theme_override_font_sizes/font_size = 13
+text = "EXP 0 / 100"
+vertical_alignment = 1
+
+[node name="战斗信息面板" type="ColorRect" parent="." unique_id=602691253]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -700.0
+offset_top = -100.0
+offset_right = 700.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.0509804, 0.0666667, 0.054902, 0.82)
+
+[node name="英雄名" type="Label" parent="战斗信息面板" unique_id=759342379]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 8.0
+offset_right = 320.0
+offset_bottom = 28.0
+text = "英雄名称"
+
+[node name="战斗信息" type="Label" parent="战斗信息面板" unique_id=47585197]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 38.0
+offset_right = 1382.0
+offset_bottom = 70.0
+text = "时间 0.0s
+击杀 0"
+
+[node name="帮助" type="Label" parent="战斗信息面板" unique_id=1823291761]
+layout_mode = 0
+offset_left = 1020.0
+offset_top = 8.0
+offset_right = 1382.0
+offset_bottom = 28.0
+
+[node name="中央提示" type="Label" parent="." unique_id=1158191211]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -34.0
+offset_right = 220.0
+offset_bottom = 34.0
+text = "尽可能生存下去"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="武器成长面板" parent="." unique_id=1574035314 instance=ExtResource("3_weapon_growth")]
+visible = true
+layout_mode = 3

@@ -1,0 +1,70 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/属性面板.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="1_panel_style"]
+bg_color = Color(0.03, 0.04, 0.04, 0.94)
+border_color = Color(0.38, 0.38, 0.38, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="属性面板" type="Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 0
+offset_left = 80.0
+offset_top = 70.0
+offset_right = 960.0
+offset_bottom = 620.0
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="主面板" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("1_panel_style")
+
+[node name="标题" type="Label" parent="主面板"]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 14.0
+offset_right = 360.0
+offset_bottom = 42.0
+theme_override_font_sizes/font_size = 22
+text = "全属性面板"
+vertical_alignment = 1
+
+[node name="提示" type="Label" parent="主面板"]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 44.0
+offset_right = 360.0
+offset_bottom = 66.0
+text = "按 Tab 关闭并继续游戏"
+vertical_alignment = 1
+
+[node name="滚动区" type="ScrollContainer" parent="主面板"]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 82.0
+offset_right = 860.0
+offset_bottom = 534.0
+horizontal_scroll_mode = 0
+
+[node name="属性列表" type="GridContainer" parent="主面板/滚动区"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 3
+theme_override_constants/h_separation = 18
+theme_override_constants/v_separation = 10

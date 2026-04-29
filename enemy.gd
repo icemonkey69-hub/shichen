@@ -485,13 +485,15 @@ func _apply_model_from_id() -> void:
 			push_warning("Enemy sprite animator missing configure_model_id for model_id=%s." % animator_model_key)
 		return
 
-	var configured_3d: bool = bool(sprite.call("configure_model_id", model_id))
-	if not configured_3d:
+	var configured_2d: bool = bool(sprite.call("configure_model_id", model_id))
+	if not configured_2d:
 		var model_key: String = target_model_id
 		if not _missing_model_warning_ids.has(model_key):
 			_missing_model_warning_ids[model_key] = true
-			push_warning("Enemy 3D profile missing or invalid for model_id=%s." % model_key)
+			push_warning("Enemy 2D profile missing or invalid for model_id=%s." % model_key)
 		return
+	if sprite != null and sprite.has_method("ensure_model_ready"):
+		sprite.call("ensure_model_ready")
 	_model_configured = true
 	_configured_model_id = model_id
 	if sprite != null and sprite.has_method("set_runtime_active"):

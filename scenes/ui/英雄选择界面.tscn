@@ -1,0 +1,277 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/英雄选择界面.gd" id="1_selection_ui"]
+
+[node name="SelectionOverlay" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_selection_ui")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.0392157, 0.0470588, 0.0431373, 0.84)
+
+[node name="SelectionPanel" type="ColorRect" parent="."]
+layout_mode = 0
+anchor_left = 0.06
+anchor_top = 0.08
+anchor_right = 0.94
+anchor_bottom = 0.92
+color = Color(0.054902, 0.0705882, 0.0588235, 0.96)
+
+[node name="Title" type="Label" parent="SelectionPanel"]
+layout_mode = 0
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 20.0
+offset_right = -30.0
+offset_bottom = 58.0
+theme_override_font_sizes/font_size = 30
+text = "选择模板与血脉"
+
+[node name="Countdown" type="Label" parent="SelectionPanel"]
+layout_mode = 0
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 58.0
+offset_right = -30.0
+offset_bottom = 88.0
+theme_override_font_sizes/font_size = 16
+text = "左侧选择模板与血脉，中间拖拽预览模型，右侧确认基础信息与 Q / W / R 技能。"
+
+[node name="MainColumns" type="HBoxContainer" parent="SelectionPanel"]
+layout_mode = 0
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 104.0
+offset_right = -30.0
+offset_bottom = 584.0
+theme_override_constants/separation = 22
+
+[node name="LeftColumn" type="VBoxContainer" parent="SelectionPanel/MainColumns"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 5.0
+theme_override_constants/separation = 18
+
+[node name="HeroSection" type="VBoxContainer" parent="SelectionPanel/MainColumns/LeftColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.15
+theme_override_constants/separation = 10
+
+[node name="TemplateTitle" type="Label" parent="SelectionPanel/MainColumns/LeftColumn/HeroSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "人物"
+
+[node name="TemplateFrame" type="Panel" parent="SelectionPanel/MainColumns/LeftColumn/HeroSection"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TemplateScroll" type="ScrollContainer" parent="SelectionPanel/MainColumns/LeftColumn/HeroSection/TemplateFrame"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+horizontal_scroll_mode = 0
+
+[node name="TemplateButtons" type="GridContainer" parent="SelectionPanel/MainColumns/LeftColumn/HeroSection/TemplateFrame/TemplateScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 5
+theme_override_constants/separation = 8
+
+[node name="BloodlineSection" type="VBoxContainer" parent="SelectionPanel/MainColumns/LeftColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.85
+theme_override_constants/separation = 10
+
+[node name="BloodlineTitle" type="Label" parent="SelectionPanel/MainColumns/LeftColumn/BloodlineSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "血脉"
+
+[node name="BloodlineFrame" type="Panel" parent="SelectionPanel/MainColumns/LeftColumn/BloodlineSection"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BloodlineScroll" type="ScrollContainer" parent="SelectionPanel/MainColumns/LeftColumn/BloodlineSection/BloodlineFrame"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+horizontal_scroll_mode = 0
+
+[node name="BloodlineButtons" type="GridContainer" parent="SelectionPanel/MainColumns/LeftColumn/BloodlineSection/BloodlineFrame/BloodlineScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 5
+theme_override_constants/separation = 8
+
+[node name="PreviewColumn" type="VBoxContainer" parent="SelectionPanel/MainColumns"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 3.0
+theme_override_constants/separation = 10
+
+[node name="PreviewTitle" type="Label" parent="SelectionPanel/MainColumns/PreviewColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "模型预览"
+
+[node name="PreviewFrame" type="Panel" parent="SelectionPanel/MainColumns/PreviewColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PreviewModel" type="SubViewportContainer" parent="SelectionPanel/MainColumns/PreviewColumn/PreviewFrame"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+mouse_filter = 1
+stretch = true
+
+[node name="Viewport" type="SubViewport" parent="SelectionPanel/MainColumns/PreviewColumn/PreviewFrame/PreviewModel"]
+own_world_3d = true
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(580, 760)
+render_target_update_mode = 4
+
+[node name="PreviewRoot" type="Node2D" parent="SelectionPanel/MainColumns/PreviewColumn/PreviewFrame/PreviewModel/Viewport"]
+
+[node name="Hint" type="Label" parent="SelectionPanel/MainColumns/PreviewColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "按住左键左右拖动，可旋转模型。"
+horizontal_alignment = 1
+
+[node name="SummaryColumn" type="VBoxContainer" parent="SelectionPanel/MainColumns"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
+theme_override_constants/separation = 10
+
+[node name="SummaryTitle" type="Label" parent="SelectionPanel/MainColumns/SummaryColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "汇总信息"
+
+[node name="SummaryFrame" type="Panel" parent="SelectionPanel/MainColumns/SummaryColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SummaryContent" type="VBoxContainer" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+theme_override_constants/separation = 10
+
+[node name="Name" type="Label" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "英雄名称"
+
+[node name="Bloodline" type="Label" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "血脉：未选择"
+
+[node name="PrimaryAttr" type="Label" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "主属性：-"
+
+[node name="Stats" type="Label" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 16
+text = "生命 0\n法力 0\n攻击 0"
+autowrap_mode = 3
+
+[node name="SkillsTitle" type="VBoxContainer" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SkillsLabel" type="Label" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillsTitle"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "血脉效果"
+
+[node name="SkillButtons" type="HBoxContainer" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillsTitle"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SkillQ" type="Button" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillsTitle/SkillButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 56)
+text = "Q"
+
+[node name="SkillW" type="Button" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillsTitle/SkillButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 56)
+text = "W"
+
+[node name="SkillR" type="Button" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillsTitle/SkillButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 56)
+text = "R"
+
+[node name="SkillTooltipTitle" type="Label" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "技能说明"
+
+[node name="SkillTooltipBody" type="Label" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "鼠标悬停在 Q / W / R 上查看技能名称和描述。"
+autowrap_mode = 3
+
+[node name="Description" type="Label" parent="SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 15
+text = "英雄与血脉的摘要会显示在这里。"
+autowrap_mode = 3
+
+[node name="ConfirmButton" type="Button" parent="SelectionPanel"]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_top = 602.0
+offset_right = 120.0
+offset_bottom = 648.0
+theme_override_font_sizes/font_size = 22
+text = "确认出战"

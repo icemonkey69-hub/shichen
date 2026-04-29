@@ -404,7 +404,6 @@ func _show_card_detail(card_row: Dictionary) -> void:
 		return
 
 	var card_name := str(card_row.get("name", card_row.get("id", "未命名卡牌")))
-	var card_id := str(card_row.get("id", ""))
 	var card_tier := int(card_row.get("tier", 0))
 	var description := str(card_row.get("description", "暂无描述")).strip_edges()
 	var icon_texture := _resolve_card_icon(card_row)

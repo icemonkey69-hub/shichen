@@ -5,14 +5,14 @@ const PROJECTILE_SCENE := preload("res://projectile.tscn")
 const PICKUP_SCENE := preload("res://pickup.tscn")
 const FLOATING_TEXT_SCENE := preload("res://floating_text.tscn")
 const COIN_BURST_EFFECT_SCENE := preload("res://coin_burst_effect.tscn")
+const CardPickupBurstEffectScript := preload("res://card_pickup_burst_effect.gd")
 const AttributeSystemScript := preload("res://attribute_system.gd")
 const RuntimeEnemySnapshotScript := preload("res://systems/runtime_enemy_snapshot.gd")
 const DataTableProviderScript := preload("res://systems/data_table_provider.gd")
 const TemplateBloodlineOptionIndexScript := preload("res://systems/template_bloodline_option_index.gd")
 const SelectionStateScript := preload("res://systems/selection_state.gd")
 const WaveRuntimeScript := preload("res://systems/wave_runtime.gd")
-const Model3DProfileCatalogScript := preload("res://model3d_profile_catalog.gd")
-const Model3DActionCatalogScript := preload("res://model3d_action_catalog.gd")
+const BattleResultFormatterScript := preload("res://systems/battle_result_formatter.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const MAX_PICKUPS_PER_REWARD_TYPE := 6
@@ -29,9 +29,34 @@ const PASSIVE_TICK_SECONDS := 0.2
 const SELECTION_TOOLTIP_DELAY_SEC := 0.08
 const CARD_ICON_FALLBACK_DIR := "res://assets/ui/icons/cards"
 const CARD_ICON_EXTENSIONS := ["png", "webp", "jpg", "jpeg", "svg"]
+const WAVE_INFO_SCENE := preload("res://scenes/ui/波次信息.tscn")
+const BOSS_HEALTH_SCENE := preload("res://scenes/ui/Boss血条.tscn")
+const WAVE_BANNER_SCENE := preload("res://scenes/ui/波次横幅.tscn")
+const DEATH_OVERLAY_SCENE := preload("res://scenes/ui/死亡遮罩.tscn")
+const BATTLE_RESULT_SCENE := preload("res://scenes/ui/战斗结算面板.tscn")
+const ATTRIBUTES_PANEL_SCENE := preload("res://scenes/ui/属性面板.tscn")
+const CARD_COLLECTION_SCENE := preload("res://scenes/ui/神权收藏.tscn")
+const CARD_CHOICE_SCENE := preload("res://scenes/ui/神权三选一.tscn")
 const CARD_CHOICE_DRAW_COUNT := 3
+const CARD_CHOICE_DEFAULT_REFRESH_COUNT := 2
+const CARD_CHOICE_PICKUP_REWARD_TYPE: StringName = &"card_choice"
+const WEAPON_GROWTH_TABLE_NAME: StringName = &"weapon_growth"
+const SWORD_SHIELD_BLOODLINE_ID := "2001"
+const RUNTIME_CONSTANT_TABLE_NAME: StringName = &"runtime_constants"
+const RUNTIME_CONSTANT_CARD_CHOICE_COOLDOWN_ID := "1"
+const RUNTIME_CONSTANT_CARD_CHOICE_INITIAL_CHANCE_ID := "2"
+const RUNTIME_CONSTANT_CARD_CHOICE_CHANCE_INCREASE_ID := "3"
+const CARD_CHOICE_DEMO_ICON_BY_ID := {
+	"152": "res://assets/ui/card_choice/icons/sample/titan_heart_icon_v1.png",
+}
+const CARD_CHOICE_DEMO_ICON_BY_NAME := {
+	"泰坦心脏": "res://assets/ui/card_choice/icons/sample/titan_heart_icon_v1.png",
+}
 const CARD_CHOICE_DEBUG_TITLE := "神权三选一"
+const CARD_CHOICE_PICKUP_TITLE := CARD_CHOICE_DEBUG_TITLE
 const CARD_COLLECTION_BUTTON_TEXT := "[神权]"
+const CARD_COLLECTION_SORT_TIME := "time"
+const CARD_COLLECTION_SORT_QUALITY := "quality"
 
 const CARD_STAT_ALIAS_MAP := {
 	"attack_damage": {
@@ -264,6 +289,9 @@ const CARD_DESCRIPTION_ALIAS_MAP := {
 	"每秒金币": {
 		"flat_id": &"gold_per_second",
 	},
+	"每秒经验": {
+		"flat_id": &"exp_per_second",
+	},
 	"每秒经济": {
 		"flat_id": &"gold_per_second",
 	},
@@ -473,7 +501,6 @@ const BLOODLINE_TABLE_NAME: StringName = &"bloodlines"
 const TEMPLATE_BLOODLINE_OPTION_TABLE_NAME: StringName = &"template_bloodline_options"
 const BLOODLINE_ICON_DIR := "res://assets/ui/icons/bloodlines/"
 const SELECTION_GRID_COLUMNS := 5
-const SELECTION_GRID_GAP := 8.0
 const COMBAT_INFO_REFRESH_INTERVAL := 0.12
 
 @export var play_area := Rect2(-1000.0, -1000.0, 2000.0, 2000.0)
@@ -482,11 +509,14 @@ const COMBAT_INFO_REFRESH_INTERVAL := 0.12
 @export var wave_prepare_seconds := 2.5
 @export var wave_transition_seconds := 2.0
 @export var wave_banner_seconds := 1.6
+@export var card_choice_pickup_interval_seconds := 5.0
+@export var card_choice_pickup_initial_chance_percent := 100.0
+@export var card_choice_pickup_chance_increase_percent := 4.0
 @export var max_alive_enemies := 50
 @export var enemy_overload_defeat_seconds := 10.0
 @export var respawn_invulnerability_seconds := 1.5
 @export var enemy_pool_enabled := true
-@export var enemy_pool_size_per_model := 16
+@export var enemy_pool_size_per_model := 64
 @export var enemy_pool_total_cap := 120
 @export var enemy_pool_hidden_position := Vector2(-22000.0, -22000.0)
 @export var hero_table_name: StringName = HERO_SELECTION_TABLE_NAME
@@ -496,50 +526,9 @@ const COMBAT_INFO_REFRESH_INTERVAL := 0.12
 @onready var player = $Player
 @onready var enemies = $Enemies
 @onready var projectiles = $Projectiles
-@onready var hud_panel: Control = $HUD/Panel
-@onready var portrait_panel: Control = $HUD/PortraitPanel
-@onready var minimap: Minimap = $HUD/Minimap
-@onready var portrait_rect: TextureRect = $HUD/PortraitPanel/Portrait
-@onready var portrait_name_label: Label = $HUD/PortraitPanel/HeroName
-@onready var hp_bar: ProgressBar = $HUD/PortraitPanel/HpBar
-@onready var hp_label: Label = $HUD/PortraitPanel/HpBar/HpLabel
-@onready var mana_bar: ProgressBar = $HUD/PortraitPanel/ManaBar
-@onready var mana_label: Label = $HUD/PortraitPanel/ManaBar/ManaLabel
-@onready var exp_bar: ProgressBar = $HUD/PortraitPanel/ExpBar
-@onready var exp_label: Label = $HUD/PortraitPanel/ExpBar/ExpLabel
-@onready var hero_name_label: Label = $HUD/Panel/HeroName
-@onready var stats_label: Label = $HUD/Panel/Stats
-@onready var help_label: Label = $HUD/Panel/Help
-@onready var message_label: Label = $HUD/Message
-@onready var selection_overlay: Control = get_node_or_null("HUD/SelectionOverlay")
-@onready var selection_title_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/Title")
-@onready var selection_countdown_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/Countdown")
-@onready var selection_template_title_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/LeftColumn/HeroSection/TemplateTitle")
-@onready var selection_bloodline_title_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/LeftColumn/BloodlineSection/BloodlineTitle")
-@onready var selection_template_frame: Panel = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/LeftColumn/HeroSection/TemplateFrame")
-@onready var selection_bloodline_frame: Panel = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/LeftColumn/BloodlineSection/BloodlineFrame")
-@onready var selection_template_scroll: ScrollContainer = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/LeftColumn/HeroSection/TemplateFrame/TemplateScroll")
-@onready var selection_bloodline_scroll: ScrollContainer = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/LeftColumn/BloodlineSection/BloodlineFrame/BloodlineScroll")
-@onready var selection_template_buttons: GridContainer = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/LeftColumn/HeroSection/TemplateFrame/TemplateScroll/TemplateButtons")
-@onready var selection_bloodline_buttons: GridContainer = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/LeftColumn/BloodlineSection/BloodlineFrame/BloodlineScroll/BloodlineButtons")
-@onready var selection_preview_hint_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/PreviewColumn/Hint")
-@onready var selection_preview_frame: Panel = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/PreviewColumn/PreviewFrame")
-@onready var selection_preview_container: SubViewportContainer = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/PreviewColumn/PreviewFrame/PreviewModel")
-@onready var selection_preview_viewport: SubViewport = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/PreviewColumn/PreviewFrame/PreviewModel/Viewport")
-@onready var selection_preview_root: Node2D = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/PreviewColumn/PreviewFrame/PreviewModel/Viewport/PreviewRoot")
-@onready var selection_summary_frame: Panel = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame")
-@onready var selection_name_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/Name")
-@onready var selection_bloodline_name_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/Bloodline")
-@onready var selection_primary_attr_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/PrimaryAttr")
-@onready var selection_stats_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/Stats")
-@onready var selection_skills_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillsTitle/SkillsLabel")
-@onready var selection_skill_q_button: Button = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillsTitle/SkillButtons/SkillQ")
-@onready var selection_skill_w_button: Button = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillsTitle/SkillButtons/SkillW")
-@onready var selection_skill_r_button: Button = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillsTitle/SkillButtons/SkillR")
-@onready var selection_skill_tooltip_title_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillTooltipTitle")
-@onready var selection_skill_tooltip_body_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/SkillTooltipBody")
-@onready var selection_description_label: Label = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/MainColumns/SummaryColumn/SummaryFrame/SummaryContent/Description")
-@onready var selection_confirm_button: Button = get_node_or_null("HUD/SelectionOverlay/SelectionPanel/ConfirmButton")
+@onready var battle_terrain: Node = get_node_or_null("测试地形")
+@onready var hud: BattleHudUi = $战斗HUD
+@onready var selection_overlay: HeroSelectionOverlayUi = $SelectionLayer/SelectionOverlay
 
 var elapsed_time := 0.0
 var kill_count := 0
@@ -562,6 +551,14 @@ var passive_tick_accumulator := 0.0
 var passive_spec_progress: Dictionary = {}
 var card_rows: Array[Dictionary] = []
 var weapon_rows: Array[Dictionary] = []
+var weapon_growth_rows: Array[Dictionary] = []
+var weapon_growth_rows_by_slot: Dictionary = {}
+var weapon_growth_levels := {
+	"sword": 0,
+	"shield": 0,
+}
+var weapon_growth_bonus_values: Dictionary = {}
+var weapon_growth_available := false
 var bloodline_rows: Array[Dictionary] = []
 var template_bloodline_option_rows: Array[Dictionary] = []
 var kill_reward_rows: Array[Dictionary] = []
@@ -607,47 +604,29 @@ var template_bloodline_option_index: TemplateBloodlineOptionIndex
 var selection_state: SelectionState
 var wave_runtime: WaveRuntime
 
-var attributes_panel: ColorRect
-var attributes_title_label: Label
-var attributes_hint_label: Label
-var attributes_grid: GridContainer
+var attributes_panel: AttributesPanelUi
 var attributes_value_labels: Dictionary = {}
 var attribute_panel_entries: Array[Dictionary] = []
 var attributes_panel_visible := false
 var card_collection_button: Button
-var card_collection_overlay: ColorRect
-var card_collection_panel: Panel
-var card_collection_close_button: Button
-var card_collection_grid: GridContainer
-var card_collection_empty_label: Label
-var card_collection_detail_title_label: Label
-var card_collection_detail_tier_label: Label
-var card_collection_detail_icon_rect: TextureRect
-var card_collection_detail_placeholder_label: Label
-var card_collection_detail_description_label: RichTextLabel
-var card_collection_detail_stack_label: Label
-var card_collection_slot_buttons: Array[Button] = []
+var card_collection_overlay: CardCollectionOverlayUi
+var card_collection_sort_mode := CARD_COLLECTION_SORT_QUALITY
 var card_collection_selected_stack_key := ""
 var card_collection_visible := false
-var card_choice_overlay: ColorRect
-var card_choice_title_label: Label
-var card_choice_hint_label: Label
-var card_choice_button_row: HBoxContainer
-var card_choice_detail_name_label: Label
-var card_choice_detail_owned_label: Label
-var card_choice_detail_description_label: RichTextLabel
+var card_choice_overlay: CardChoiceOverlayUi
 var card_choice_overlay_visible := false
 var card_choice_rows: Array[Dictionary] = []
-var card_choice_button_nodes: Array[Button] = []
 var card_choice_selected_index := -1
+var card_choice_refresh_remaining := 0
+var card_choice_title_text := CARD_CHOICE_DEBUG_TITLE
+var next_card_choice_pickup_time := 0.0
+var card_choice_pickup_available_rolls := 1
+var card_choice_pickup_current_chance_percent := 100.0
+var queued_card_choice_pickups := 0
+var card_choice_overlay_request_pending := false
 var card_collect_effect_layer: Control
-var wave_info_panel: ColorRect
-var wave_info_title_label: Label
-var wave_info_timer_label: Label
-var wave_info_progress_label: Label
-var wave_banner_panel: ColorRect
-var wave_banner_title_label: Label
-var wave_banner_subtitle_label: Label
+var wave_info_panel: WaveInfoUi
+var wave_banner_panel: WaveBannerUi
 var wave_banner_remaining := 0.0
 
 enum WaveFlowState {
@@ -662,19 +641,12 @@ var wave_state_remaining := 0.0
 var current_wave_timed_spawns: Array[Dictionary] = []
 var pickups: Node2D
 var effects: Node2D
-var death_overlay: ColorRect
-var death_overlay_label: Label
-var death_overlay_subtitle_label: Label
+var death_overlay: DeathOverlayUi
 var respawn_remaining := 0.0
 var player_respawning := false
 var player_respawn_anchor := Vector2.ZERO
-var boss_health_panel: ColorRect
-var boss_health_bar: ProgressBar
-var boss_health_label: Label
-var victory_overlay: ColorRect
-var victory_title_label: Label
-var victory_summary_label: Label
-var victory_return_button: Button
+var boss_health_panel: BossHealthUi
+var victory_overlay: BattleResultUi
 var battle_finished := false
 var enemy_overload_remaining := 0.0
 var cleared_wave_count := 0
@@ -702,6 +674,7 @@ func _ready() -> void:
 	effects.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(effects)
 
+	_apply_terrain_settings()
 	player.configure(play_area)
 	player.projectile_requested.connect(_on_player_projectile_requested)
 	player.health_changed.connect(_on_player_health_changed)
@@ -710,53 +683,26 @@ func _ready() -> void:
 	player.set_controls_enabled(false)
 	player.visible = false
 
-	hud_panel.visible = false
-	portrait_panel.visible = false
-	portrait_panel.clip_contents = true
-	portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	help_label.text = "Tab: 全属性面板（暂停/继续）  F1: 范围清怪(测试)  F2: 完成当前波次(测试)  F8: 自杀(测试)"
-
-	message_label.visible = false
-	minimap.visible = false
-	minimap.play_area = play_area
-	minimap.player = player
-	if selection_preview_viewport != null:
-		selection_preview_viewport.transparent_bg = true
+	if hud == null:
+		push_warning("Battle HUD is missing from game.tscn.")
 	else:
-		push_warning("Hero selection preview viewport is missing from game.tscn.")
-	if selection_title_label != null:
-		selection_title_label.text = "选择模板与血脉"
-	if selection_template_title_label != null:
-		selection_template_title_label.text = "人物"
-	if selection_bloodline_title_label != null:
-		selection_bloodline_title_label.text = "血脉"
-	if selection_skills_label != null:
-		selection_skills_label.text = "血脉效果"
-	if selection_countdown_label != null:
-		selection_countdown_label.text = "左侧挑选模板与血脉，中间预览模型，右侧查看出战汇总。"
-	if selection_preview_hint_label != null:
-		selection_preview_hint_label.text = "按住左键左右拖动，可旋转模型。"
-	if selection_skill_tooltip_title_label != null:
-		selection_skill_tooltip_title_label.visible = false
-	if selection_skill_tooltip_body_label != null:
-		selection_skill_tooltip_body_label.visible = false
-	if selection_description_label != null:
-		selection_description_label.visible = false
-	if selection_confirm_button != null and not selection_confirm_button.pressed.is_connected(_confirm_current_hero_selection):
-		selection_confirm_button.pressed.connect(_confirm_current_hero_selection)
-	if selection_preview_container != null:
-		selection_preview_container.gui_input.connect(_on_selection_preview_gui_input)
-		if not selection_preview_container.resized.is_connected(_on_selection_preview_size_changed):
-			selection_preview_container.resized.connect(_on_selection_preview_size_changed)
-	selection_skill_buttons = {
-		"Q": selection_skill_q_button,
-		"W": selection_skill_w_button,
-		"R": selection_skill_r_button,
-	}
+		hud.set_combat_hud_visible(false)
+		hud.set_help_text("Tab: 全属性面板（暂停/继续）  F1: 范围清怪(测试)  F2: 完成当前波次(测试)  F8: 自杀(测试)")
+		hud.hide_message()
+		hud.set_minimap_visible(false)
+		hud.configure_minimap(play_area, player)
+		hud.connect_weapon_growth_upgrade(Callable(self, "_on_weapon_growth_upgrade_requested"))
+	if selection_overlay == null:
+		push_warning("Hero selection overlay is missing from game.tscn.")
+	else:
+		if not selection_overlay.confirm_requested.is_connected(_confirm_current_hero_selection):
+			selection_overlay.confirm_requested.connect(_confirm_current_hero_selection)
+		if not selection_overlay.preview_gui_input.is_connected(_on_selection_preview_gui_input):
+			selection_overlay.preview_gui_input.connect(_on_selection_preview_gui_input)
+		if not selection_overlay.preview_resized.is_connected(_on_selection_preview_size_changed):
+			selection_overlay.preview_resized.connect(_on_selection_preview_size_changed)
+	selection_skill_buttons = selection_overlay.get_skill_buttons() if selection_overlay != null else {}
 	_connect_selection_skill_signals()
-	_apply_selection_panel_styles()
-	_apply_selection_confirm_button_style()
 
 	_setup_wave_info_display()
 	_setup_boss_health_bar()
@@ -771,11 +717,33 @@ func _ready() -> void:
 	_load_wave_rows()
 	_load_card_rows()
 	_load_weapon_rows()
+	_load_weapon_growth_rows()
 	_load_bloodline_rows()
 	_load_kill_reward_rows()
 	_load_levelup_rows()
+	_load_runtime_constant_settings()
 	_build_hero_selection_buttons()
 	_start_hero_selection()
+
+
+func _apply_terrain_settings() -> void:
+	if battle_terrain == null:
+		push_warning("Battle terrain is missing from game.tscn; fallback play_area will be used.")
+		return
+	if not battle_terrain.has_method("get_play_area"):
+		push_warning("Battle terrain does not expose get_play_area(); fallback play_area will be used.")
+		return
+	var terrain_area: Rect2 = battle_terrain.call("get_play_area")
+	if terrain_area.size.x <= 0.0 or terrain_area.size.y <= 0.0:
+		push_warning("Battle terrain play_area is invalid; fallback play_area will be used.")
+		return
+	play_area = terrain_area
+
+
+func _get_player_start_position() -> Vector2:
+	if battle_terrain != null and battle_terrain.has_method("get_spawn_position"):
+		return battle_terrain.call("get_spawn_position")
+	return play_area.position + play_area.size * 0.5
 
 
 func _process(delta: float) -> void:
@@ -798,7 +766,11 @@ func _process(delta: float) -> void:
 	_update_transient_message(delta)
 	_update_wave_banner(delta)
 	_update_respawn_state(delta)
+	if player_respawning:
+		_update_hud(player.health, player.max_health, delta)
+		return
 	elapsed_time += delta
+	_request_queued_card_choice_overlay()
 	_process_card_runtime_effects(delta)
 	_process_wave_spawning(delta)
 	_refresh_runtime_enemy_snapshot()
@@ -913,23 +885,21 @@ func _get_player_respawn_duration() -> float:
 func _show_death_overlay() -> void:
 	if death_overlay == null:
 		return
-	death_overlay.visible = true
-	death_overlay.modulate = Color(1, 1, 1, 1)
+	death_overlay.show_overlay("你已阵亡", "%d 秒后复活" % max(ceili(respawn_remaining), 0))
 
 
 func _hide_death_overlay() -> void:
 	if death_overlay == null:
 		return
-	death_overlay.visible = false
+	death_overlay.hide_overlay()
 
 
 func _update_death_overlay_text() -> void:
-	if death_overlay_label == null or death_overlay_subtitle_label == null:
+	if death_overlay == null:
 		return
 
 	var respawn_seconds := ceili(respawn_remaining)
-	death_overlay_label.text = "你已阵亡"
-	death_overlay_subtitle_label.text = "%d 秒后复活" % max(respawn_seconds, 0)
+	death_overlay.set_texts("你已阵亡", "%d 秒后复活" % max(respawn_seconds, 0))
 
 
 func _refresh_runtime_enemy_snapshot(force: bool = false) -> void:
@@ -939,6 +909,11 @@ func _refresh_runtime_enemy_snapshot(force: bool = false) -> void:
 	if tree == null:
 		return
 	runtime_enemy_snapshot.refresh(tree, force)
+
+
+func _invalidate_runtime_enemy_snapshot() -> void:
+	if runtime_enemy_snapshot != null:
+		runtime_enemy_snapshot.invalidate()
 
 
 func _get_runtime_alive_enemy_count(force_refresh: bool = false) -> int:
@@ -1009,30 +984,26 @@ func _finish_battle_defeat(reason: String) -> void:
 
 
 func _show_victory_overlay() -> void:
-	if victory_overlay == null or victory_summary_label == null or victory_title_label == null:
+	if victory_overlay == null:
 		return
 
 	var final_wave: int = _get_wave_number(wave_rows.size() - 1) if not wave_rows.is_empty() else 0
 	var elapsed_seconds: int = int(round(elapsed_time))
 	var hero_name := selected_hero.hero_name if selected_hero != null else "未知英雄"
-	victory_title_label.text = "战斗胜利"
-	victory_summary_label.text = "英雄：%s\n最终波次：第%d波（全清）\n战斗时长：%d 秒\n击杀：%d\n金币：%d\n总经验：%d\n等级：Lv.%d\n本局结果已写入存档记录" % [
+	var summary_text := BattleResultFormatterScript.build_victory_summary(
 		hero_name,
 		final_wave,
 		elapsed_seconds,
 		kill_count,
 		current_gold,
 		current_exp,
-		current_level,
-	]
-	victory_overlay.visible = true
-	victory_overlay.modulate = Color(1, 1, 1, 1)
-	if victory_return_button != null:
-		victory_return_button.grab_focus()
+		current_level
+	)
+	victory_overlay.show_result("战斗胜利", summary_text)
 
 
 func _show_defeat_overlay(reason: String) -> void:
-	if victory_overlay == null or victory_summary_label == null or victory_title_label == null:
+	if victory_overlay == null:
 		return
 
 	var reached_wave: int = _get_wave_number(current_wave_index) if not wave_rows.is_empty() else 0
@@ -1041,8 +1012,7 @@ func _show_defeat_overlay(reason: String) -> void:
 	var reason_text := reason.strip_edges()
 	if reason_text.is_empty():
 		reason_text = "战斗失败"
-	victory_title_label.text = "战斗失败"
-	victory_summary_label.text = "原因：%s\n英雄：%s\n停留波次：第%d波\n战斗时长：%d 秒\n击杀：%d\n金币：%d\n总经验：%d\n等级：Lv.%d\n本局结果已写入存档记录" % [
+	var summary_text := BattleResultFormatterScript.build_defeat_summary(
 		reason_text,
 		hero_name,
 		reached_wave,
@@ -1050,18 +1020,15 @@ func _show_defeat_overlay(reason: String) -> void:
 		kill_count,
 		current_gold,
 		current_exp,
-		current_level,
-	]
-	victory_overlay.visible = true
-	victory_overlay.modulate = Color(1, 1, 1, 1)
-	if victory_return_button != null:
-		victory_return_button.grab_focus()
+		current_level
+	)
+	victory_overlay.show_result("战斗失败", summary_text)
 
 
 func _hide_victory_overlay() -> void:
 	if victory_overlay == null:
 		return
-	victory_overlay.visible = false
+	victory_overlay.hide_panel()
 
 
 func _on_victory_return_button_pressed() -> void:
@@ -1147,9 +1114,11 @@ func _build_run_record(result: String) -> Dictionary:
 
 
 func _on_enemy_died(_world_position: Vector2, reward_info: Dictionary = {}) -> void:
+	_invalidate_runtime_enemy_snapshot()
 	kill_count += 1
 	_apply_card_passives_on_kill()
 	_spawn_enemy_death_feedback(_world_position, reward_info)
+	_try_spawn_card_choice_pickup_from_enemy_death(_world_position, reward_info)
 	_spawn_kill_reward_pickups(_world_position, reward_info)
 	_process_kill_reward_thresholds()
 	_sync_player_runtime_progress()
@@ -1258,6 +1227,7 @@ func _spawn_enemy(enemy_data: EnemyData = null, force_boss: bool = false) -> voi
 	else:
 		enemy.set("player", player)
 		enemy.global_position = spawn_position
+	_invalidate_runtime_enemy_snapshot()
 
 
 func _apply_enemy_boss_override(enemy, force_boss: bool) -> void:
@@ -1298,6 +1268,8 @@ func _pick_spawn_position(force_boss: bool = false) -> Vector2:
 
 
 func _get_boss_spawn_position() -> Vector2:
+	if battle_terrain != null and battle_terrain.has_method("get_boss_spawn_position"):
+		return battle_terrain.call("get_boss_spawn_position")
 	return play_area.position + play_area.size * 0.5
 
 
@@ -1375,7 +1347,6 @@ func _get_spawn_burst_count() -> int:
 func _process_wave_spawning(delta: float) -> void:
 	if wave_rows.is_empty():
 		# 没有波次配置时回退到旧版无限刷怪逻辑，避免 Demo 空场景。
-		spawn_cooldown -= delta
 		if spawn_cooldown <= 0.0:
 			spawn_cooldown = _get_spawn_interval()
 			_spawn_enemy_ring(_get_spawn_burst_count())
@@ -1384,7 +1355,7 @@ func _process_wave_spawning(delta: float) -> void:
 	if current_wave_index >= wave_rows.size():
 		current_wave_index = maxi(wave_rows.size() - 1, 0)
 
-	var alive_count: int = get_tree().get_nodes_in_group("enemy").size()
+	var alive_count: int = _get_runtime_alive_enemy_count(true)
 	match wave_flow_state:
 		WaveFlowState.PREPARE:
 			wave_state_remaining = maxf(wave_state_remaining - delta, 0.0)
@@ -1453,14 +1424,17 @@ func _update_hud(current_health: int, max_health: int, delta: float = 0.0) -> vo
 			should_refresh_combat_info = true
 			combat_info_refresh_accumulator = 0.0
 	if should_refresh_combat_info:
-		stats_label.text = _build_combat_info_text()
+		if hud != null:
+			hud.set_combat_info_text(_build_combat_info_text())
 	_update_resource_bars(current_health, max_health, player.mana, player.max_mana)
 	_update_wave_info_hud()
 	_update_boss_health_bar()
+	_refresh_weapon_growth_panel()
 
 	if not game_over:
 		if transient_message_remaining <= 0.0:
-			message_label.visible = false
+			if hud != null:
+				hud.hide_message()
 
 
 func _build_combat_info_text() -> String:
@@ -1498,39 +1472,29 @@ func _build_combat_info_text() -> String:
 
 
 func _update_resource_bars(current_health: int, max_health: int, current_mana: int, max_mana: int) -> void:
-	hp_bar.max_value = maxf(float(max_health), 1.0)
-	hp_bar.value = clampf(float(current_health), 0.0, hp_bar.max_value)
-	hp_label.text = "HP %d / %d" % [current_health, max_health]
-
-	var safe_max_mana: int = maxi(max_mana, 0)
-	mana_bar.max_value = maxf(float(maxi(safe_max_mana, 1)), 1.0)
-	mana_bar.value = clampf(float(current_mana), 0.0, mana_bar.max_value)
-	mana_label.text = "MP %d / %d" % [current_mana, max_mana]
-	mana_bar.visible = true
-
 	var exp_needed := _get_exp_required_for_level(current_level)
 	var exp_progress := _get_current_level_exp_progress()
-	if current_level >= _get_max_level():
-		exp_bar.max_value = 1.0
-		exp_bar.value = 1.0
-		exp_label.text = "EXP MAX"
-	else:
-		exp_bar.max_value = maxf(float(maxi(exp_needed, 1)), 1.0)
-		exp_bar.value = clampf(float(exp_progress), 0.0, exp_bar.max_value)
-		exp_label.text = "EXP %d / %d" % [exp_progress, exp_needed]
-	exp_bar.visible = true
+	if hud != null:
+		hud.update_resource_bars(
+			current_health,
+			max_health,
+			current_mana,
+			max_mana,
+			current_level,
+			exp_progress,
+			exp_needed,
+			current_level >= _get_max_level()
+		)
 
 
 func _apply_hero_header() -> void:
 	if selected_hero == null:
-		hero_name_label.text = "未知英雄"
-		portrait_name_label.text = "未知英雄"
-		portrait_rect.texture = null
+		if hud != null:
+			hud.clear_hero_header()
 		return
 
-	hero_name_label.text = selected_hero.hero_name
-	portrait_name_label.text = "%s  Lv.%d" % [selected_hero.hero_name, current_level]
-	portrait_rect.texture = selected_hero.portrait_icon
+	if hud != null:
+		hud.set_hero_header(selected_hero.hero_name, current_level, selected_hero.portrait_icon)
 
 
 func _load_available_heroes() -> void:
@@ -1720,6 +1684,7 @@ func _release_enemy_to_pool(enemy_node: Node2D) -> void:
 		return
 	if not enemy_pool_nodes.has(enemy_node):
 		enemy_node.queue_free()
+		_invalidate_runtime_enemy_snapshot()
 		return
 	if enemy_node.has_method("deactivate_to_pool"):
 		enemy_node.call("deactivate_to_pool", enemy_pool_hidden_position)
@@ -1730,6 +1695,7 @@ func _release_enemy_to_pool(enemy_node: Node2D) -> void:
 		enemy_node.set_physics_process(false)
 	var bucket_key: String = _pool_key_for_model(String(enemy_node.get("model_id")))
 	_add_enemy_to_pool_bucket(bucket_key, enemy_node)
+	_invalidate_runtime_enemy_snapshot()
 
 
 func _on_enemy_despawn_requested(enemy_node: Node2D) -> void:
@@ -1841,8 +1807,97 @@ func _load_card_rows() -> void:
 	card_rows = _load_table_rows(&"cards", "tier")
 
 
+func _try_spawn_card_choice_pickup_from_enemy_death(world_position: Vector2, reward_info: Dictionary) -> void:
+	if _is_card_choice_drop_boss_reward(reward_info):
+		return
+	if player_respawning or battle_finished:
+		return
+	if card_rows.is_empty():
+		return
+	if player == null or not is_instance_valid(player):
+		return
+	_refresh_card_choice_pickup_available_rolls()
+	if card_choice_pickup_available_rolls <= 0:
+		return
+
+	var roll_count := card_choice_pickup_available_rolls
+	card_choice_pickup_available_rolls = 0
+	for _i in range(roll_count):
+		_roll_card_choice_pickup_at(world_position)
+
+
+func _refresh_card_choice_pickup_available_rolls() -> void:
+	if card_choice_pickup_interval_seconds <= 0.0:
+		card_choice_pickup_available_rolls = maxi(card_choice_pickup_available_rolls, 1)
+		return
+	if next_card_choice_pickup_time <= 0.0:
+		next_card_choice_pickup_time = card_choice_pickup_interval_seconds
+	while elapsed_time >= next_card_choice_pickup_time:
+		card_choice_pickup_available_rolls += 1
+		next_card_choice_pickup_time += card_choice_pickup_interval_seconds
+
+
+func _roll_card_choice_pickup_at(world_position: Vector2) -> void:
+	var roll_threshold: float = clampf(card_choice_pickup_current_chance_percent, 0.0, 100.0)
+	var roll_success: bool = roll_threshold >= 100.0 or randf() * 100.0 <= roll_threshold
+	if roll_success:
+		_spawn_card_choice_pickup_at(world_position)
+		_reset_card_choice_pickup_roll_state()
+		return
+	card_choice_pickup_current_chance_percent = clampf(
+		card_choice_pickup_current_chance_percent + card_choice_pickup_chance_increase_percent,
+		0.0,
+		100.0
+	)
+
+
+func _is_card_choice_drop_boss_reward(reward_info: Dictionary) -> bool:
+	if int(reward_info.get("enemy_type", EnemyCatalog.TYPE_NORMAL)) == EnemyCatalog.TYPE_BOSS:
+		return true
+	return _variant_flag_enabled(reward_info.get("is_boss", false))
+
+
+func _spawn_card_choice_pickup_at(world_position: Vector2) -> void:
+	if pickups == null or PICKUP_SCENE == null:
+		_grant_card_choice_opportunity(world_position)
+		return
+	var spawn_position := world_position + Vector2(0.0, -8.0)
+	var impulse := Vector2(randf_range(-18.0, 18.0), randf_range(-34.0, -12.0))
+	_spawn_single_pickup(spawn_position, CARD_CHOICE_PICKUP_REWARD_TYPE, 1, impulse)
+
+
+func _grant_card_choice_opportunity(world_position: Vector2) -> void:
+	queued_card_choice_pickups += 1
+	_spawn_card_pickup_burst_effect(world_position + Vector2(0, -4), 1.0)
+	_request_queued_card_choice_overlay()
+
+
 func _load_weapon_rows() -> void:
 	weapon_rows = _load_table_rows(&"weapons", "quality")
+
+
+func _load_weapon_growth_rows() -> void:
+	weapon_growth_rows = _load_table_rows(WEAPON_GROWTH_TABLE_NAME, "step")
+	_rebuild_weapon_growth_row_index()
+
+
+func _rebuild_weapon_growth_row_index() -> void:
+	weapon_growth_rows_by_slot.clear()
+	for row in weapon_growth_rows:
+		if String(row.get("bloodline_id", "")).strip_edges() != SWORD_SHIELD_BLOODLINE_ID:
+			continue
+		var slot := String(row.get("slot", "")).strip_edges()
+		if slot.is_empty():
+			continue
+		var slot_rows: Array = weapon_growth_rows_by_slot.get(slot, [])
+		slot_rows.append(row)
+		weapon_growth_rows_by_slot[slot] = slot_rows
+
+	for slot in weapon_growth_rows_by_slot.keys():
+		var rows: Array = weapon_growth_rows_by_slot[slot]
+		rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+			return int(a.get("step", 0)) < int(b.get("step", 0))
+		)
 
 
 func _load_bloodline_rows() -> void:
@@ -1878,6 +1933,52 @@ func _load_kill_reward_rows() -> void:
 
 func _load_levelup_rows() -> void:
 	levelup_rows = _load_table_rows(&"levelup", "level")
+
+
+func _load_runtime_constant_settings() -> void:
+	card_choice_pickup_interval_seconds = maxf(
+		_load_runtime_constant_float(RUNTIME_CONSTANT_CARD_CHOICE_COOLDOWN_ID, card_choice_pickup_interval_seconds),
+		0.0
+	)
+	card_choice_pickup_initial_chance_percent = clampf(
+		_load_runtime_constant_float(RUNTIME_CONSTANT_CARD_CHOICE_INITIAL_CHANCE_ID, card_choice_pickup_initial_chance_percent),
+		0.0,
+		100.0
+	)
+	card_choice_pickup_chance_increase_percent = maxf(
+		_load_runtime_constant_float(RUNTIME_CONSTANT_CARD_CHOICE_CHANCE_INCREASE_ID, card_choice_pickup_chance_increase_percent),
+		0.0
+	)
+	_reset_card_choice_pickup_roll_state()
+
+
+func _load_runtime_constant_float(row_id: String, fallback_value: float) -> float:
+	var row: Dictionary = _load_table_row(RUNTIME_CONSTANT_TABLE_NAME, row_id)
+	if row.is_empty():
+		return fallback_value
+	var raw_value: Variant = row.get("value", fallback_value)
+	if raw_value is int or raw_value is float:
+		return float(raw_value)
+	var text: String = String(raw_value).strip_edges()
+	if text.is_empty():
+		return fallback_value
+	if text.is_valid_float():
+		return float(text)
+	if text.is_valid_int():
+		return float(int(text))
+	return fallback_value
+
+
+func _reset_card_choice_pickup_roll_state() -> void:
+	card_choice_pickup_current_chance_percent = clampf(card_choice_pickup_initial_chance_percent, 0.0, 100.0)
+
+
+func _reset_card_choice_pickup_runtime_state() -> void:
+	card_choice_pickup_available_rolls = 1
+	next_card_choice_pickup_time = card_choice_pickup_interval_seconds if card_choice_pickup_interval_seconds > 0.0 else 0.0
+	queued_card_choice_pickups = 0
+	card_choice_overlay_request_pending = false
+	_reset_card_choice_pickup_roll_state()
 
 
 func _reset_wave_runtime_state() -> void:
@@ -1968,22 +2069,6 @@ func _ensure_selection_state() -> void:
 		selection_state = SelectionStateScript.new()
 
 
-func _set_label_text_if_changed(label: Label, text: String) -> void:
-	if label == null:
-		return
-	if label.text == text:
-		return
-	label.text = text
-
-
-func _set_rich_text_if_changed(label: RichTextLabel, text: String) -> void:
-	if label == null:
-		return
-	if label.text == text:
-		return
-	label.text = text
-
-
 func _resolve_selection_preview_model_id(hero: HeroData) -> StringName:
 	if hero == null:
 		return &""
@@ -1999,10 +2084,7 @@ func _build_selection_preview_signature(hero: HeroData) -> String:
 	var preview_model_id := _resolve_selection_preview_model_id(hero)
 	var body_color := hero.body_color.to_html(true)
 	var accent_color := hero.accent_color.to_html(true)
-	var override_tag := hero.preview_model_profile_override_tag
-	if override_tag.is_empty():
-		override_tag = hero.model_profile_override_tag
-	return "%s|%s|%s|%s" % [String(preview_model_id), body_color, accent_color, override_tag]
+	return "%s|%s|%s" % [String(preview_model_id), body_color, accent_color]
 
 
 func _build_selection_skill_signature(hero: HeroData) -> String:
@@ -2026,17 +2108,15 @@ func _build_selection_skill_signature(hero: HeroData) -> String:
 
 func _build_hero_selection_buttons() -> void:
 	_ensure_selection_state()
-	if selection_template_buttons == null or selection_bloodline_buttons == null:
+	if selection_overlay == null:
 		return
 
-	for child in selection_template_buttons.get_children():
-		child.queue_free()
-	for child in selection_bloodline_buttons.get_children():
-		child.queue_free()
+	selection_overlay.clear_template_grid()
+	selection_overlay.clear_bloodline_grid()
 
 	hero_button_nodes.clear()
 	bloodline_button_nodes.clear()
-	var hero_card_width := _get_selection_grid_item_width(selection_template_scroll, SELECTION_GRID_COLUMNS, 80.0, 100.0)
+	var hero_card_width := selection_overlay.get_template_card_width(SELECTION_GRID_COLUMNS, 80.0, 100.0)
 
 	for i in available_heroes.size():
 		var hero := available_heroes[i]
@@ -2050,7 +2130,7 @@ func _build_hero_selection_buttons() -> void:
 		)
 		button.pressed.connect(_on_template_button_pressed.bind(i))
 		hero_button_nodes.append(button)
-	_rebuild_selection_grid(selection_template_buttons, hero_button_nodes, SELECTION_GRID_COLUMNS)
+	selection_overlay.rebuild_template_grid(hero_button_nodes)
 	if selection_state != null:
 		selection_state.mark_dirty()
 
@@ -2063,12 +2143,10 @@ func _start_hero_selection() -> void:
 	_hide_card_collection(false)
 	if card_collection_button != null:
 		card_collection_button.visible = false
+	if hud != null:
+		hud.show_selection_mode()
 	if selection_overlay != null:
-		selection_overlay.visible = true
-	message_label.visible = false
-	minimap.visible = false
-	hud_panel.visible = false
-	portrait_panel.visible = false
+		selection_overlay.show_overlay()
 	if wave_info_panel != null:
 		wave_info_panel.visible = false
 	if boss_health_panel != null:
@@ -2147,20 +2225,14 @@ func _on_bloodline_button_pressed(option_index: int) -> void:
 func _refresh_hero_selection_ui() -> void:
 	_ensure_selection_state()
 	if available_heroes.is_empty():
-		_set_label_text_if_changed(selection_name_label, "暂无模板数据")
-		_set_label_text_if_changed(selection_bloodline_name_label, "请先配置 heroes#英雄.xlsx。")
-		_set_label_text_if_changed(selection_primary_attr_label, "")
-		_set_label_text_if_changed(selection_stats_label, "")
-		if selection_description_label != null:
-			selection_description_label.visible = false
-		_set_label_text_if_changed(selection_skill_tooltip_title_label, "血脉效果")
-		_set_label_text_if_changed(selection_skill_tooltip_body_label, "Q / W / R 展示字段会从血脉表读取。")
-		if selection_confirm_button != null:
-			selection_confirm_button.disabled = true
+		if selection_overlay != null:
+			selection_overlay.set_summary_texts("暂无模板数据", "请先配置 heroes#英雄.xlsx。", "", "")
+			selection_overlay.set_description_visible(false)
+			selection_overlay.set_skill_tooltip("血脉效果", "Q / W / R 展示字段会从血脉表读取。")
+			selection_overlay.set_confirm_disabled(true)
 		_clear_selection_preview_model()
-		if selection_bloodline_buttons != null:
-			for child in selection_bloodline_buttons.get_children():
-				child.queue_free()
+		if selection_overlay != null:
+			selection_overlay.clear_bloodline_grid()
 		bloodline_button_nodes.clear()
 		if selection_state != null:
 			selection_state.mark_dirty()
@@ -2179,31 +2251,29 @@ func _refresh_hero_selection_ui() -> void:
 	var current_bloodline := _get_bloodline_row_for_option(current_option)
 	var preview_hero := _build_runtime_selected_hero(hero, current_option, current_bloodline)
 	var preview_stats = AttributeSystemScript.build_hero_stats(preview_hero)
-	if selection_confirm_button != null:
-		selection_confirm_button.disabled = current_option.is_empty()
+	if selection_overlay != null:
+		selection_overlay.set_confirm_disabled(current_option.is_empty())
 	var bloodline_name := _get_bloodline_option_display_name(current_option, current_bloodline)
+	var stats_text := "生命 %d\n法力 %d\n攻击 %d\n移速 %.0f\n攻速 %.2fs\n射程 %.0f\n力量 %.0f  敏捷 %.0f  智力 %.0f" % [
+		preview_stats.get_stat_int(&"max_health", preview_hero.starting_max_health),
+		preview_stats.get_stat_int(&"max_mana", preview_hero.starting_max_mana),
+		preview_stats.get_stat_int(&"attack_power", preview_hero.starting_attack_damage),
+		preview_stats.get_stat(&"move_speed", preview_hero.starting_move_speed),
+		preview_stats.get_stat(&"final_attack_interval", preview_hero.starting_attack_interval),
+		preview_stats.get_stat(&"attack_range", preview_hero.starting_attack_range),
+		preview_hero.base_str,
+		preview_hero.base_agi,
+		preview_hero.base_int,
+	]
 
-	_set_label_text_if_changed(selection_name_label, hero.hero_name)
-	_set_label_text_if_changed(
-		selection_bloodline_name_label,
-		"血脉：%s" % (bloodline_name if not bloodline_name.is_empty() else "未配置")
-	)
-	_set_label_text_if_changed(selection_primary_attr_label, "主属性：%s" % _get_primary_attr_display_name(hero.primary_attr))
-	if selection_stats_label != null:
-		var stats_text := "生命 %d\n法力 %d\n攻击 %d\n移速 %.0f\n攻速 %.2fs\n射程 %.0f\n力量 %.0f  敏捷 %.0f  智力 %.0f" % [
-			preview_stats.get_stat_int(&"max_health", preview_hero.starting_max_health),
-			preview_stats.get_stat_int(&"max_mana", preview_hero.starting_max_mana),
-			preview_stats.get_stat_int(&"attack_power", preview_hero.starting_attack_damage),
-			preview_stats.get_stat(&"move_speed", preview_hero.starting_move_speed),
-			preview_stats.get_stat(&"final_attack_interval", preview_hero.starting_attack_interval),
-			preview_stats.get_stat(&"attack_range", preview_hero.starting_attack_range),
-			preview_hero.base_str,
-			preview_hero.base_agi,
-			preview_hero.base_int,
-		]
-		_set_label_text_if_changed(selection_stats_label, stats_text)
-	if selection_description_label != null:
-		selection_description_label.visible = false
+	if selection_overlay != null:
+		selection_overlay.set_summary_texts(
+			hero.hero_name,
+			"血脉：%s" % (bloodline_name if not bloodline_name.is_empty() else "未配置"),
+			"主属性：%s" % _get_primary_attr_display_name(hero.primary_attr),
+			stats_text
+		)
+		selection_overlay.set_description_visible(false)
 	_update_selection_preview_model(preview_hero, selection_preview_should_replay_intro)
 	selection_preview_should_replay_intro = false
 	if should_rebuild_bloodline_buttons:
@@ -2222,13 +2292,12 @@ func _refresh_hero_selection_ui() -> void:
 
 
 func _rebuild_bloodline_selection_buttons(option_rows: Array[Dictionary]) -> void:
-	if selection_bloodline_buttons == null:
+	if selection_overlay == null:
 		return
 
-	for child in selection_bloodline_buttons.get_children():
-		child.queue_free()
+	selection_overlay.clear_bloodline_grid()
 	bloodline_button_nodes.clear()
-	var bloodline_card_width := _get_selection_grid_item_width(selection_bloodline_scroll, SELECTION_GRID_COLUMNS, 90.0, 110.0)
+	var bloodline_card_width := selection_overlay.get_bloodline_card_width(SELECTION_GRID_COLUMNS, 90.0, 110.0)
 	var bloodline_card_height := bloodline_card_width + 16.0
 
 	for i in option_rows.size():
@@ -2245,7 +2314,7 @@ func _rebuild_bloodline_selection_buttons(option_rows: Array[Dictionary]) -> voi
 		)
 		button.pressed.connect(_on_bloodline_button_pressed.bind(i))
 		bloodline_button_nodes.append(button)
-	_rebuild_selection_grid(selection_bloodline_buttons, bloodline_button_nodes, SELECTION_GRID_COLUMNS)
+	selection_overlay.rebuild_bloodline_grid(bloodline_button_nodes)
 
 
 func _refresh_bloodline_button_styles(option_rows: Array[Dictionary]) -> void:
@@ -2410,49 +2479,12 @@ func _get_bloodline_option_skill_group_name(option_row: Dictionary, bloodline_ro
 	return str(bloodline_row.get("r_skill_name", "")).strip_edges()
 
 
-func _build_selection_description_text(hero: HeroData, option_row: Dictionary, bloodline_row: Dictionary, option_count: int) -> String:
-	var parts: Array[String] = []
-	var hero_description := str(hero.hero_description).strip_edges()
-	if not hero_description.is_empty():
-		parts.append(hero_description)
-
-	if option_row.is_empty():
-		parts.append("这个模板暂时还没有可选血脉。请在 heroes#英雄.xlsx 的 bloodline_ids 填写血脉ID列表。")
-		return "\n\n".join(parts)
-
-	var bloodline_name := _get_bloodline_option_display_name(option_row, bloodline_row)
-	if not bloodline_name.is_empty():
-		parts.append("当前血脉：%s" % bloodline_name)
-
-	var bloodline_description := str(option_row.get("selection_description", "")).strip_edges()
-	if bloodline_description.is_empty():
-		bloodline_description = str(bloodline_row.get("description", "")).strip_edges()
-	if not bloodline_description.is_empty():
-		parts.append("血脉说明：%s" % bloodline_description)
-
-	if option_count > 1:
-		parts.append("当前模板可选血脉：%d" % option_count)
-	return "\n\n".join(parts)
-
-
 func _build_bloodline_option_tooltip(option_row: Dictionary, bloodline_row: Dictionary) -> String:
 	var lines: Array[String] = []
 	var description := str(option_row.get("selection_description", bloodline_row.get("description", ""))).strip_edges()
 	if not description.is_empty():
 		lines.append(description)
 	return "\n".join(lines)
-
-
-func _build_bloodline_visual_summary(option_row: Dictionary, bloodline_row: Dictionary) -> String:
-	var visual_label := _get_optional_text(option_row.get("visual_label", bloodline_row.get("visual_label", "")))
-	if not visual_label.is_empty():
-		return visual_label
-
-	var model_id := _get_optional_text(option_row.get("model_id_override", bloodline_row.get("model_id", "")))
-	if not model_id.is_empty():
-		return "武器方案 %s" % model_id
-
-	return ""
 
 
 func _build_runtime_selected_hero(template_hero: HeroData, option_row: Dictionary, bloodline_row: Dictionary) -> HeroData:
@@ -2467,13 +2499,12 @@ func _build_runtime_selected_hero(template_hero: HeroData, option_row: Dictionar
 	if model_text.is_empty():
 		model_text = _get_optional_text(runtime_hero.model_id)
 	var bloodline_model_text: String = _get_optional_text(option_row.get("model_id_override", bloodline_row.get("model_id", "")))
-	var bloodline_model_valid := not bloodline_model_text.is_empty() and Model3DProfileCatalogScript.has_profile(StringName(bloodline_model_text))
+	var bloodline_model_valid := not bloodline_model_text.is_empty() and _has_visual_model_profile(bloodline_model_text)
 	if bloodline_model_valid:
 		# 统一规则：血脉模型优先，确保与 F6 生成配置一致。
-		model_text = bloodline_model_text
-	if model_text.is_empty():
-		model_text = bloodline_model_text
-	if not model_text.is_empty() and not Model3DProfileCatalogScript.has_profile(StringName(model_text)):
+		if model_text.is_empty():
+			model_text = bloodline_model_text
+	if not model_text.is_empty() and not _has_visual_model_profile(model_text):
 		if bloodline_model_valid:
 			model_text = bloodline_model_text
 	if not model_text.is_empty():
@@ -2498,8 +2529,6 @@ func _build_runtime_selected_hero(template_hero: HeroData, option_row: Dictionar
 		runtime_hero.primary_attr = normalized_primary_attr
 
 	_apply_bloodline_attribute_overrides(runtime_hero, option_row, bloodline_row)
-	_apply_bloodline_weapon_profile_overrides(runtime_hero, option_row, bloodline_row)
-
 	return runtime_hero
 
 
@@ -2556,66 +2585,6 @@ func _apply_bloodline_attribute_overrides(runtime_hero: HeroData, option_row: Di
 	runtime_hero.r_skill_name = _resolve_bloodline_text_value(option_row, "r_skill_name_override", bloodline_row, "r_skill_name", runtime_hero.r_skill_name)
 	runtime_hero.r_skill_description = _resolve_bloodline_text_value(option_row, "r_skill_description_override", bloodline_row, "r_skill_description", runtime_hero.r_skill_description)
 	runtime_hero.r_skill_icon = _resolve_bloodline_skill_icon(option_row, "r_skill_icon_override", bloodline_row, "r_skill_icon", runtime_hero.r_skill_icon)
-
-
-func _apply_bloodline_weapon_profile_overrides(runtime_hero: HeroData, option_row: Dictionary, bloodline_row: Dictionary) -> void:
-	var runtime_weapon_profile_id := _get_optional_text(option_row.get("weapon_profile_model_id_override", option_row.get("model_id_override", bloodline_row.get("model_id", ""))))
-	var preview_weapon_profile_id := _get_optional_text(option_row.get("preview_weapon_profile_model_id_override", option_row.get("preview_model_id_override", bloodline_row.get("model_id", ""))))
-	if preview_weapon_profile_id.is_empty():
-		preview_weapon_profile_id = runtime_weapon_profile_id
-
-	runtime_hero.model_profile_overrides = _build_weapon_profile_overrides(runtime_weapon_profile_id)
-	runtime_hero.preview_model_profile_overrides = _build_weapon_profile_overrides(preview_weapon_profile_id)
-	runtime_hero.model_profile_override_tag = runtime_weapon_profile_id
-	runtime_hero.preview_model_profile_override_tag = preview_weapon_profile_id
-
-
-func _build_weapon_profile_overrides(profile_model_id_text: String) -> Dictionary:
-	var profile_id_text: String = profile_model_id_text.strip_edges()
-	if profile_id_text.is_empty():
-		return {}
-	var profile: Dictionary = Model3DProfileCatalogScript.get_profile(StringName(profile_id_text))
-	if profile.is_empty():
-		return {}
-
-	var keys: Array[String] = [
-		"character_path",
-		"scale",
-		"speed",
-		"use_extra_animation_pack",
-		"weapon_path",
-		"weapon_name",
-		"weapon_tune_pos_x",
-		"weapon_tune_pos_y",
-		"weapon_tune_pos_z",
-		"weapon_tune_rot_x",
-		"weapon_tune_rot_y",
-		"weapon_tune_rot_z",
-		"right_weapon_path",
-		"right_weapon_name",
-		"left_weapon_path",
-		"left_weapon_name",
-		"left_weapon_tune_pos_x",
-		"left_weapon_tune_pos_y",
-		"left_weapon_tune_pos_z",
-		"left_weapon_tune_rot_x",
-		"left_weapon_tune_rot_y",
-		"left_weapon_tune_rot_z",
-		"hair_preset_key",
-		"hair_tint_html",
-		"skin_preset_key",
-		"skin_tint_html",
-		"cloth_preset_key",
-		"cloth_tint_html",
-		"hat_preset_key",
-		"hat_tint_html",
-	]
-
-	var overrides: Dictionary = {}
-	for key in keys:
-		if profile.has(key):
-			overrides[key] = profile[key]
-	return overrides
 
 
 func _resolve_bloodline_float_value(option_row: Dictionary, option_key: String, bloodline_row: Dictionary, bloodline_key: String, fallback_value: float) -> float:
@@ -2706,12 +2675,18 @@ func _get_optional_text(value: Variant) -> String:
 	return "" if text == "<null>" else text
 
 
-func _get_preview_model_profile_overrides(hero: HeroData) -> Dictionary:
-	if hero == null:
-		return {}
-	if not hero.preview_model_profile_overrides.is_empty():
-		return hero.preview_model_profile_overrides.duplicate(true)
-	return hero.model_profile_overrides.duplicate(true)
+func _has_visual_model_profile(model_id_text: String) -> bool:
+	var clean_model_id := model_id_text.strip_edges()
+	if clean_model_id.is_empty():
+		return false
+	var index_path := "res://assets/heroes/models_3d/index.json"
+	if not FileAccess.file_exists(index_path):
+		return false
+	var file := FileAccess.open(index_path, FileAccess.READ)
+	if file == null:
+		return false
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	return parsed is Dictionary and (parsed as Dictionary).has(clean_model_id)
 
 
 func _connect_selection_skill_signals() -> void:
@@ -2789,20 +2764,20 @@ func _get_selection_skill_entry(hero: HeroData, skill_key: String) -> Dictionary
 
 
 func _reset_selection_skill_hover_text(hero: HeroData, option_row: Dictionary, bloodline_row: Dictionary) -> void:
-	if selection_skill_tooltip_title_label == null or selection_skill_tooltip_body_label == null:
+	if selection_overlay == null:
 		return
-	selection_skill_tooltip_title_label.text = "血脉效果"
+	var title_text := "血脉效果"
 	var lines: Array[String] = []
 	var description := str(option_row.get("selection_description", bloodline_row.get("description", ""))).strip_edges()
 	if description.is_empty() and hero != null:
 		description = str(hero.hero_description).strip_edges()
 	if not description.is_empty():
 		lines.append(description)
-	selection_skill_tooltip_body_label.text = "\n".join(lines)
+	selection_overlay.set_skill_tooltip(title_text, "\n".join(lines))
 
 
 func _on_selection_skill_mouse_entered(skill_key: String) -> void:
-	if selection_skill_tooltip_title_label == null or selection_skill_tooltip_body_label == null:
+	if selection_overlay == null:
 		return
 	var preview_hero: HeroData = selected_hero
 	if selection_active and not available_heroes.is_empty():
@@ -2812,15 +2787,17 @@ func _on_selection_skill_mouse_entered(skill_key: String) -> void:
 	var skill_entry := _get_selection_skill_entry(preview_hero, skill_key)
 	var skill_name := str(skill_entry.get("name", "")).strip_edges()
 	var skill_description := str(skill_entry.get("description", "")).strip_edges()
-	selection_skill_tooltip_title_label.text = "%s 技能" % skill_key
-	selection_skill_tooltip_body_label.text = "%s\n%s" % [
-		skill_name if not skill_name.is_empty() else "%s 技能待填写" % skill_key,
-		skill_description if not skill_description.is_empty() else "请在 bloodlines#血脉.xlsx 中填写该技能名称与文本。",
-	]
+	selection_overlay.set_skill_tooltip(
+		"%s 技能" % skill_key,
+		"%s\n%s" % [
+			skill_name if not skill_name.is_empty() else "%s 技能待填写" % skill_key,
+			skill_description if not skill_description.is_empty() else "请在 bloodlines#血脉.xlsx 中填写该技能名称与文本。",
+		]
+	)
 
 
 func _on_selection_skill_mouse_exited() -> void:
-	if selection_skill_tooltip_title_label == null or selection_skill_tooltip_body_label == null:
+	if selection_overlay == null:
 		return
 	if available_heroes.is_empty():
 		return
@@ -2848,13 +2825,11 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 	selected_hero = hero
 	selected_hero_id = hero.hero_id
 	selection_state.selected_template_bloodline_option = bloodline_option.duplicate(true)
+	if hud != null:
+		hud.show_battle_mode()
 	if selection_overlay != null:
-		selection_overlay.visible = false
+		selection_overlay.hide_overlay()
 	_clear_selection_preview_model()
-	hud_panel.visible = true
-	portrait_panel.visible = true
-	message_label.visible = true
-	minimap.visible = true
 	if wave_info_panel != null:
 		wave_info_panel.visible = true
 	elapsed_time = 0.0
@@ -2876,6 +2851,7 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 	owned_card_passives.clear()
 	owned_card_runtime_specs.clear()
 	owned_weapons.clear()
+	_reset_weapon_growth_runtime_state(hero, bloodline_option)
 	next_kill_reward_index = 0
 	transient_message_remaining = 0.0
 	transient_message_queue.clear()
@@ -2890,14 +2866,18 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 	_hide_victory_overlay()
 	_hide_card_choice_overlay(false)
 	_hide_card_collection(false)
+	_reset_card_choice_pickup_runtime_state()
 	spawn_cooldown = 1.2
 	_reset_wave_runtime_state()
 	_refresh_level_state(false)
-	player.global_position = Vector2.ZERO
+	player.global_position = _get_player_start_position()
 	player_respawn_anchor = player.global_position
 	player.visible = true
 	player.apply_hero_data(hero)
-	_sync_player_runtime_progress()
+	if weapon_growth_available:
+		_push_runtime_bonus_values_to_player(false)
+	else:
+		_sync_player_runtime_progress()
 	player.set_controls_enabled(true)
 	if card_collection_button != null:
 		card_collection_button.visible = true
@@ -2905,7 +2885,8 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 	_rebuild_card_collection_ui()
 	_apply_hero_header()
 	_build_attribute_panel_entries()
-	message_label.visible = false
+	if hud != null:
+		hud.hide_message()
 	_update_hud(player.health, player.max_health)
 	if wave_rows.is_empty():
 		_spawn_enemy_ring(2)
@@ -2959,6 +2940,219 @@ func clear_runtime_bonus_values(preserve_resources: bool = true) -> void:
 	_push_runtime_bonus_values_to_player(preserve_resources)
 
 
+func _reset_weapon_growth_runtime_state(hero: HeroData, bloodline_option: Dictionary) -> void:
+	weapon_growth_levels["sword"] = 0
+	weapon_growth_levels["shield"] = 0
+	weapon_growth_bonus_values.clear()
+	weapon_growth_available = _is_weapon_growth_supported(hero, bloodline_option)
+	if weapon_growth_available:
+		_refresh_weapon_growth_bonus_values()
+	_refresh_weapon_growth_panel()
+
+
+func _is_weapon_growth_supported(hero: HeroData, bloodline_option: Dictionary) -> bool:
+	if weapon_growth_rows_by_slot.is_empty():
+		return false
+	var bloodline_id := _normalize_bloodline_id_token(bloodline_option.get("bloodline_id", ""))
+	if bloodline_id.is_empty():
+		bloodline_id = _normalize_bloodline_id_token(bloodline_option.get("id", ""))
+	if bloodline_id == SWORD_SHIELD_BLOODLINE_ID:
+		return true
+	if hero != null and String(hero.model_id) == SWORD_SHIELD_BLOODLINE_ID:
+		return true
+	return false
+
+
+func _refresh_weapon_growth_bonus_values() -> void:
+	weapon_growth_bonus_values.clear()
+	if not weapon_growth_available:
+		return
+
+	for slot in ["sword", "shield"]:
+		var rows: Array = weapon_growth_rows_by_slot.get(slot, [])
+		if rows.is_empty():
+			continue
+		var current_step := clampi(int(weapon_growth_levels.get(slot, 0)), 0, rows.size() - 1)
+		weapon_growth_levels[slot] = current_step
+		for index in range(current_step + 1):
+			_merge_weapon_growth_row_bonus(rows[index])
+
+
+func _merge_weapon_growth_row_bonus(row: Dictionary) -> void:
+	for slot_index in range(1, 4):
+		var stat_id_text := String(row.get("stat_%d_id" % slot_index, "")).strip_edges()
+		if stat_id_text.is_empty():
+			continue
+		var stat_id := _resolve_weapon_growth_stat_id(stat_id_text)
+		if stat_id == &"":
+			continue
+		var value := float(row.get("stat_%d_value" % slot_index, 0.0))
+		_add_dict_bonus_value(weapon_growth_bonus_values, stat_id, value)
+
+
+func _resolve_weapon_growth_stat_id(stat_id_text: String) -> StringName:
+	if stat_id_text != "primary_attr":
+		return StringName(stat_id_text)
+
+	var primary_attr := &"str"
+	if selected_hero != null:
+		primary_attr = selected_hero.primary_attr
+	match String(primary_attr):
+		"agi":
+			return &"added_agi"
+		"int":
+			return &"added_int"
+		_:
+			return &"added_str"
+
+
+func _on_weapon_growth_upgrade_requested(slot: String) -> void:
+	if selection_active or game_over or not weapon_growth_available:
+		return
+	var normalized_slot := slot.strip_edges().to_lower()
+	var current_step := int(weapon_growth_levels.get(normalized_slot, 0))
+	var next_row := _get_weapon_growth_row(normalized_slot, current_step + 1)
+	if next_row.is_empty():
+		_show_transient_message("%s已满级" % _get_weapon_growth_slot_title(normalized_slot), 1.2)
+		_refresh_weapon_growth_panel()
+		return
+
+	var cost := maxi(int(next_row.get("cost_gold", 0)), 0)
+	if current_gold < cost:
+		_show_transient_message(
+			"金币不足\n%s升级需要 %d 金币\n当前金币 %d" % [
+				_get_weapon_growth_slot_title(normalized_slot),
+				cost,
+				current_gold,
+			],
+			1.8
+		)
+		_refresh_weapon_growth_panel()
+		return
+
+	current_gold -= cost
+	weapon_growth_levels[normalized_slot] = current_step + 1
+	_refresh_weapon_growth_bonus_values()
+	_push_runtime_bonus_values_to_player(true)
+	_show_transient_message(
+		"%s升级：%s\n%s" % [
+			_get_weapon_growth_slot_title(normalized_slot),
+			String(next_row.get("name", "")),
+			_build_weapon_growth_delta_text(next_row, false),
+		],
+		1.8
+	)
+	_refresh_weapon_growth_panel()
+	_update_hud(player.health, player.max_health)
+
+
+func _refresh_weapon_growth_panel() -> void:
+	if hud == null:
+		return
+	if selection_active or game_over or not weapon_growth_available:
+		hud.hide_weapon_growth_panel()
+		return
+	hud.configure_weapon_growth(_build_weapon_growth_slot_infos(), current_gold)
+
+
+func _build_weapon_growth_slot_infos() -> Array[Dictionary]:
+	var infos: Array[Dictionary] = []
+	for slot in ["sword", "shield"]:
+		var rows: Array = weapon_growth_rows_by_slot.get(slot, [])
+		if rows.is_empty():
+			continue
+		var current_step := clampi(int(weapon_growth_levels.get(slot, 0)), 0, rows.size() - 1)
+		var current_row: Dictionary = rows[current_step]
+		var next_row := _get_weapon_growth_row(slot, current_step + 1)
+		var is_max := next_row.is_empty()
+		infos.append({
+			"slot": slot,
+			"title": _get_weapon_growth_slot_title(slot),
+			"level_text": "阶%d Lv.%d  %d/%d" % [
+				int(current_row.get("tier", 0)),
+				int(current_row.get("level", current_step)),
+				current_step,
+				rows.size() - 1,
+			],
+			"current_text": _build_weapon_growth_total_text(slot, current_step),
+			"next_text": "下级：已满级" if is_max else _build_weapon_growth_delta_text(next_row, true),
+			"cost_gold": 0 if is_max else int(next_row.get("cost_gold", 0)),
+			"is_max": is_max,
+		})
+	return infos
+
+
+func _get_weapon_growth_row(slot: String, step: int) -> Dictionary:
+	var rows: Array = weapon_growth_rows_by_slot.get(slot, [])
+	if step < 0 or step >= rows.size():
+		return {}
+	return rows[step]
+
+
+func _get_weapon_growth_slot_title(slot: String) -> String:
+	match slot:
+		"sword":
+			return "剑"
+		"shield":
+			return "盾"
+		_:
+			return slot
+
+
+func _build_weapon_growth_total_text(slot: String, current_step: int) -> String:
+	var rows: Array = weapon_growth_rows_by_slot.get(slot, [])
+	if rows.is_empty():
+		return "当前：无"
+	var capped_step := clampi(current_step, 0, rows.size() - 1)
+	var totals: Dictionary = {}
+	var labels: Dictionary = {}
+	for index in range(capped_step + 1):
+		var row: Dictionary = rows[index]
+		for stat_index in range(1, 4):
+			var stat_id := String(row.get("stat_%d_id" % stat_index, "")).strip_edges()
+			if stat_id.is_empty():
+				continue
+			var label := String(row.get("stat_%d_label" % stat_index, stat_id)).strip_edges()
+			var key := stat_id
+			totals[key] = float(totals.get(key, 0.0)) + float(row.get("stat_%d_value" % stat_index, 0.0))
+			labels[key] = label
+
+	var parts := ["当前：%s" % String(rows[capped_step].get("name", ""))]
+	for key in totals.keys():
+		var value := float(totals[key])
+		if absf(value) < 0.0001:
+			continue
+		parts.append("%s +%s" % [String(labels.get(key, key)), _format_weapon_growth_value(key, value)])
+	return "\n".join(parts)
+
+
+func _build_weapon_growth_delta_text(row: Dictionary, include_name: bool) -> String:
+	var parts: Array[String] = []
+	if include_name:
+		parts.append("下级：%s" % String(row.get("name", "")))
+	for stat_index in range(1, 4):
+		var stat_id := String(row.get("stat_%d_id" % stat_index, "")).strip_edges()
+		if stat_id.is_empty():
+			continue
+		var value := float(row.get("stat_%d_value" % stat_index, 0.0))
+		if absf(value) < 0.0001:
+			continue
+		var label := String(row.get("stat_%d_label" % stat_index, stat_id)).strip_edges()
+		parts.append("%s +%s" % [label, _format_weapon_growth_value(stat_id, value)])
+	var special := String(row.get("special_effect", "")).strip_edges()
+	if not special.is_empty():
+		parts.append(special)
+	return "\n".join(parts)
+
+
+func _format_weapon_growth_value(stat_id_text: String, value: float) -> String:
+	if stat_id_text.ends_with("_percent"):
+		return "%.0f%%" % (value * 100.0)
+	if absf(value - roundf(value)) < 0.001:
+		return "%d" % int(roundf(value))
+	return "%.2f" % value
+
+
 func _find_hero_index(hero_id: StringName) -> int:
 	for i in available_heroes.size():
 		if available_heroes[i].hero_id == hero_id:
@@ -2968,7 +3162,8 @@ func _find_hero_index(hero_id: StringName) -> int:
 
 
 func _clear_selection_preview_model() -> void:
-	if selection_preview_root == null:
+	var preview_root := selection_overlay.preview_root if selection_overlay != null else null
+	if preview_root == null:
 		selection_preview_model_root = null
 		selection_preview_hero_model = null
 		selection_preview_dragging = false
@@ -2976,7 +3171,7 @@ func _clear_selection_preview_model() -> void:
 		selection_preview_should_replay_intro = true
 		return
 
-	for child in selection_preview_root.get_children():
+	for child in preview_root.get_children():
 		child.queue_free()
 
 	selection_preview_model_root = null
@@ -2987,7 +3182,8 @@ func _clear_selection_preview_model() -> void:
 
 
 func _update_selection_preview_model(hero: HeroData, force_replay_intro: bool = false) -> void:
-	if hero == null or selection_preview_root == null:
+	var preview_root := selection_overlay.preview_root if selection_overlay != null else null
+	if hero == null or preview_root == null:
 		_clear_selection_preview_model()
 		return
 
@@ -3000,7 +3196,7 @@ func _update_selection_preview_model(hero: HeroData, force_replay_intro: bool = 
 	var can_reuse := selection_preview_signature == preview_signature \
 		and selection_preview_model_root != null \
 		and is_instance_valid(selection_preview_model_root) \
-		and selection_preview_model_root.get_parent() == selection_preview_root
+		and selection_preview_model_root.get_parent() == preview_root
 	if can_reuse:
 		if force_replay_intro and selection_preview_hero_model != null:
 			selection_preview_hero_model.play_selection_preview_intro()
@@ -3014,16 +3210,13 @@ func _update_selection_preview_model(hero: HeroData, force_replay_intro: bool = 
 		return
 
 	selection_preview_model_root = instance
-	selection_preview_root.add_child(selection_preview_model_root)
+	preview_root.add_child(selection_preview_model_root)
 	selection_preview_model_root.scale = Vector2(0.65, 0.65)
 	selection_preview_hero_model = selection_preview_model_root as HeroModel
 	selection_preview_signature = preview_signature
 	call_deferred("_layout_selection_preview_model")
 
 	if selection_preview_hero_model != null:
-		var preview_overrides := _get_preview_model_profile_overrides(hero)
-		if not preview_overrides.is_empty():
-			selection_preview_hero_model.apply_profile_overrides(preview_overrides)
 		selection_preview_hero_model.apply_selection_preview_preset()
 		selection_preview_hero_model.play_selection_preview_intro()
 		selection_preview_hero_model.set_showcase_spin_speed(0.0)
@@ -3032,12 +3225,13 @@ func _update_selection_preview_model(hero: HeroData, force_replay_intro: bool = 
 func _layout_selection_preview_model() -> void:
 	if selection_preview_model_root == null or not is_instance_valid(selection_preview_model_root):
 		return
-	if selection_preview_viewport == null:
+	var preview_viewport := selection_overlay.preview_viewport if selection_overlay != null else null
+	if preview_viewport == null:
 		return
 
-	var preview_size := Vector2(selection_preview_viewport.get_visible_rect().size)
+	var preview_size := Vector2(preview_viewport.get_visible_rect().size)
 	if preview_size == Vector2.ZERO:
-		preview_size = Vector2(selection_preview_viewport.size)
+		preview_size = Vector2(preview_viewport.size)
 
 	selection_preview_model_root.position = Vector2(preview_size.x * 0.5, preview_size.y * 0.66)
 
@@ -3125,32 +3319,6 @@ func _create_selection_card_button(display_name: String, icon_texture: Texture2D
 	return button
 
 
-func _get_selection_grid_item_width(host: Control, columns: int, min_width: float, max_width: float) -> float:
-	var safe_columns := maxi(columns, 1)
-	var available_width := 0.0
-	if host != null:
-		available_width = host.size.x
-		if available_width <= 1.0 and host.get_parent() is Control:
-			available_width = (host.get_parent() as Control).size.x
-	if available_width <= 1.0:
-		available_width = 520.0
-	var total_spacing: float = SELECTION_GRID_GAP * float(maxi(safe_columns - 1, 0))
-	var computed_width: float = floor((available_width - total_spacing) / float(safe_columns))
-	return clampf(computed_width, min_width, max_width)
-
-
-func _rebuild_selection_grid(container: GridContainer, buttons: Array[Button], _columns: int) -> void:
-	if container == null:
-		return
-	for child in container.get_children():
-		child.queue_free()
-	if buttons.is_empty():
-		return
-
-	for button in buttons:
-		container.add_child(button)
-
-
 func _apply_selection_card_button_style(button: Button, border_color: Color, background_color: Color, border_width: int) -> void:
 	if button == null:
 		return
@@ -3210,28 +3378,8 @@ func _ensure_skill_button_card(button: Button, shortcut_key: String) -> void:
 	card.add_child(shortcut_label)
 
 
-func _apply_selection_panel_styles() -> void:
-	var frame_style := StyleBoxFlat.new()
-	frame_style.bg_color = Color(0.09, 0.11, 0.09, 0.96)
-	frame_style.border_color = Color(0.29, 0.35, 0.32, 1.0)
-	frame_style.set_border_width_all(2)
-	frame_style.set_corner_radius_all(14)
-	frame_style.content_margin_left = 14
-	frame_style.content_margin_top = 14
-	frame_style.content_margin_right = 14
-	frame_style.content_margin_bottom = 14
-	if selection_template_frame != null:
-		selection_template_frame.add_theme_stylebox_override("panel", frame_style)
-	if selection_bloodline_frame != null:
-		selection_bloodline_frame.add_theme_stylebox_override("panel", frame_style)
-	if selection_preview_frame != null:
-		selection_preview_frame.add_theme_stylebox_override("panel", frame_style)
-	if selection_summary_frame != null:
-		selection_summary_frame.add_theme_stylebox_override("panel", frame_style)
-
-
 func _on_selection_preview_gui_input(event: InputEvent) -> void:
-	if selection_preview_container == null:
+	if selection_overlay == null:
 		return
 	var mouse_button := event as InputEventMouseButton
 	if mouse_button != null and mouse_button.button_index == MOUSE_BUTTON_LEFT:
@@ -3245,365 +3393,60 @@ func _on_selection_preview_gui_input(event: InputEvent) -> void:
 		selection_preview_hero_model.rotate_preview(mouse_motion.relative.x * 0.01)
 
 
-func _apply_selection_confirm_button_style() -> void:
-	if selection_confirm_button == null:
-		return
-
-	var normal_style := StyleBoxFlat.new()
-	normal_style.bg_color = Color(0.12, 0.12, 0.11, 0.98)
-	normal_style.border_color = Color(0.95, 0.80, 0.28, 1.0)
-	normal_style.set_border_width_all(3)
-	normal_style.set_corner_radius_all(10)
-	normal_style.content_margin_left = 12
-	normal_style.content_margin_top = 6
-	normal_style.content_margin_right = 12
-	normal_style.content_margin_bottom = 6
-
-	var hover_style := normal_style.duplicate()
-	hover_style.bg_color = Color(0.18, 0.17, 0.13, 1.0)
-	hover_style.border_color = Color(1.0, 0.88, 0.42, 1.0)
-
-	var pressed_style := normal_style.duplicate()
-	pressed_style.bg_color = Color(0.22, 0.19, 0.12, 1.0)
-	pressed_style.border_color = Color(0.98, 0.86, 0.40, 1.0)
-
-	selection_confirm_button.add_theme_stylebox_override("normal", normal_style)
-	selection_confirm_button.add_theme_stylebox_override("hover", hover_style)
-	selection_confirm_button.add_theme_stylebox_override("pressed", pressed_style)
-	selection_confirm_button.add_theme_stylebox_override("focus", hover_style)
-	selection_confirm_button.add_theme_stylebox_override("disabled", normal_style)
-	selection_confirm_button.add_theme_color_override("font_color", Color(0.98, 0.97, 0.92, 1.0))
-	selection_confirm_button.add_theme_color_override("font_hover_color", Color(1, 1, 0.96, 1.0))
-	selection_confirm_button.add_theme_color_override("font_pressed_color", Color(1, 1, 0.96, 1.0))
-
-
 func _setup_wave_info_display() -> void:
-	wave_info_panel = ColorRect.new()
+	wave_info_panel = WAVE_INFO_SCENE.instantiate() as WaveInfoUi
 	wave_info_panel.name = "WaveInfoPanel"
-	wave_info_panel.anchors_preset = Control.PRESET_TOP_WIDE
-	wave_info_panel.anchor_left = 0.5
-	wave_info_panel.anchor_right = 0.5
-	wave_info_panel.offset_left = -120.0
-	wave_info_panel.offset_top = 10.0
-	wave_info_panel.offset_right = 120.0
-	wave_info_panel.offset_bottom = 64.0
-	wave_info_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	wave_info_panel.color = Color(0.07, 0.05, 0.03, 0.32)
-	wave_info_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	wave_info_panel.visible = false
-	$HUD.add_child(wave_info_panel)
-
-	var wave_info_frame := Panel.new()
-	wave_info_frame.anchor_right = 1.0
-	wave_info_frame.anchor_bottom = 1.0
-	wave_info_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var frame_style := StyleBoxFlat.new()
-	frame_style.bg_color = Color(0.09, 0.07, 0.04, 0.72)
-	frame_style.border_color = Color(0.72, 0.57, 0.28, 1.0)
-	frame_style.set_border_width_all(1)
-	frame_style.set_corner_radius_all(6)
-	wave_info_frame.add_theme_stylebox_override("panel", frame_style)
-	wave_info_panel.add_child(wave_info_frame)
-
-	wave_info_title_label = Label.new()
-	wave_info_title_label.anchor_left = 0.0
-	wave_info_title_label.anchor_top = 0.0
-	wave_info_title_label.anchor_right = 1.0
-	wave_info_title_label.anchor_bottom = 0.0
-	wave_info_title_label.offset_top = 4.0
-	wave_info_title_label.offset_bottom = 20.0
-	wave_info_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	wave_info_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	wave_info_title_label.add_theme_font_size_override("font_size", 12)
-	wave_info_title_label.modulate = Color(1.0, 0.92, 0.68, 1.0)
-	wave_info_title_label.text = "第1波  战斗中"
-	wave_info_frame.add_child(wave_info_title_label)
-
-	wave_info_progress_label = Label.new()
-	wave_info_progress_label.anchor_left = 0.0
-	wave_info_progress_label.anchor_top = 0.0
-	wave_info_progress_label.anchor_right = 1.0
-	wave_info_progress_label.anchor_bottom = 0.0
-	wave_info_progress_label.offset_top = 20.0
-	wave_info_progress_label.offset_bottom = 36.0
-	wave_info_progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	wave_info_progress_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	wave_info_progress_label.add_theme_font_size_override("font_size", 12)
-	wave_info_progress_label.modulate = Color(0.91, 0.81, 0.55, 1.0)
-	wave_info_progress_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	wave_info_progress_label.clip_text = true
-	wave_info_progress_label.text = "场上怪物 0/50"
-	wave_info_frame.add_child(wave_info_progress_label)
-
-	wave_info_timer_label = Label.new()
-	wave_info_timer_label.anchor_left = 0.0
-	wave_info_timer_label.anchor_top = 0.0
-	wave_info_timer_label.anchor_right = 1.0
-	wave_info_timer_label.anchor_bottom = 1.0
-	wave_info_timer_label.offset_top = 37.0
-	wave_info_timer_label.offset_bottom = -1.0
-	wave_info_timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	wave_info_timer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	wave_info_timer_label.add_theme_font_size_override("font_size", 8)
-	wave_info_timer_label.modulate = Color(0.96, 0.96, 0.96, 0.9)
-	wave_info_timer_label.text = "剩余 80.0s"
-	wave_info_frame.add_child(wave_info_timer_label)
+	_set_process_mode_recursive(wave_info_panel, Node.PROCESS_MODE_ALWAYS)
+	if hud != null:
+		hud.add_runtime_ui(wave_info_panel)
 
 
 func _setup_boss_health_bar() -> void:
-	boss_health_panel = ColorRect.new()
+	boss_health_panel = BOSS_HEALTH_SCENE.instantiate() as BossHealthUi
 	boss_health_panel.name = "BossHealthPanel"
-	boss_health_panel.anchor_left = 0.5
-	boss_health_panel.anchor_top = 0.0
-	boss_health_panel.anchor_right = 0.5
-	boss_health_panel.anchor_bottom = 0.0
-	boss_health_panel.offset_left = -420.0
-	boss_health_panel.offset_top = 100.0
-	boss_health_panel.offset_right = 420.0
-	boss_health_panel.offset_bottom = 160.0
-	boss_health_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	boss_health_panel.color = Color(0.1, 0.05, 0.02, 0.94)
-	boss_health_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	boss_health_panel.visible = false
-	$HUD.add_child(boss_health_panel)
-
-	var boss_frame := Panel.new()
-	boss_frame.anchor_right = 1.0
-	boss_frame.anchor_bottom = 1.0
-	boss_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var boss_style := StyleBoxFlat.new()
-	boss_style.bg_color = Color(0.12, 0.06, 0.03, 0.96)
-	boss_style.border_color = Color(0.78, 0.59, 0.21, 1.0)
-	boss_style.set_border_width_all(2)
-	boss_style.set_corner_radius_all(8)
-	boss_frame.add_theme_stylebox_override("panel", boss_style)
-	boss_health_panel.add_child(boss_frame)
-
-	boss_health_label = Label.new()
-	boss_health_label.anchor_right = 1.0
-	boss_health_label.offset_top = 6.0
-	boss_health_label.offset_bottom = 28.0
-	boss_health_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	boss_health_label.add_theme_font_size_override("font_size", 20)
-	boss_health_label.modulate = Color(1.0, 0.9, 0.62, 1.0)
-	boss_health_label.text = "Boss"
-	boss_frame.add_child(boss_health_label)
-
-	boss_health_bar = ProgressBar.new()
-	boss_health_bar.anchor_left = 0.0
-	boss_health_bar.anchor_top = 0.0
-	boss_health_bar.anchor_right = 1.0
-	boss_health_bar.anchor_bottom = 0.0
-	boss_health_bar.offset_left = 20.0
-	boss_health_bar.offset_top = 32.0
-	boss_health_bar.offset_right = -20.0
-	boss_health_bar.offset_bottom = 52.0
-	boss_health_bar.show_percentage = false
-	var boss_bg := StyleBoxFlat.new()
-	boss_bg.bg_color = Color(0.18, 0.08, 0.06, 0.9)
-	boss_bg.set_corner_radius_all(7)
-	var boss_fill := StyleBoxFlat.new()
-	boss_fill.bg_color = Color(0.78, 0.13, 0.11, 1.0)
-	boss_fill.set_corner_radius_all(7)
-	boss_health_bar.add_theme_stylebox_override("background", boss_bg)
-	boss_health_bar.add_theme_stylebox_override("fill", boss_fill)
-	boss_frame.add_child(boss_health_bar)
+	_set_process_mode_recursive(boss_health_panel, Node.PROCESS_MODE_ALWAYS)
+	if hud != null:
+		hud.add_runtime_ui(boss_health_panel)
 
 
 func _setup_wave_banner_display() -> void:
-	wave_banner_panel = ColorRect.new()
+	wave_banner_panel = WAVE_BANNER_SCENE.instantiate() as WaveBannerUi
 	wave_banner_panel.name = "WaveBannerPanel"
-	wave_banner_panel.anchor_left = 0.5
-	wave_banner_panel.anchor_top = 0.0
-	wave_banner_panel.anchor_right = 0.5
-	wave_banner_panel.anchor_bottom = 0.0
-	wave_banner_panel.offset_left = -150.0
-	wave_banner_panel.offset_top = 84.0
-	wave_banner_panel.offset_right = 150.0
-	wave_banner_panel.offset_bottom = 132.0
-	wave_banner_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	wave_banner_panel.color = Color(0.05, 0.07, 0.06, 0.72)
-	wave_banner_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	wave_banner_panel.visible = false
-	$HUD.add_child(wave_banner_panel)
-
-	wave_banner_title_label = Label.new()
-	wave_banner_title_label.anchor_right = 1.0
-	wave_banner_title_label.offset_top = 5.0
-	wave_banner_title_label.offset_bottom = 26.0
-	wave_banner_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	wave_banner_title_label.add_theme_font_size_override("font_size", 16)
-	wave_banner_title_label.text = "第1波 即将开始"
-	wave_banner_panel.add_child(wave_banner_title_label)
-
-	wave_banner_subtitle_label = Label.new()
-	wave_banner_subtitle_label.anchor_right = 1.0
-	wave_banner_subtitle_label.offset_top = 24.0
-	wave_banner_subtitle_label.offset_bottom = 42.0
-	wave_banner_subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	wave_banner_subtitle_label.add_theme_font_size_override("font_size", 10)
-	wave_banner_subtitle_label.text = "准备期 2.5s"
-	wave_banner_panel.add_child(wave_banner_subtitle_label)
+	_set_process_mode_recursive(wave_banner_panel, Node.PROCESS_MODE_ALWAYS)
+	if hud != null:
+		hud.add_runtime_ui(wave_banner_panel)
 
 
 func _setup_death_overlay() -> void:
-	death_overlay = ColorRect.new()
+	death_overlay = DEATH_OVERLAY_SCENE.instantiate() as DeathOverlayUi
 	death_overlay.name = "DeathOverlay"
-	death_overlay.anchor_right = 1.0
-	death_overlay.anchor_bottom = 1.0
-	death_overlay.color = Color(0.78, 0.78, 0.78, 0.1)
-	death_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	death_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	death_overlay.visible = false
-	$HUD.add_child(death_overlay)
-
-	death_overlay_label = Label.new()
-	death_overlay_label.anchor_left = 0.5
-	death_overlay_label.anchor_top = 0.5
-	death_overlay_label.anchor_right = 0.5
-	death_overlay_label.anchor_bottom = 0.5
-	death_overlay_label.offset_left = -220.0
-	death_overlay_label.offset_top = -46.0
-	death_overlay_label.offset_right = 220.0
-	death_overlay_label.offset_bottom = -2.0
-	death_overlay_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	death_overlay_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	death_overlay_label.add_theme_font_size_override("font_size", 34)
-	death_overlay_label.text = "你已阵亡"
-	death_overlay.add_child(death_overlay_label)
-
-	death_overlay_subtitle_label = Label.new()
-	death_overlay_subtitle_label.anchor_left = 0.5
-	death_overlay_subtitle_label.anchor_top = 0.5
-	death_overlay_subtitle_label.anchor_right = 0.5
-	death_overlay_subtitle_label.anchor_bottom = 0.5
-	death_overlay_subtitle_label.offset_left = -220.0
-	death_overlay_subtitle_label.offset_top = 10.0
-	death_overlay_subtitle_label.offset_right = 220.0
-	death_overlay_subtitle_label.offset_bottom = 44.0
-	death_overlay_subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	death_overlay_subtitle_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	death_overlay_subtitle_label.add_theme_font_size_override("font_size", 22)
-	death_overlay_subtitle_label.text = "5 秒后复活"
-	death_overlay.add_child(death_overlay_subtitle_label)
+	_set_process_mode_recursive(death_overlay, Node.PROCESS_MODE_ALWAYS)
+	if hud != null:
+		hud.add_runtime_ui(death_overlay)
 
 
 func _setup_victory_overlay() -> void:
-	victory_overlay = ColorRect.new()
+	victory_overlay = BATTLE_RESULT_SCENE.instantiate() as BattleResultUi
 	victory_overlay.name = "VictoryOverlay"
-	victory_overlay.anchor_right = 1.0
-	victory_overlay.anchor_bottom = 1.0
-	victory_overlay.color = Color(0.03, 0.05, 0.04, 0.82)
-	victory_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	victory_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	victory_overlay.visible = false
-	$HUD.add_child(victory_overlay)
-
-	var panel := Panel.new()
-	panel.anchor_left = 0.5
-	panel.anchor_top = 0.5
-	panel.anchor_right = 0.5
-	panel.anchor_bottom = 0.5
-	panel.offset_left = -260.0
-	panel.offset_top = -170.0
-	panel.offset_right = 260.0
-	panel.offset_bottom = 170.0
-	panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.08, 0.1, 0.09, 0.96)
-	panel_style.border_color = Color(0.83, 0.73, 0.38, 1.0)
-	panel_style.set_border_width_all(2)
-	panel_style.set_corner_radius_all(10)
-	panel.add_theme_stylebox_override("panel", panel_style)
-	victory_overlay.add_child(panel)
-
-	victory_title_label = Label.new()
-	victory_title_label.anchor_left = 0.0
-	victory_title_label.anchor_top = 0.0
-	victory_title_label.anchor_right = 1.0
-	victory_title_label.anchor_bottom = 0.0
-	victory_title_label.offset_top = 16.0
-	victory_title_label.offset_bottom = 48.0
-	victory_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	victory_title_label.add_theme_font_size_override("font_size", 30)
-	victory_title_label.text = "战斗胜利"
-	panel.add_child(victory_title_label)
-
-	victory_summary_label = Label.new()
-	victory_summary_label.anchor_left = 0.0
-	victory_summary_label.anchor_top = 0.0
-	victory_summary_label.anchor_right = 1.0
-	victory_summary_label.anchor_bottom = 1.0
-	victory_summary_label.offset_left = 24.0
-	victory_summary_label.offset_top = 62.0
-	victory_summary_label.offset_right = -24.0
-	victory_summary_label.offset_bottom = -72.0
-	victory_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	victory_summary_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	victory_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	victory_summary_label.text = ""
-	panel.add_child(victory_summary_label)
-
-	victory_return_button = Button.new()
-	victory_return_button.anchor_left = 0.5
-	victory_return_button.anchor_top = 1.0
-	victory_return_button.anchor_right = 0.5
-	victory_return_button.anchor_bottom = 1.0
-	victory_return_button.offset_left = -100.0
-	victory_return_button.offset_top = -52.0
-	victory_return_button.offset_right = 100.0
-	victory_return_button.offset_bottom = -16.0
-	victory_return_button.focus_mode = Control.FOCUS_ALL
-	victory_return_button.text = "返回主界面"
-	victory_return_button.pressed.connect(_on_victory_return_button_pressed)
-	panel.add_child(victory_return_button)
+	_set_process_mode_recursive(victory_overlay, Node.PROCESS_MODE_ALWAYS)
+	if not victory_overlay.return_requested.is_connected(_on_victory_return_button_pressed):
+		victory_overlay.return_requested.connect(_on_victory_return_button_pressed)
+	if hud != null:
+		hud.add_runtime_ui(victory_overlay)
 
 
 func _setup_attributes_panel() -> void:
-	attributes_panel = ColorRect.new()
+	attributes_panel = ATTRIBUTES_PANEL_SCENE.instantiate() as AttributesPanelUi
 	attributes_panel.name = "AttributesPanel"
-	attributes_panel.visible = false
-	attributes_panel.color = Color(0.03, 0.04, 0.04, 0.94)
-	attributes_panel.offset_left = 80.0
-	attributes_panel.offset_top = 70.0
-	attributes_panel.offset_right = 960.0
-	attributes_panel.offset_bottom = 620.0
-	attributes_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	attributes_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	$HUD.add_child(attributes_panel)
-
-	attributes_title_label = Label.new()
-	attributes_title_label.text = "全属性面板"
-	attributes_title_label.offset_left = 20.0
-	attributes_title_label.offset_top = 14.0
-	attributes_title_label.offset_right = 360.0
-	attributes_title_label.offset_bottom = 42.0
-	attributes_title_label.add_theme_font_size_override("font_size", 22)
-	attributes_panel.add_child(attributes_title_label)
-
-	attributes_hint_label = Label.new()
-	attributes_hint_label.text = "按 Tab 关闭并继续游戏"
-	attributes_hint_label.offset_left = 20.0
-	attributes_hint_label.offset_top = 44.0
-	attributes_hint_label.offset_right = 360.0
-	attributes_hint_label.offset_bottom = 66.0
-	attributes_panel.add_child(attributes_hint_label)
-
-	var list_container := ScrollContainer.new()
-	list_container.offset_left = 16.0
-	list_container.offset_top = 82.0
-	list_container.offset_right = 860.0
-	list_container.offset_bottom = 534.0
-	list_container.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	attributes_panel.add_child(list_container)
-
-	attributes_grid = GridContainer.new()
-	attributes_grid.columns = 3
-	attributes_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	attributes_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	attributes_grid.add_theme_constant_override("h_separation", 18)
-	attributes_grid.add_theme_constant_override("v_separation", 10)
-	list_container.add_child(attributes_grid)
+	attributes_panel.hide_panel()
+	_set_process_mode_recursive(attributes_panel, Node.PROCESS_MODE_ALWAYS)
+	if hud != null:
+		hud.add_runtime_ui(attributes_panel)
 
 
 func _toggle_attributes_panel() -> void:
@@ -3619,7 +3462,8 @@ func _show_attributes_panel() -> void:
 
 	_build_attribute_panel_entries()
 	_refresh_attribute_panel_values()
-	attributes_panel.visible = true
+	if attributes_panel != null:
+		attributes_panel.show_panel()
 	attributes_panel_visible = true
 	_update_runtime_pause_state()
 
@@ -3628,17 +3472,14 @@ func _hide_attributes_panel() -> void:
 	if attributes_panel == null:
 		return
 
-	attributes_panel.visible = false
+	attributes_panel.hide_panel()
 	attributes_panel_visible = false
 	_update_runtime_pause_state()
 
 
 func _build_attribute_panel_entries() -> void:
-	if attributes_grid == null:
+	if attributes_panel == null:
 		return
-
-	for child in attributes_grid.get_children():
-		child.queue_free()
 
 	attributes_value_labels.clear()
 	attribute_panel_entries.clear()
@@ -3685,17 +3526,12 @@ func _build_attribute_panel_entries() -> void:
 	)
 
 	for entry in attribute_panel_entries:
-		var value_label := Label.new()
-		value_label.custom_minimum_size = Vector2(270, 26)
-		value_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-		value_label.clip_text = true
-		value_label.text = "%s: -" % String(entry.get("name", ""))
-		attributes_grid.add_child(value_label)
-		attributes_value_labels[entry["id"]] = value_label
+		attributes_value_labels[entry["id"]] = "%s: -" % String(entry.get("name", ""))
+	attributes_panel.rebuild_entries(attribute_panel_entries)
 
 
 func _refresh_attribute_panel_values() -> void:
-	if attributes_value_labels.is_empty():
+	if attributes_panel == null or attribute_panel_entries.is_empty():
 		return
 
 	var stats = player.get_combat_stats() if player != null and player.has_method("get_combat_stats") else null
@@ -3704,16 +3540,14 @@ func _refresh_attribute_panel_values() -> void:
 	if stats == null:
 		return
 
+	var display_values: Dictionary = {}
 	for entry in attribute_panel_entries:
 		var stat_id: StringName = entry.get("id", &"")
-		var label: Label = attributes_value_labels.get(stat_id)
-		if label == null:
-			continue
-
 		var stat_name := String(entry.get("name", stat_id))
 		var value_type := String(entry.get("value_type", "值"))
 		var value: float = float(stats.get_stat(stat_id))
-		label.text = "%s: %s" % [stat_name, _format_attribute_value(value, value_type)]
+		display_values[stat_id] = "%s: %s" % [stat_name, _format_attribute_value(value, value_type)]
+	attributes_panel.update_value_texts(display_values)
 
 
 func _format_attribute_value(value: float, value_type: String) -> String:
@@ -3732,68 +3566,63 @@ func _format_attribute_value(value: float, value_type: String) -> String:
 
 
 func _update_wave_info_hud() -> void:
-	if wave_info_panel == null or wave_info_title_label == null or wave_info_timer_label == null or wave_info_progress_label == null:
+	if wave_info_panel == null:
 		return
 	if selection_active:
-		wave_info_panel.visible = false
+		wave_info_panel.set_panel_visible(false)
 		return
 
-	wave_info_panel.visible = true
+	wave_info_panel.set_panel_visible(true)
 	var alive_count: int = _get_runtime_alive_enemy_count()
 	var cap: int = maxi(max_alive_enemies, 1)
 	var progress_text := _build_wave_hud_progress_text(alive_count, cap)
 	if wave_rows.is_empty():
-		wave_info_title_label.text = "生存模式"
-		wave_info_progress_label.text = progress_text
-		wave_info_timer_label.text = "持续战斗"
-		_append_enemy_overload_warning_to_wave_hud(alive_count, cap)
+		var survival_texts := _apply_enemy_overload_warning_to_wave_texts(progress_text, "持续战斗", alive_count, cap)
+		wave_info_panel.set_wave_info("生存模式", String(survival_texts.get("progress", progress_text)), String(survival_texts.get("timer", "持续战斗")))
 		return
 
 	var wave_text := _get_wave_display_text()
-	match wave_flow_state:
-		WaveFlowState.PREPARE:
-			wave_info_title_label.text = "第%s波  准备期" % wave_text
-			wave_info_progress_label.text = progress_text
-			wave_info_timer_label.text = "准备 %.1fs" % wave_state_remaining
-		WaveFlowState.TRANSITION:
-			wave_info_title_label.text = "第%s波  结算过渡" % wave_text
-			wave_info_progress_label.text = progress_text
-			wave_info_timer_label.text = "过渡 %.1fs" % wave_state_remaining
-		WaveFlowState.COMPLETE:
-			wave_info_title_label.text = "全部波次完成"
-			wave_info_progress_label.text = progress_text
-			wave_info_timer_label.text = "清理残敌"
-		_:
-			wave_info_title_label.text = "第%s波  战斗中" % wave_text
-			wave_info_progress_label.text = progress_text
-			wave_info_timer_label.text = "剩余 %.1fs" % _get_wave_remaining_time()
-	_append_enemy_overload_warning_to_wave_hud(alive_count, cap)
+	var info_state := wave_runtime.build_wave_info_state(
+		wave_flow_state,
+		WaveFlowState.PREPARE,
+		WaveFlowState.TRANSITION,
+		WaveFlowState.COMPLETE,
+		wave_text,
+		wave_state_remaining,
+		_get_wave_remaining_time()
+	)
+	var title_text := String(info_state.get("title", ""))
+	var timer_text := String(info_state.get("timer", ""))
+	var texts := _apply_enemy_overload_warning_to_wave_texts(progress_text, timer_text, alive_count, cap)
+	wave_info_panel.set_wave_info(title_text, String(texts.get("progress", progress_text)), String(texts.get("timer", timer_text)))
 
 
 func _build_wave_hud_progress_text(alive_count: int, cap: int) -> String:
 	return "场上怪物 %d/%d" % [alive_count, cap]
 
 
-func _append_enemy_overload_warning_to_wave_hud(alive_count: int, threshold: int) -> void:
+func _apply_enemy_overload_warning_to_wave_texts(progress_text: String, timer_text: String, alive_count: int, threshold: int) -> Dictionary:
 	if alive_count <= threshold:
-		return
+		return {"progress": progress_text, "timer": timer_text}
 	var remain_seconds := enemy_overload_remaining
 	if remain_seconds <= 0.0:
 		remain_seconds = maxf(enemy_overload_defeat_seconds, 0.1)
-	wave_info_progress_label.text = "场上怪物 %d/%d  (超载)" % [alive_count, threshold]
-	wave_info_timer_label.text = "%s  |  超载倒计时 %.1fs" % [wave_info_timer_label.text, remain_seconds]
+	return {
+		"progress": "场上怪物 %d/%d  (超载)" % [alive_count, threshold],
+		"timer": "%s  |  超载倒计时 %.1fs" % [timer_text, remain_seconds],
+	}
 
 
 func _update_boss_health_bar() -> void:
-	if boss_health_panel == null or boss_health_bar == null or boss_health_label == null:
+	if boss_health_panel == null:
 		return
 	if selection_active:
-		boss_health_panel.visible = false
+		boss_health_panel.hide_bar()
 		return
 
 	var active_bosses: Array[Node2D] = _get_runtime_active_boss_nodes()
 	if active_bosses.is_empty():
-		boss_health_panel.visible = false
+		boss_health_panel.hide_bar()
 		return
 
 	var total_max_hp := 0.0
@@ -3806,18 +3635,13 @@ func _update_boss_health_bar() -> void:
 
 	total_max_hp = maxf(total_max_hp, 1.0)
 	total_hp = clampf(total_hp, 0.0, total_max_hp)
-	boss_health_panel.visible = true
-	boss_health_bar.max_value = total_max_hp
-	boss_health_bar.value = total_hp
+	var title_text := ""
 	if active_bosses.size() == 1:
 		var single_boss: Node2D = active_bosses[0]
-		boss_health_label.text = "%s  HP %d / %d" % [str(single_boss.get("enemy_name")), int(round(total_hp)), int(round(total_max_hp))]
+		title_text = "%s  HP %d / %d" % [str(single_boss.get("enemy_name")), int(round(total_hp)), int(round(total_max_hp))]
 	else:
-		boss_health_label.text = "Boss敌群 x%d  总HP %d / %d" % [active_bosses.size(), int(round(total_hp)), int(round(total_max_hp))]
-
-
-func _get_active_boss_nodes() -> Array[Node2D]:
-	return _get_runtime_active_boss_nodes()
+		title_text = "Boss敌群 x%d  总HP %d / %d" % [active_bosses.size(), int(round(total_hp)), int(round(total_max_hp))]
+	boss_health_panel.show_boss_health(title_text, total_hp, total_max_hp)
 
 
 func _get_wave_display_text() -> String:
@@ -3986,7 +3810,7 @@ func _update_wave_banner(delta: float) -> void:
 	var alpha_scale := 1.0
 	if wave_banner_remaining < 0.25:
 		alpha_scale = wave_banner_remaining / 0.25
-	wave_banner_panel.modulate = Color(1, 1, 1, alpha_scale)
+	wave_banner_panel.set_alpha_scale(alpha_scale)
 
 	if wave_banner_remaining == 0.0:
 		_hide_wave_banner()
@@ -3996,10 +3820,7 @@ func _show_wave_banner(title: String, subtitle: String, duration: float) -> void
 	if wave_banner_panel == null:
 		return
 
-	wave_banner_title_label.text = title
-	wave_banner_subtitle_label.text = subtitle
-	wave_banner_panel.visible = true
-	wave_banner_panel.modulate = Color(1, 1, 1, 1)
+	wave_banner_panel.show_banner(title, subtitle)
 	wave_banner_remaining = maxf(duration, 0.01)
 
 
@@ -4007,7 +3828,7 @@ func _hide_wave_banner() -> void:
 	if wave_banner_panel == null:
 		return
 
-	wave_banner_panel.visible = false
+	wave_banner_panel.hide_banner()
 	wave_banner_remaining = 0.0
 
 
@@ -4031,7 +3852,15 @@ func _start_current_wave() -> void:
 	current_wave_spawn_timer = 0.0
 	var row: Dictionary = wave_rows[clampi(current_wave_index, 0, wave_rows.size() - 1)] if not wave_rows.is_empty() else {}
 	if _get_wave_type(row) == WAVE_TYPE_BOSS:
-		_show_wave_banner("第%s波 开始" % _get_wave_display_text(), _build_wave_banner_subtitle(), wave_banner_seconds)
+		var boss_id_text := _get_wave_boss_id(row, current_wave_index)
+		var boss_data: EnemyData = enemy_data_by_id.get(boss_id_text)
+		var boss_name := boss_data.enemy_name if boss_data != null else "Boss"
+		var subtitle := wave_runtime.build_wave_banner_subtitle(
+			int(row.get("total", 0)),
+			_get_wave_spawn_interval(row),
+			boss_name if not boss_id_text.is_empty() else ""
+		)
+		_show_wave_banner("第%s波 开始" % _get_wave_display_text(), subtitle, wave_banner_seconds)
 
 
 func _start_wave_transition(cleared_by_cleanup: bool) -> void:
@@ -4043,50 +3872,25 @@ func _start_wave_transition(cleared_by_cleanup: bool) -> void:
 	wave_flow_state = WaveFlowState.TRANSITION
 	wave_state_remaining = maxf(wave_transition_seconds, 0.0)
 
-	var subtitle := "已清场，敌潮短暂退去" if cleared_by_cleanup else "时间到，敌潮正在重组"
-	if current_wave_index < wave_rows.size() - 1:
+	var has_next_wave := current_wave_index < wave_rows.size() - 1
+	var next_is_boss_wave := false
+	var next_wave_number := _get_wave_number(current_wave_index)
+	if has_next_wave:
 		var next_row: Dictionary = wave_rows[current_wave_index + 1]
-		var next_is_boss_wave := _get_wave_type(next_row) == WAVE_TYPE_BOSS
-		var next_wave_hint := "Boss波次" if next_is_boss_wave else "第%d波" % _get_wave_number(current_wave_index + 1)
-		subtitle = "%s\n%.1fs 后进入第%d波" % [
-			subtitle,
-			wave_state_remaining,
-			_get_wave_number(current_wave_index + 1),
-		]
-		if next_is_boss_wave:
-			subtitle = "%s\n%.1fs 后进入 %s" % [
-				"已清场，Boss 气息正在逼近" if cleared_by_cleanup else "时间到，Boss 正在逼近",
-				wave_state_remaining,
-				next_wave_hint,
-			]
-	else:
-		subtitle = "最终波结算中"
+		next_is_boss_wave = _get_wave_type(next_row) == WAVE_TYPE_BOSS
+		next_wave_number = _get_wave_number(current_wave_index + 1)
+	var subtitle := wave_runtime.build_wave_transition_subtitle(
+		cleared_by_cleanup,
+		has_next_wave,
+		next_is_boss_wave,
+		wave_state_remaining,
+		next_wave_number
+	)
 
 	_show_wave_banner("第%s波 完成" % _get_wave_display_text(), subtitle, maxf(wave_state_remaining, wave_banner_seconds))
 
 	if wave_state_remaining == 0.0:
 		_advance_wave()
-
-
-func _build_wave_banner_subtitle() -> String:
-	if wave_rows.is_empty():
-		return ""
-
-	var row: Dictionary = wave_rows[clampi(current_wave_index, 0, wave_rows.size() - 1)]
-	var total: int = int(row.get("total", 0))
-	var spawn_interval := _get_wave_spawn_interval(row)
-	var boss_id_text := _get_wave_boss_id(row, current_wave_index)
-	if not boss_id_text.is_empty():
-		var boss_data: EnemyData = enemy_data_by_id.get(boss_id_text)
-		var boss_name := boss_data.enemy_name if boss_data != null else "Boss"
-		return "%s 来袭" % boss_name
-	if total > 0:
-		if spawn_interval > 0.0:
-			return "目标 %d 只  每 %.2f 秒 1 只" % [total, spawn_interval]
-		return "目标 %d 只" % total
-	if spawn_interval > 0.0:
-		return "敌潮来袭  每 %.2f 秒 1 只" % spawn_interval
-	return "保持阵型"
 
 
 func _is_current_wave_cleared(row: Dictionary, alive_count: int) -> bool:
@@ -4110,33 +3914,6 @@ func _is_current_wave_cleared(row: Dictionary, alive_count: int) -> bool:
 	if not has_boss and not has_limited_spawn and not has_timed_spawn:
 		return false
 	return true
-
-
-func _build_wave_spawn_progress_text() -> String:
-	if wave_rows.is_empty():
-		return ""
-
-	var row: Dictionary = wave_rows[clampi(current_wave_index, 0, wave_rows.size() - 1)]
-	var segments: Array[String] = []
-	var is_boss_wave := _get_wave_type(row) == WAVE_TYPE_BOSS
-	var total: int = int(row.get("total", 0))
-	if total > 0:
-		var unit_label := "Boss" if is_boss_wave else "主怪"
-		segments.append("%s %d/%d" % [unit_label, current_wave_spawned, total])
-
-	for event in current_wave_timed_spawns:
-		var event_count := int(event.get("count", 0))
-		if event_count <= 0:
-			continue
-		var event_enemy := _resolve_enemy_by_id(event.get("enemy_id", ""))
-		var event_name := event_enemy.enemy_name if event_enemy != null else "特殊怪"
-		segments.append("%s %d/%d" % [event_name, int(event.get("spawned_count", 0)), event_count])
-
-	var boss_id_text := _get_wave_boss_id(row, current_wave_index)
-	if is_boss_wave and total <= 0 and not boss_id_text.is_empty():
-		segments.append("Boss %s" % ("已出场" if wave_boss_spawned else "待出场"))
-
-	return "  ".join(segments)
 
 
 func _update_enemy_overload_state(delta: float, alive_enemy_count: int = -1) -> void:
@@ -4239,6 +4016,12 @@ func _load_table_rows(table_name: StringName, sort_key: String) -> Array[Diction
 	return data_table_provider.load_rows(get_tree(), table_name, sort_key)
 
 
+func _load_table_row(table_name: StringName, row_id: Variant) -> Dictionary:
+	if data_table_provider == null:
+		data_table_provider = DataTableProviderScript.new()
+	return data_table_provider.load_row(get_tree(), table_name, row_id)
+
+
 func _is_table_row_banned(row: Dictionary) -> bool:
 	if row.is_empty():
 		return false
@@ -4333,7 +4116,8 @@ func _update_transient_message(delta: float) -> void:
 	if transient_message_remaining > 0.0:
 		transient_message_remaining = maxf(transient_message_remaining - delta, 0.0)
 		if transient_message_remaining == 0.0:
-			message_label.visible = false
+			if hud != null:
+				hud.hide_message()
 
 	if transient_message_remaining == 0.0 and not transient_message_queue.is_empty():
 		var next_message: Dictionary = transient_message_queue.pop_front()
@@ -4344,7 +4128,7 @@ func _update_transient_message(delta: float) -> void:
 
 
 func _show_transient_message(text: String, duration: float = DEFAULT_REWARD_MESSAGE_DURATION) -> void:
-	if message_label == null:
+	if hud == null:
 		return
 
 	if transient_message_remaining > 0.0:
@@ -4358,8 +4142,8 @@ func _show_transient_message(text: String, duration: float = DEFAULT_REWARD_MESS
 
 
 func _display_transient_message(text: String, duration: float) -> void:
-	message_label.text = text
-	message_label.visible = true
+	if hud != null:
+		hud.show_message_text(text)
 	transient_message_remaining = maxf(duration, 0.01)
 
 
@@ -4374,6 +4158,12 @@ func _on_enemy_damaged(world_position: Vector2, amount: int) -> void:
 		24,
 		0.58
 	)
+	if player != null and player.has_method("get_combat_stats") and player.has_method("heal"):
+		var stats = player.get_combat_stats()
+		if stats != null:
+			var on_hit_heal := maxi(int(round(float(stats.get_stat(&"on_hit_heal")))), 0)
+			if on_hit_heal > 0:
+				player.heal(on_hit_heal)
 
 
 func _spawn_enemy_death_feedback(world_position: Vector2, reward_info: Dictionary) -> void:
@@ -4422,7 +4212,7 @@ func _spawn_single_pickup(world_position: Vector2, reward_type: StringName, amou
 		pickup.configure_pickup(reward_type, amount, player, impulse)
 
 
-func _on_pickup_collected(reward_type: StringName, amount: int) -> void:
+func _on_pickup_collected(reward_type: StringName, amount: int, world_position: Vector2) -> void:
 	match reward_type:
 		&"gold":
 			current_gold += maxi(amount, 0)
@@ -4431,6 +4221,9 @@ func _on_pickup_collected(reward_type: StringName, amount: int) -> void:
 			current_exp += maxi(amount, 0)
 			_refresh_level_state(true)
 			_spawn_pickup_gain_text(player.global_position + Vector2(randf_range(-10.0, 10.0), -28.0), amount, reward_type)
+		CARD_CHOICE_PICKUP_REWARD_TYPE:
+			for _i in range(maxi(amount, 1)):
+				_grant_card_choice_opportunity(world_position)
 		_:
 			return
 
@@ -4474,6 +4267,34 @@ func _spawn_coin_burst_effect(world_position: Vector2, burst_scale: float = 1.0)
 	if effect.has_method("configure_burst"):
 		var particle_count := int(clampf(6.0 + burst_scale * 2.5, 6.0, 14.0))
 		effect.configure_burst(particle_count, burst_scale)
+
+
+func _spawn_card_pickup_burst_effect(world_position: Vector2, burst_scale: float = 1.0) -> void:
+	if CardPickupBurstEffectScript == null or effects == null:
+		return
+	var effect := CardPickupBurstEffectScript.new()
+	effect.global_position = world_position
+	effects.add_child(effect)
+	if effect.has_method("configure_burst"):
+		effect.configure_burst(burst_scale)
+
+
+func _play_card_choice_focus_effect() -> void:
+	if card_collect_effect_layer == null:
+		return
+	var flash := ColorRect.new()
+	flash.name = "CardChoiceFocusFlash"
+	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.color = Color(0.98, 0.84, 0.34, 0.0)
+	card_collect_effect_layer.add_child(flash)
+	flash.move_to_front()
+
+	var tween := card_collect_effect_layer.create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(flash, "color", Color(0.98, 0.84, 0.34, 0.12), 0.05)
+	tween.tween_property(flash, "color", Color(0.98, 0.84, 0.34, 0.0), 0.14)
+	tween.tween_callback(Callable(flash, "queue_free"))
 
 
 func _process_kill_reward_thresholds() -> void:
@@ -4634,6 +4455,7 @@ func _compose_all_bonus_values() -> Dictionary:
 	_merge_bonus_dictionary(combined, reward_attribute_bonus_values)
 	_merge_bonus_dictionary(combined, passive_accumulated_bonus_values)
 	_merge_bonus_dictionary(combined, passive_conditional_bonus_values)
+	_merge_bonus_dictionary(combined, weapon_growth_bonus_values)
 
 	for card_row in owned_cards:
 		_merge_bonus_dictionary(combined, _build_card_bonus_values(card_row))
@@ -4822,6 +4644,14 @@ func _apply_builtin_runtime_progress_rates(stats, delta: float) -> bool:
 		var gold_gain := _consume_fractional_progress("gold", scaled_gold_rate * delta)
 		if gold_gain > 0:
 			current_gold += gold_gain
+			changed = true
+
+	var exp_rate := maxf(float(stats.get_stat(&"exp_per_second")), 0.0)
+	if exp_rate > 0.0:
+		var scaled_exp_rate := exp_rate * maxf(1.0 + float(stats.get_stat(&"exp_gain_percent")), 0.0)
+		var exp_gain := _consume_fractional_progress("exp", scaled_exp_rate * delta)
+		if exp_gain > 0:
+			current_exp += exp_gain
 			changed = true
 
 	var kill_rate := maxf(float(stats.get_stat(&"kill_count_per_second")), 0.0)
@@ -5554,8 +5384,6 @@ func _reload_data_tables() -> void:
 	var data_table := _get_data_table_node()
 	if data_table != null:
 		data_table.call("reload_all")
-	Model3DProfileCatalogScript.reload()
-	Model3DActionCatalogScript.reload()
 	if data_table_provider != null:
 		data_table_provider.invalidate()
 	if runtime_enemy_snapshot != null:
@@ -5592,308 +5420,48 @@ func _setup_card_collection_button() -> void:
 	card_collection_button.process_mode = Node.PROCESS_MODE_ALWAYS
 	card_collection_button.pressed.connect(_on_card_collection_button_pressed)
 	_apply_card_collection_button_style()
-	$HUD.add_child(card_collection_button)
+	if hud != null:
+		hud.add_runtime_ui(card_collection_button)
 
 
 func _setup_card_collection_overlay() -> void:
-	card_collection_overlay = ColorRect.new()
+	card_collection_overlay = CARD_COLLECTION_SCENE.instantiate() as CardCollectionOverlayUi
 	card_collection_overlay.name = "CardCollectionOverlay"
-	card_collection_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	card_collection_overlay.color = Color(0.02, 0.04, 0.03, 0.62)
-	card_collection_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	card_collection_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	card_collection_overlay.visible = false
-	card_collection_overlay.gui_input.connect(_on_card_collection_overlay_gui_input)
-	$HUD.add_child(card_collection_overlay)
-
-	card_collection_panel = Panel.new()
-	card_collection_panel.anchor_left = 0.5
-	card_collection_panel.anchor_top = 0.5
-	card_collection_panel.anchor_right = 0.5
-	card_collection_panel.anchor_bottom = 0.5
-	card_collection_panel.offset_left = -540.0
-	card_collection_panel.offset_top = -300.0
-	card_collection_panel.offset_right = 540.0
-	card_collection_panel.offset_bottom = 300.0
-	card_collection_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	card_collection_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	card_collection_overlay.add_child(card_collection_panel)
-
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.05, 0.07, 0.06, 0.98)
-	panel_style.border_color = Color(0.84, 0.76, 0.44, 1.0)
-	panel_style.set_border_width_all(2)
-	panel_style.set_corner_radius_all(16)
-	card_collection_panel.add_theme_stylebox_override("panel", panel_style)
-
-	var header := HBoxContainer.new()
-	header.anchor_right = 1.0
-	header.offset_left = 22.0
-	header.offset_top = 18.0
-	header.offset_right = -22.0
-	header.offset_bottom = 56.0
-	header.add_theme_constant_override("separation", 12)
-	card_collection_panel.add_child(header)
-
-	var title := Label.new()
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title.add_theme_font_size_override("font_size", 28)
-	title.text = "神权收藏"
-	header.add_child(title)
-
-	card_collection_close_button = Button.new()
-	card_collection_close_button.custom_minimum_size = Vector2(92, 36)
-	card_collection_close_button.focus_mode = Control.FOCUS_NONE
-	card_collection_close_button.text = "关闭"
-	card_collection_close_button.pressed.connect(_hide_card_collection.bind(true))
-	header.add_child(card_collection_close_button)
-
-	var body := HBoxContainer.new()
-	body.anchor_right = 1.0
-	body.anchor_bottom = 1.0
-	body.offset_left = 22.0
-	body.offset_top = 70.0
-	body.offset_right = -22.0
-	body.offset_bottom = -22.0
-	body.add_theme_constant_override("separation", 18)
-	card_collection_panel.add_child(body)
-
-	var left_pane := VBoxContainer.new()
-	left_pane.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left_pane.add_theme_constant_override("separation", 12)
-	body.add_child(left_pane)
-
-	card_collection_empty_label = Label.new()
-	card_collection_empty_label.visible = false
-	card_collection_empty_label.text = "当前还没有纳入任何神权。"
-	card_collection_empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	left_pane.add_child(card_collection_empty_label)
-
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	left_pane.add_child(scroll)
-
-	var scroll_content := MarginContainer.new()
-	scroll_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll_content.add_theme_constant_override("margin_right", 12)
-	scroll.add_child(scroll_content)
-
-	card_collection_grid = GridContainer.new()
-	card_collection_grid.columns = 5
-	card_collection_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card_collection_grid.add_theme_constant_override("h_separation", 12)
-	card_collection_grid.add_theme_constant_override("v_separation", 12)
-	scroll_content.add_child(card_collection_grid)
-
-	var right_pane := Panel.new()
-	right_pane.custom_minimum_size = Vector2(320.0, 0.0)
-	right_pane.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_child(right_pane)
-
-	var detail_style := StyleBoxFlat.new()
-	detail_style.bg_color = Color(0.09, 0.11, 0.10, 0.98)
-	detail_style.border_color = Color(0.34, 0.37, 0.33, 1.0)
-	detail_style.set_border_width_all(1)
-	detail_style.set_corner_radius_all(12)
-	right_pane.add_theme_stylebox_override("panel", detail_style)
-
-	var detail_header := HBoxContainer.new()
-	detail_header.offset_left = 18.0
-	detail_header.offset_top = 18.0
-	detail_header.offset_right = 302.0
-	detail_header.offset_bottom = 48.0
-	detail_header.add_theme_constant_override("separation", 8)
-	right_pane.add_child(detail_header)
-
-	card_collection_detail_title_label = Label.new()
-	card_collection_detail_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card_collection_detail_title_label.add_theme_font_size_override("font_size", 20)
-	card_collection_detail_title_label.text = "神权收藏"
-	detail_header.add_child(card_collection_detail_title_label)
-
-	card_collection_detail_tier_label = Label.new()
-	card_collection_detail_tier_label.add_theme_font_size_override("font_size", 14)
-	card_collection_detail_tier_label.text = "等待选择"
-	card_collection_detail_tier_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	detail_header.add_child(card_collection_detail_tier_label)
-
-	var icon_panel := Panel.new()
-	icon_panel.offset_left = 18.0
-	icon_panel.offset_top = 60.0
-	icon_panel.offset_right = 302.0
-	icon_panel.offset_bottom = 236.0
-	right_pane.add_child(icon_panel)
-
-	var icon_style := StyleBoxFlat.new()
-	icon_style.bg_color = Color(0.12, 0.14, 0.13, 1.0)
-	icon_style.border_color = Color(0.46, 0.44, 0.33, 1.0)
-	icon_style.set_border_width_all(1)
-	icon_style.set_corner_radius_all(12)
-	icon_panel.add_theme_stylebox_override("panel", icon_style)
-
-	card_collection_detail_icon_rect = TextureRect.new()
-	card_collection_detail_icon_rect.visible = false
-	card_collection_detail_icon_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-	card_collection_detail_icon_rect.offset_left = 14.0
-	card_collection_detail_icon_rect.offset_top = 14.0
-	card_collection_detail_icon_rect.offset_right = -14.0
-	card_collection_detail_icon_rect.offset_bottom = -14.0
-	card_collection_detail_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	card_collection_detail_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon_panel.add_child(card_collection_detail_icon_rect)
-
-	card_collection_detail_placeholder_label = Label.new()
-	card_collection_detail_placeholder_label.set_anchors_preset(Control.PRESET_FULL_RECT)
-	card_collection_detail_placeholder_label.add_theme_font_size_override("font_size", 36)
-	card_collection_detail_placeholder_label.text = "神权"
-	card_collection_detail_placeholder_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	card_collection_detail_placeholder_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	icon_panel.add_child(card_collection_detail_placeholder_label)
-
-	card_collection_detail_stack_label = Label.new()
-	card_collection_detail_stack_label.offset_left = 18.0
-	card_collection_detail_stack_label.offset_top = 252.0
-	card_collection_detail_stack_label.offset_right = 302.0
-	card_collection_detail_stack_label.offset_bottom = 278.0
-	card_collection_detail_stack_label.add_theme_font_size_override("font_size", 15)
-	card_collection_detail_stack_label.modulate = Color(0.95, 0.87, 0.58, 1.0)
-	card_collection_detail_stack_label.text = "尚未纳入神权"
-	right_pane.add_child(card_collection_detail_stack_label)
-
-	var description_title := Label.new()
-	description_title.offset_left = 18.0
-	description_title.offset_top = 308.0
-	description_title.offset_right = 302.0
-	description_title.offset_bottom = 334.0
-	description_title.add_theme_font_size_override("font_size", 16)
-	description_title.text = "描述"
-	right_pane.add_child(description_title)
-
-	card_collection_detail_description_label = RichTextLabel.new()
-	card_collection_detail_description_label.offset_left = 18.0
-	card_collection_detail_description_label.offset_top = 340.0
-	card_collection_detail_description_label.offset_right = 302.0
-	card_collection_detail_description_label.offset_bottom = 500.0
-	card_collection_detail_description_label.bbcode_enabled = false
-	card_collection_detail_description_label.scroll_active = true
-	card_collection_detail_description_label.fit_content = false
-	card_collection_detail_description_label.text = "将鼠标放到左侧神权上，这里会显示实时说明。"
-	right_pane.add_child(card_collection_detail_description_label)
+	card_collection_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_set_process_mode_recursive(card_collection_overlay, Node.PROCESS_MODE_ALWAYS)
+	if hud != null:
+		hud.add_runtime_ui(card_collection_overlay)
+	if not card_collection_overlay.close_requested.is_connected(_hide_card_collection.bind(true)):
+		card_collection_overlay.close_requested.connect(_hide_card_collection.bind(true))
+	if not card_collection_overlay.sort_mode_changed.is_connected(_on_card_collection_sort_button_pressed):
+		card_collection_overlay.sort_mode_changed.connect(_on_card_collection_sort_button_pressed)
+	if not card_collection_overlay.stack_selected.is_connected(_on_card_collection_stack_selected):
+		card_collection_overlay.stack_selected.connect(_on_card_collection_stack_selected)
+	card_collection_overlay.clear_collection()
 
 
 func _setup_card_choice_overlay() -> void:
-	card_choice_overlay = ColorRect.new()
+	card_choice_overlay = CARD_CHOICE_SCENE.instantiate() as CardChoiceOverlayUi
 	card_choice_overlay.name = "CardChoiceOverlay"
-	card_choice_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	card_choice_overlay.color = Color(0.02, 0.04, 0.03, 0.76)
-	card_choice_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	card_choice_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	card_choice_overlay.visible = false
-	$HUD.add_child(card_choice_overlay)
+	card_choice_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_set_process_mode_recursive(card_choice_overlay, Node.PROCESS_MODE_ALWAYS)
+	if hud != null:
+		hud.add_runtime_ui(card_choice_overlay)
+	if not card_choice_overlay.option_selected.is_connected(_on_card_choice_selected):
+		card_choice_overlay.option_selected.connect(_on_card_choice_selected)
+	if not card_choice_overlay.refresh_requested.is_connected(_on_card_choice_refresh_pressed):
+		card_choice_overlay.refresh_requested.connect(_on_card_choice_refresh_pressed)
+	card_choice_overlay.clear_choices()
 
-	var panel := Panel.new()
-	panel.anchor_left = 0.5
-	panel.anchor_top = 0.5
-	panel.anchor_right = 0.5
-	panel.anchor_bottom = 0.5
-	panel.offset_left = -560.0
-	panel.offset_top = -310.0
-	panel.offset_right = 560.0
-	panel.offset_bottom = 310.0
-	panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	card_choice_overlay.add_child(panel)
 
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.05, 0.07, 0.06, 0.98)
-	panel_style.border_color = Color(0.91, 0.80, 0.48, 1.0)
-	panel_style.set_border_width_all(2)
-	panel_style.set_corner_radius_all(18)
-	panel.add_theme_stylebox_override("panel", panel_style)
-
-	card_choice_title_label = Label.new()
-	card_choice_title_label.anchor_right = 1.0
-	card_choice_title_label.offset_left = 30.0
-	card_choice_title_label.offset_top = 20.0
-	card_choice_title_label.offset_right = -30.0
-	card_choice_title_label.offset_bottom = 58.0
-	card_choice_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	card_choice_title_label.add_theme_font_size_override("font_size", 30)
-	card_choice_title_label.text = CARD_CHOICE_DEBUG_TITLE
-	panel.add_child(card_choice_title_label)
-
-	card_choice_hint_label = Label.new()
-	card_choice_hint_label.anchor_right = 1.0
-	card_choice_hint_label.offset_left = 30.0
-	card_choice_hint_label.offset_top = 60.0
-	card_choice_hint_label.offset_right = -30.0
-	card_choice_hint_label.offset_bottom = 88.0
-	card_choice_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	card_choice_hint_label.add_theme_font_size_override("font_size", 16)
-	card_choice_hint_label.text = "从 3 张神权中选择 1 张，选择后将立即生效。"
-	panel.add_child(card_choice_hint_label)
-
-	card_choice_button_row = HBoxContainer.new()
-	card_choice_button_row.anchor_right = 1.0
-	card_choice_button_row.offset_left = 30.0
-	card_choice_button_row.offset_top = 108.0
-	card_choice_button_row.offset_right = -30.0
-	card_choice_button_row.offset_bottom = 388.0
-	card_choice_button_row.add_theme_constant_override("separation", 16)
-	panel.add_child(card_choice_button_row)
-
-	var detail_panel := Panel.new()
-	detail_panel.anchor_left = 0.5
-	detail_panel.anchor_top = 1.0
-	detail_panel.anchor_right = 0.5
-	detail_panel.anchor_bottom = 1.0
-	detail_panel.offset_left = -470.0
-	detail_panel.offset_top = -188.0
-	detail_panel.offset_right = 470.0
-	detail_panel.offset_bottom = -24.0
-	panel.add_child(detail_panel)
-
-	var detail_style := StyleBoxFlat.new()
-	detail_style.bg_color = Color(0.08, 0.10, 0.09, 0.98)
-	detail_style.border_color = Color(0.33, 0.36, 0.33, 1.0)
-	detail_style.set_border_width_all(1)
-	detail_style.set_corner_radius_all(12)
-	detail_panel.add_theme_stylebox_override("panel", detail_style)
-
-	card_choice_detail_name_label = Label.new()
-	card_choice_detail_name_label.anchor_right = 1.0
-	card_choice_detail_name_label.offset_left = 22.0
-	card_choice_detail_name_label.offset_top = 16.0
-	card_choice_detail_name_label.offset_right = -22.0
-	card_choice_detail_name_label.offset_bottom = 44.0
-	card_choice_detail_name_label.add_theme_font_size_override("font_size", 24)
-	card_choice_detail_name_label.text = "神权预览"
-	detail_panel.add_child(card_choice_detail_name_label)
-
-	card_choice_detail_owned_label = Label.new()
-	card_choice_detail_owned_label.anchor_right = 1.0
-	card_choice_detail_owned_label.offset_left = 22.0
-	card_choice_detail_owned_label.offset_top = 48.0
-	card_choice_detail_owned_label.offset_right = -22.0
-	card_choice_detail_owned_label.offset_bottom = 72.0
-	card_choice_detail_owned_label.add_theme_font_size_override("font_size", 15)
-	card_choice_detail_owned_label.modulate = Color(0.95, 0.87, 0.58, 1.0)
-	card_choice_detail_owned_label.text = "尚未纳入神权"
-	detail_panel.add_child(card_choice_detail_owned_label)
-
-	card_choice_detail_description_label = RichTextLabel.new()
-	card_choice_detail_description_label.anchor_right = 1.0
-	card_choice_detail_description_label.anchor_bottom = 1.0
-	card_choice_detail_description_label.offset_left = 22.0
-	card_choice_detail_description_label.offset_top = 82.0
-	card_choice_detail_description_label.offset_right = -22.0
-	card_choice_detail_description_label.offset_bottom = -18.0
-	card_choice_detail_description_label.bbcode_enabled = false
-	card_choice_detail_description_label.scroll_active = true
-	card_choice_detail_description_label.fit_content = false
-	card_choice_detail_description_label.text = "将鼠标放到神权上即可预览详细效果。"
-	detail_panel.add_child(card_choice_detail_description_label)
+func _set_process_mode_recursive(node: Node, mode: Node.ProcessMode) -> void:
+	if node == null:
+		return
+	node.process_mode = mode
+	for child in node.get_children():
+		_set_process_mode_recursive(child, mode)
 
 
 func _setup_card_collect_effect_layer() -> void:
@@ -5902,7 +5470,8 @@ func _setup_card_collect_effect_layer() -> void:
 	card_collect_effect_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	card_collect_effect_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card_collect_effect_layer.process_mode = Node.PROCESS_MODE_ALWAYS
-	$HUD.add_child(card_collect_effect_layer)
+	if hud != null:
+		hud.add_runtime_ui(card_collect_effect_layer)
 
 
 func _update_runtime_pause_state() -> void:
@@ -5925,10 +5494,9 @@ func _show_card_collection() -> void:
 	if card_collection_overlay != null:
 		card_collection_overlay.visible = true
 		card_collection_overlay.move_to_front()
+		card_collection_overlay.grab_close_focus()
 	if card_collect_effect_layer != null:
 		card_collect_effect_layer.move_to_front()
-	if card_collection_close_button != null:
-		card_collection_close_button.grab_focus()
 	_update_runtime_pause_state()
 
 
@@ -5936,62 +5504,90 @@ func _hide_card_collection(restore_pause_state: bool = true) -> void:
 	card_collection_visible = false
 	card_collection_selected_stack_key = ""
 	if card_collection_overlay != null:
+		card_collection_overlay.clear_collection()
 		card_collection_overlay.visible = false
 	if restore_pause_state:
 		_update_runtime_pause_state()
 
 
-func _on_card_collection_overlay_gui_input(event: InputEvent) -> void:
-	var mouse_button := event as InputEventMouseButton
-	if mouse_button == null:
-		return
-	if mouse_button.button_index == MOUSE_BUTTON_LEFT and mouse_button.pressed:
-		_hide_card_collection(true)
-
-
 func _debug_open_card_choice() -> void:
+	_try_open_card_choice_overlay(CARD_CHOICE_DEBUG_TITLE)
+
+
+func _try_open_card_choice_overlay(title: String) -> bool:
+	if selection_active or game_over or player_respawning or battle_finished:
+		return false
+	if card_choice_overlay_request_pending:
+		return false
 	if card_choice_overlay_visible or card_collection_visible:
-		return
+		return false
 	if card_rows.is_empty():
 		_show_transient_message("当前卡池为空，无法打开神权三选一。")
-		return
+		return false
 	if attributes_panel_visible:
 		_hide_attributes_panel()
 	var choice_rows := _draw_random_card_choices(CARD_CHOICE_DRAW_COUNT)
+	choice_rows = _ensure_demo_card_choice_visible(choice_rows)
 	if choice_rows.is_empty():
 		_show_transient_message("当前没有可用于抽取的神权。")
+		return false
+	_show_card_choice_overlay(choice_rows, title)
+	return true
+
+
+func _request_queued_card_choice_overlay() -> void:
+	if queued_card_choice_pickups <= 0:
 		return
-	_show_card_choice_overlay(choice_rows, CARD_CHOICE_DEBUG_TITLE)
+	if card_choice_overlay_request_pending:
+		return
+	if selection_active or game_over or player_respawning or battle_finished:
+		return
+	if card_choice_overlay_visible or card_collection_visible:
+		return
+	card_choice_overlay_request_pending = true
+	_play_card_choice_focus_effect()
+	var tween := create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_interval(0.12)
+	tween.tween_callback(Callable(self, "_open_queued_card_choice_overlay"))
+
+
+func _open_queued_card_choice_overlay() -> void:
+	card_choice_overlay_request_pending = false
+	if queued_card_choice_pickups <= 0:
+		return
+	if _try_open_card_choice_overlay(CARD_CHOICE_PICKUP_TITLE):
+		queued_card_choice_pickups = maxi(queued_card_choice_pickups - 1, 0)
 
 
 func _show_card_choice_overlay(choice_rows: Array[Dictionary], title: String) -> void:
 	card_choice_rows = choice_rows.duplicate(true)
 	card_choice_selected_index = -1
+	card_choice_refresh_remaining = CARD_CHOICE_DEFAULT_REFRESH_COUNT
+	card_choice_title_text = title
 	card_choice_overlay_visible = true
 	if card_choice_overlay != null:
 		card_choice_overlay.visible = true
 		card_choice_overlay.move_to_front()
+		card_choice_overlay.configure_choices(_build_card_choice_ui_rows(card_choice_rows), card_choice_title_text, card_choice_refresh_remaining)
+		card_choice_overlay.play_open_transition()
 	if card_collect_effect_layer != null:
 		card_collect_effect_layer.move_to_front()
-	_set_label_text_if_changed(card_choice_title_label, title)
-	_rebuild_card_choice_buttons()
-	if not card_choice_rows.is_empty():
-		_show_card_choice_detail(0)
 	_update_runtime_pause_state()
 
 
 func _hide_card_choice_overlay(restore_pause_state: bool = true) -> void:
 	card_choice_overlay_visible = false
 	card_choice_rows.clear()
-	card_choice_button_nodes.clear()
 	card_choice_selected_index = -1
-	if card_choice_button_row != null:
-		for child in card_choice_button_row.get_children():
-			child.queue_free()
+	card_choice_refresh_remaining = 0
+	card_choice_title_text = CARD_CHOICE_DEBUG_TITLE
 	if card_choice_overlay != null:
+		card_choice_overlay.clear_choices()
 		card_choice_overlay.visible = false
 	if restore_pause_state:
 		_update_runtime_pause_state()
+	_request_queued_card_choice_overlay()
 
 
 func _draw_random_card_choices(draw_count: int) -> Array[Dictionary]:
@@ -6010,126 +5606,64 @@ func _draw_random_card_choices(draw_count: int) -> Array[Dictionary]:
 	return picked
 
 
-func _rebuild_card_choice_buttons() -> void:
-	if card_choice_button_row == null:
+func _ensure_demo_card_choice_visible(choice_rows: Array[Dictionary]) -> Array[Dictionary]:
+	if choice_rows.is_empty():
+		return choice_rows
+	var demo_names := CARD_CHOICE_DEMO_ICON_BY_NAME.keys()
+	if demo_names.is_empty():
+		return choice_rows
+	for row in choice_rows:
+		if CARD_CHOICE_DEMO_ICON_BY_NAME.has(String(row.get("name", "")).strip_edges()):
+			return choice_rows
+	var demo_row := _find_card_row_by_name(String(demo_names[0]))
+	if demo_row.is_empty():
+		return choice_rows
+	var output := choice_rows.duplicate(true)
+	output[0] = demo_row.duplicate(true)
+	return output
+
+
+func _find_card_row_by_name(target_name: String) -> Dictionary:
+	var normalized_target := target_name.strip_edges()
+	if normalized_target.is_empty():
+		return {}
+	for row in card_rows:
+		if String(row.get("name", "")).strip_edges() == normalized_target:
+			return row
+	return {}
+
+
+func _build_card_choice_ui_rows(source_rows: Array[Dictionary]) -> Array[Dictionary]:
+	var ui_rows: Array[Dictionary] = []
+	for row in source_rows:
+		var ui_row := row.duplicate(true)
+		ui_row["owned_count"] = _get_owned_card_count_for_row(row)
+		ui_row["icon_texture"] = _resolve_card_icon(row)
+		ui_rows.append(ui_row)
+	return ui_rows
+
+
+func _build_card_collection_ui_stack_infos() -> Array[Dictionary]:
+	var ui_stack_infos: Array[Dictionary] = []
+	for stack_info in _build_owned_card_stack_infos():
+		var ui_stack_info := stack_info.duplicate(true)
+		var card_row: Dictionary = ui_stack_info.get("row", {})
+		ui_stack_info["icon_texture"] = _resolve_card_icon(card_row)
+		ui_stack_infos.append(ui_stack_info)
+	return ui_stack_infos
+
+
+func _on_card_choice_refresh_pressed() -> void:
+	if not card_choice_overlay_visible:
 		return
-	for child in card_choice_button_row.get_children():
-		child.queue_free()
-	card_choice_button_nodes.clear()
-	for index in card_choice_rows.size():
-		var button := _build_card_choice_option_button(card_choice_rows[index], index)
-		card_choice_button_nodes.append(button)
-		card_choice_button_row.add_child(button)
-
-
-func _build_card_choice_option_button(card_row: Dictionary, index: int) -> Button:
-	var button := Button.new()
-	button.custom_minimum_size = Vector2(0.0, 280.0)
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.focus_mode = Control.FOCUS_NONE
-	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	button.text = ""
-	button.clip_text = true
-
-	var tier := int(card_row.get("tier", 0))
-	_apply_card_choice_button_style(button, tier, false)
-
-	var content := VBoxContainer.new()
-	content.name = "Content"
-	content.set_anchors_preset(Control.PRESET_FULL_RECT)
-	content.offset_left = 12.0
-	content.offset_top = 12.0
-	content.offset_right = -12.0
-	content.offset_bottom = -12.0
-	content.alignment = BoxContainer.ALIGNMENT_CENTER
-	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_theme_constant_override("separation", 8)
-	button.add_child(content)
-
-	var icon_panel := Panel.new()
-	icon_panel.custom_minimum_size = Vector2(0.0, 160.0)
-	icon_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	icon_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_child(icon_panel)
-
-	var icon_panel_style := StyleBoxFlat.new()
-	icon_panel_style.bg_color = Color(0.09, 0.11, 0.10, 0.96)
-	icon_panel_style.border_color = Color(0.28, 0.30, 0.28, 1.0)
-	icon_panel_style.set_border_width_all(1)
-	icon_panel_style.set_corner_radius_all(12)
-	icon_panel.add_theme_stylebox_override("panel", icon_panel_style)
-
-	var icon_texture := _resolve_card_icon(card_row)
-	if icon_texture != null:
-		var icon_rect := TextureRect.new()
-		icon_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-		icon_rect.offset_left = 12.0
-		icon_rect.offset_top = 12.0
-		icon_rect.offset_right = -12.0
-		icon_rect.offset_bottom = -12.0
-		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon_rect.texture = icon_texture
-		icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		icon_panel.add_child(icon_rect)
-	else:
-		var placeholder := Label.new()
-		placeholder.set_anchors_preset(Control.PRESET_FULL_RECT)
-		placeholder.text = _build_card_placeholder_text(String(card_row.get("name", card_row.get("id", "神权"))))
-		placeholder.add_theme_font_size_override("font_size", 34)
-		placeholder.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		placeholder.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		icon_panel.add_child(placeholder)
-
-	var name_label := Label.new()
-	name_label.text = String(card_row.get("name", card_row.get("id", "神权")))
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	name_label.add_theme_font_size_override("font_size", 20)
-	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_child(name_label)
-
-	var tier_label := Label.new()
-	tier_label.text = "阶级 %d" % tier
-	tier_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	tier_label.modulate = (_get_card_tier_colors(tier).get("border", Color(0.88, 0.82, 0.62, 1.0)) as Color)
-	tier_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_child(tier_label)
-
-	var owned_count := _get_owned_card_count_for_row(card_row)
-	var owned_label := Label.new()
-	owned_label.text = _format_owned_card_count_text(owned_count)
-	owned_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	owned_label.add_theme_font_size_override("font_size", 14)
-	owned_label.modulate = Color(0.95, 0.87, 0.58, 1.0)
-	owned_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_child(owned_label)
-
-	button.tooltip_text = "%s\n%s\n%s" % [
-		String(card_row.get("name", card_row.get("id", "神权"))),
-		_format_owned_card_count_text(owned_count),
-		String(card_row.get("description", "暂无描述")).strip_edges(),
-	]
-	button.mouse_entered.connect(_show_card_choice_detail.bind(index))
-	button.pressed.connect(_on_card_choice_selected.bind(index))
-	return button
-
-
-func _show_card_choice_detail(index: int) -> void:
-	if index < 0 or index >= card_choice_rows.size():
+	if card_choice_refresh_remaining <= 0:
 		return
-	var card_row := card_choice_rows[index]
-	card_choice_selected_index = index
-	_set_label_text_if_changed(
-		card_choice_detail_name_label,
-		"%s  |  阶级 %d" % [String(card_row.get("name", card_row.get("id", "神权"))), int(card_row.get("tier", 0))]
-	)
-	_set_label_text_if_changed(card_choice_detail_owned_label, _format_owned_card_count_text(_get_owned_card_count_for_row(card_row)))
-	_set_rich_text_if_changed(card_choice_detail_description_label, String(card_row.get("description", "暂无描述")).strip_edges())
-	for button_index in card_choice_button_nodes.size():
-		var button := card_choice_button_nodes[button_index]
-		_apply_card_choice_button_style(button, int(card_choice_rows[button_index].get("tier", 0)), button_index == index)
+	card_choice_refresh_remaining -= 1
+	var draw_count := maxi(card_choice_rows.size(), CARD_CHOICE_DRAW_COUNT)
+	card_choice_rows = _ensure_demo_card_choice_visible(_draw_random_card_choices(draw_count))
+	card_choice_selected_index = -1
+	if card_choice_overlay != null:
+		card_choice_overlay.configure_choices(_build_card_choice_ui_rows(card_choice_rows), card_choice_title_text, card_choice_refresh_remaining)
 
 
 func _on_card_choice_selected(index: int) -> void:
@@ -6138,11 +5672,10 @@ func _on_card_choice_selected(index: int) -> void:
 	if card_choice_selected_index == -2:
 		return
 	card_choice_selected_index = -2
-	for button in card_choice_button_nodes:
-		if button != null:
-			button.disabled = true
+	if card_choice_overlay != null:
+		card_choice_overlay.set_interaction_locked(true)
 	var chosen_row := card_choice_rows[index].duplicate(true)
-	var source_center := _get_control_global_center(card_choice_button_nodes[index])
+	var source_center := card_choice_overlay.get_option_global_center(index) if card_choice_overlay != null else Vector2.ZERO
 	_add_owned_card(chosen_row)
 	_play_card_collect_animation(chosen_row, source_center)
 
@@ -6233,29 +5766,32 @@ func _refresh_card_collection_button_state() -> void:
 
 
 func _rebuild_card_collection_ui() -> void:
-	if card_collection_grid == null:
+	if card_collection_overlay == null:
 		return
-	for child in card_collection_grid.get_children():
-		child.queue_free()
-	card_collection_slot_buttons.clear()
-	var stack_infos := _build_owned_card_stack_infos()
-	if stack_infos.is_empty():
-		card_collection_empty_label.visible = true
-		_show_card_collection_detail({})
+	var stack_infos := _build_card_collection_ui_stack_infos()
+	if card_collection_selected_stack_key.is_empty() and not stack_infos.is_empty():
+		card_collection_selected_stack_key = String(stack_infos[0].get("stack_key", "")).strip_edges()
+	card_collection_overlay.configure_collection(stack_infos, card_collection_selected_stack_key, card_collection_sort_mode)
+
+
+func _on_card_collection_sort_button_pressed(mode: String) -> void:
+	if mode != CARD_COLLECTION_SORT_TIME and mode != CARD_COLLECTION_SORT_QUALITY:
 		return
-	card_collection_empty_label.visible = false
-	for stack_info in stack_infos:
-		var button := _build_owned_card_slot_button(stack_info)
-		card_collection_slot_buttons.append(button)
-		card_collection_grid.add_child(button)
-	if card_collection_selected_stack_key.is_empty():
-		card_collection_selected_stack_key = String(stack_infos[0].get("stack_key", ""))
-	_show_card_collection_detail(_find_card_stack_info(stack_infos, card_collection_selected_stack_key))
+	if card_collection_sort_mode == mode:
+		return
+	card_collection_sort_mode = mode
+	if card_collection_visible:
+		_rebuild_card_collection_ui()
+
+
+func _on_card_collection_stack_selected(stack_key: String) -> void:
+	card_collection_selected_stack_key = stack_key.strip_edges()
 
 
 func _build_owned_card_stack_infos() -> Array[Dictionary]:
 	var stacks_by_key: Dictionary = {}
 	var ordered: Array[Dictionary] = []
+	var acquired_index := 0
 	for card_row in owned_cards:
 		var card_name := String(card_row.get("name", card_row.get("id", "神权"))).strip_edges()
 		if card_name.is_empty():
@@ -6265,6 +5801,7 @@ func _build_owned_card_stack_infos() -> Array[Dictionary]:
 				"stack_key": card_name,
 				"row": card_row,
 				"count": 1,
+				"first_acquired_index": acquired_index,
 			}
 			stacks_by_key[card_name] = info
 			ordered.append(info)
@@ -6272,135 +5809,24 @@ func _build_owned_card_stack_infos() -> Array[Dictionary]:
 			var stack_info: Dictionary = stacks_by_key[card_name]
 			stack_info["count"] = int(stack_info.get("count", 0)) + 1
 			stacks_by_key[card_name] = stack_info
+		acquired_index += 1
 	for index in ordered.size():
 		var key := String(ordered[index].get("stack_key", ""))
 		ordered[index] = stacks_by_key.get(key, ordered[index])
 	ordered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		var tier_a := int((a.get("row", {}) as Dictionary).get("tier", 0))
-		var tier_b := int((b.get("row", {}) as Dictionary).get("tier", 0))
-		if tier_a != tier_b:
-			return tier_a > tier_b
+		if card_collection_sort_mode == CARD_COLLECTION_SORT_TIME:
+			var time_a := int(a.get("first_acquired_index", 0))
+			var time_b := int(b.get("first_acquired_index", 0))
+			if time_a != time_b:
+				return time_a < time_b
+		else:
+			var tier_a := int((a.get("row", {}) as Dictionary).get("tier", 0))
+			var tier_b := int((b.get("row", {}) as Dictionary).get("tier", 0))
+			if tier_a != tier_b:
+				return tier_a > tier_b
 		return String(a.get("stack_key", "")) < String(b.get("stack_key", ""))
 	)
 	return ordered
-
-
-func _find_card_stack_info(stack_infos: Array[Dictionary], stack_key: String) -> Dictionary:
-	for stack_info in stack_infos:
-		if String(stack_info.get("stack_key", "")) == stack_key:
-			return stack_info
-	return {}
-
-
-func _build_owned_card_slot_button(stack_info: Dictionary) -> Button:
-	var card_row: Dictionary = stack_info.get("row", {})
-	var stack_key := String(stack_info.get("stack_key", ""))
-	var count := int(stack_info.get("count", 0))
-	var card_name := String(card_row.get("name", card_row.get("id", "神权")))
-	var tier := int(card_row.get("tier", 0))
-	var button := Button.new()
-	button.custom_minimum_size = Vector2(96.0, 126.0)
-	button.focus_mode = Control.FOCUS_NONE
-	button.clip_text = true
-	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
-	button.expand_icon = true
-	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	button.text = ""
-
-	var icon_texture := _resolve_card_icon(card_row)
-	if icon_texture != null:
-		button.icon = icon_texture
-	else:
-		button.text = _build_card_placeholder_text(card_name)
-
-	button.tooltip_text = "%s\n%s\n%s" % [
-		card_name,
-		_format_owned_card_count_text(count),
-		String(card_row.get("description", "暂无描述")).strip_edges(),
-	]
-	button.set_meta("stack_key", stack_key)
-	button.set_meta("card_tier", tier)
-	_apply_card_collection_slot_style(button, tier, stack_key == card_collection_selected_stack_key)
-
-	var badge := Label.new()
-	badge.text = "x%d" % max(count, 1)
-	badge.anchor_left = 1.0
-	badge.anchor_top = 0.0
-	badge.anchor_right = 1.0
-	badge.anchor_bottom = 0.0
-	badge.offset_left = -40.0
-	badge.offset_top = 8.0
-	badge.offset_right = -8.0
-	badge.offset_bottom = 28.0
-	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	badge.add_theme_font_size_override("font_size", 13)
-	badge.modulate = Color(0.98, 0.94, 0.84, 1.0)
-	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	button.add_child(badge)
-
-	button.mouse_entered.connect(_on_owned_card_slot_hovered.bind(stack_key))
-	button.pressed.connect(_on_owned_card_slot_hovered.bind(stack_key))
-	return button
-
-
-func _on_owned_card_slot_hovered(stack_key: String) -> void:
-	card_collection_selected_stack_key = stack_key
-	var stack_infos := _build_owned_card_stack_infos()
-	_show_card_collection_detail(_find_card_stack_info(stack_infos, stack_key))
-
-
-func _show_card_collection_detail(stack_info: Dictionary) -> void:
-	if stack_info.is_empty():
-		_set_label_text_if_changed(card_collection_detail_title_label, "神权收藏")
-		_set_label_text_if_changed(card_collection_detail_tier_label, "等待选择")
-		_set_label_text_if_changed(card_collection_detail_stack_label, "尚未纳入神权")
-		_set_rich_text_if_changed(card_collection_detail_description_label, "当前还没有神权，完成选择后会在这里显示实时说明。")
-		if card_collection_detail_icon_rect != null:
-			card_collection_detail_icon_rect.texture = null
-			card_collection_detail_icon_rect.visible = false
-		if card_collection_detail_placeholder_label != null:
-			card_collection_detail_placeholder_label.visible = true
-			card_collection_detail_placeholder_label.text = "神权"
-		card_collection_selected_stack_key = ""
-		_refresh_owned_card_slot_highlight()
-		return
-
-	var card_row: Dictionary = stack_info.get("row", {})
-	var stack_key := String(stack_info.get("stack_key", ""))
-	var card_name := String(card_row.get("name", card_row.get("id", "神权")))
-	var tier := int(card_row.get("tier", 0))
-	var description := String(card_row.get("description", "暂无描述")).strip_edges()
-	var stack_count := int(stack_info.get("count", 0))
-	card_collection_selected_stack_key = stack_key
-	_set_label_text_if_changed(card_collection_detail_title_label, card_name)
-	_set_label_text_if_changed(card_collection_detail_tier_label, "阶级 %d" % tier)
-	_set_label_text_if_changed(card_collection_detail_stack_label, _format_owned_card_count_text(stack_count))
-	_set_rich_text_if_changed(card_collection_detail_description_label, description)
-	if card_collection_detail_tier_label != null:
-		card_collection_detail_tier_label.modulate = (_get_card_tier_colors(tier).get("border", Color(0.87, 0.78, 0.51, 1.0)) as Color)
-
-	var icon_texture := _resolve_card_icon(card_row)
-	if card_collection_detail_icon_rect != null:
-		card_collection_detail_icon_rect.texture = icon_texture
-		card_collection_detail_icon_rect.visible = icon_texture != null
-	if card_collection_detail_placeholder_label != null:
-		card_collection_detail_placeholder_label.visible = icon_texture == null
-		if icon_texture == null:
-			card_collection_detail_placeholder_label.text = _build_card_placeholder_text(card_name)
-	_refresh_owned_card_slot_highlight()
-
-
-func _refresh_owned_card_slot_highlight() -> void:
-	for button in card_collection_slot_buttons:
-		if button == null or not is_instance_valid(button):
-			continue
-		var stack_key := String(button.get_meta("stack_key", ""))
-		var tier := int(button.get_meta("card_tier", 0))
-		_apply_card_collection_slot_style(button, tier, stack_key == card_collection_selected_stack_key)
 
 
 func _get_owned_card_count_for_row(card_row: Dictionary) -> int:
@@ -6413,22 +5839,16 @@ func _get_owned_card_count_for_row(card_row: Dictionary) -> int:
 	return count
 
 
-func _format_owned_card_count_text(count: int) -> String:
-	if count <= 0:
-		return "尚未纳入神权"
-	return "已纳入神权 x%d" % count
-
-
 func _apply_card_collection_button_style() -> void:
 	if card_collection_button == null:
 		return
 	var normal_style := StyleBoxFlat.new()
-	normal_style.bg_color = Color(0.12, 0.16, 0.14, 0.96)
-	normal_style.border_color = Color(0.94, 0.85, 0.52, 1.0)
+	normal_style.bg_color = Color(0.18, 0.12, 0.07, 0.94)
+	normal_style.border_color = Color(0.96, 0.79, 0.42, 1.0)
 	normal_style.set_border_width_all(2)
 	normal_style.set_corner_radius_all(12)
 	var hover_style := normal_style.duplicate()
-	hover_style.bg_color = Color(0.17, 0.21, 0.19, 1.0)
+	hover_style.bg_color = Color(0.26, 0.16, 0.08, 0.98)
 	hover_style.border_color = Color(1.0, 0.92, 0.62, 1.0)
 	card_collection_button.add_theme_stylebox_override("normal", normal_style)
 	card_collection_button.add_theme_stylebox_override("hover", hover_style)
@@ -6436,52 +5856,6 @@ func _apply_card_collection_button_style() -> void:
 	card_collection_button.add_theme_stylebox_override("focus", hover_style)
 	card_collection_button.add_theme_font_size_override("font_size", 18)
 	card_collection_button.add_theme_color_override("font_color", Color(0.98, 0.97, 0.92, 1.0))
-
-
-func _apply_card_collection_slot_style(button: Button, tier: int, is_selected: bool) -> void:
-	if button == null:
-		return
-	var colors := _get_card_tier_colors(tier)
-	var bg_color := colors.get("bg", Color(0.12, 0.14, 0.16, 0.96)) as Color
-	var tier_border := colors.get("border", Color(0.55, 0.55, 0.55, 1.0)) as Color
-	var selected_border := Color(0.96, 0.80, 0.36, 1.0)
-	var border_color := selected_border if is_selected else tier_border
-	var border_width := 3 if is_selected else 2
-	var normal_style := StyleBoxFlat.new()
-	normal_style.bg_color = bg_color
-	normal_style.border_color = border_color
-	normal_style.set_border_width_all(border_width)
-	normal_style.set_corner_radius_all(10)
-	var hover_style := normal_style.duplicate()
-	hover_style.bg_color = bg_color.lightened(0.08)
-	hover_style.border_color = selected_border.lightened(0.08) if is_selected else tier_border.lightened(0.12)
-	button.add_theme_stylebox_override("normal", normal_style)
-	button.add_theme_stylebox_override("hover", hover_style)
-	button.add_theme_stylebox_override("pressed", hover_style)
-	button.add_theme_stylebox_override("focus", hover_style)
-	button.add_theme_font_size_override("font_size", 15)
-
-
-func _apply_card_choice_button_style(button: Button, tier: int, is_selected: bool) -> void:
-	if button == null:
-		return
-	var colors := _get_card_tier_colors(tier)
-	var border_color := colors.get("border", Color(0.82, 0.77, 0.59, 1.0)) as Color
-	var bg_color := colors.get("bg", Color(0.14, 0.16, 0.13, 0.96)) as Color
-	var highlight := Color(0.98, 0.87, 0.46, 1.0) if is_selected else border_color
-	var border_width := 4 if is_selected else 2
-	var normal_style := StyleBoxFlat.new()
-	normal_style.bg_color = bg_color
-	normal_style.border_color = highlight
-	normal_style.set_border_width_all(border_width)
-	normal_style.set_corner_radius_all(16)
-	var hover_style := normal_style.duplicate()
-	hover_style.bg_color = bg_color.lightened(0.08)
-	hover_style.border_color = highlight.lightened(0.08)
-	button.add_theme_stylebox_override("normal", normal_style)
-	button.add_theme_stylebox_override("hover", hover_style)
-	button.add_theme_stylebox_override("pressed", hover_style)
-	button.add_theme_stylebox_override("focus", hover_style)
 
 
 func _get_card_tier_colors(tier: int) -> Dictionary:
@@ -6508,7 +5882,14 @@ func _resolve_card_icon(card_row: Dictionary) -> Texture2D:
 		return null
 	var raw_icon := String(raw_icon_value).strip_edges()
 	if raw_icon.is_empty():
-		return null
+		var fallback_id := String(card_row.get("id", "")).strip_edges()
+		if CARD_CHOICE_DEMO_ICON_BY_ID.has(fallback_id):
+			raw_icon = String(CARD_CHOICE_DEMO_ICON_BY_ID.get(fallback_id, "")).strip_edges()
+		var fallback_name := String(card_row.get("name", "")).strip_edges()
+		if raw_icon.is_empty() and CARD_CHOICE_DEMO_ICON_BY_NAME.has(fallback_name):
+			raw_icon = String(CARD_CHOICE_DEMO_ICON_BY_NAME.get(fallback_name, "")).strip_edges()
+		if raw_icon.is_empty():
+			return null
 	var candidates := _build_card_icon_candidates(raw_icon)
 	for candidate in candidates:
 		if ResourceLoader.exists(candidate):

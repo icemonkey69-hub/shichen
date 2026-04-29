@@ -1,20 +1,20 @@
-﻿[
+[
     {
-        "id":  "challenge_01",
-        "base_cd":  45,
-        "reward_type":  "encounter",
-        "scaling_factor":  1.15
+        "id": "challenge_01",
+        "base_cd": 45.0,
+        "reward_type": "encounter",
+        "scaling_factor": 1.15
     },
     {
-        "id":  "challenge_02",
-        "base_cd":  60,
-        "reward_type":  "crystal",
-        "scaling_factor":  1.2
+        "id": "challenge_02",
+        "base_cd": 60.0,
+        "reward_type": "crystal",
+        "scaling_factor": 1.2
     },
     {
-        "id":  "challenge_03",
-        "base_cd":  50,
-        "reward_type":  "token",
-        "scaling_factor":  1.18
+        "id": "challenge_03",
+        "base_cd": 50.0,
+        "reward_type": "token",
+        "scaling_factor": 1.18
     }
 ]

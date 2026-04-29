@@ -1,57 +1,50 @@
-# 怪物模型预览器（独立）
+# 3D 模型预览器（F6）
 
-这是一个完全独立的预览场景，不会影响你的主项目流程：
+这是独立预览工具，不接入主场景启动流程。打开 `res://combat_visual_editor/model_viewer/model_viewer.tscn` 后按 F6 运行当前场景。
 
-- 不修改 `run/main_scene`
-- 不加入 autoload
-- 工具资源位于 `res://combat_visual_editor/`
-- 生成配置写入主项目资源目录 `res://assets/heroes/models_3d/`
+## 新资源管线
 
-## 打开方式
+- 人物与动作目录：`E:/Godot/model_3D/Ai_Model`
+- 武器目录：`E:/Godot/model_3D/Ai_weapons`
+- 配置输出目录：`res://assets/heroes/models_3d/`
 
-在 Godot 中打开：
+每个白模/角色使用一个独立文件夹，例如：
 
-`res://combat_visual_editor/model_viewer/model_viewer.tscn`
+```text
+E:/Godot/model_3D/Ai_Model/Knight_A/
+  Knight_A_benti.glb
+  Knight_A_Idle.glb
+  Knight_A_Run.fbx
+  Knight_A_Attack_01.glb
+```
 
-运行方式建议：
+本体规则只认 `*_benti.glb` / `*_benti.fbx`。同文件夹内其他 GLB/GLTF/FBX 都是动作文件，包括 `*_Idle`。
 
-- 按 `F6`（运行当前场景），不要按 `F5`（运行主项目）
+武器模型放入：
 
-## 功能
+```text
+E:/Godot/model_3D/Ai_weapons/
+```
 
-- 使用统一资源池（不再分包）：角色/武器会自动合并显示
-- 可切换角色、右手武器、左手武器、体型
-- 可播放动作（动作下拉 + 播放/停止 + 循环 + 速度）
-- 可选合并 `KayKit_Character_Animations_1.1` 的扩展动作库
-- 动作名称显示为“中文解释 | 原始英文名”
-- 武器名称显示为“中文解释 | 原始英文名”
-- 支持头发/皮肤/衣服/帽子配色预设
-- 支持右手/左手武器姿态微调（各自位置XYZ + 旋转XYZ）
-- 支持“配置ID + 模型备注”生成（如 `1001-小骷髅`）
-- 支持在“已生成配置”下拉中查找并一键载入（如 `1001-小骷髅`）
-- 支持攻击编排（攻击1~6槽位）：可设置动作、伤害帧、FPS、受击骨骼、特效ID
-- 攻击面板可实时显示当前播放帧，并支持“一键追加当前帧”到伤害帧列表
-- 在攻击面板切换动作会直接播放该动作；受击骨骼使用下拉列表（自动读取模型骨骼）
-- 支持“帧拖动条”：拖动后会自动暂停并停在指定帧，方便确认投射/命中时机
-- 可随机组合
+武器支持 GLB/GLTF/FBX，预期为无动作、无骨骼模型。F6 可选择左右手武器，并保存左右手位移、旋转、缩放微调。
 
-## 操作
+## FBX 支持
 
-- 鼠标右键拖拽：旋转视角
-- 鼠标滚轮：缩放镜头
+Godot 预览时会通过 `E:/Blender/blender.exe` 临时把 FBX 转成 GLB，缓存到 `E:/Godot/model_3D/F6_Cache`。模型改动后如果预览没刷新，删除该缓存目录即可重新转换。
 
-## 生成配置
+也可以手动运行：
 
-- 在“配置ID”输入 `1001`，并可在“模型备注”填写例如 `小骷髅`
-- 也支持直接在“配置ID”输入 `1001-小骷髅`
-- 点击“生成配置”
-- 输出目录：`res://assets/heroes/models_3d/<ID>/monster_profile.json`
-- 会同时更新：`res://assets/heroes/models_3d/index.json`
-- 会保存当前武器微调参数（位置/旋转）
-- 会保存 `attack_plan`（命中帧与效果绑定数据）
-- `attack_plan` 不包含伤害公式结果，伤害值建议在主项目战斗公式中计算
+```text
+E:/Godot/model_3D/一键处理F6模型资源.bat
+```
 
-## 关于“为什么角色不能直接播动作”
+它会预先处理 `E:/Godot/model_3D/Ai_Model`，把非本体动作文件转成轻量 animation-only GLB 缓存，减少 F6 首次打开时的等待。
 
-这两个 KayKit 包里，`Characters/*.glb` 是角色网格和骨架，通常不带动作轨道。
-动作在 `Animations/gltf/Rig_Medium/*.glb` 里，预览器会自动把动作库合并后播放。
+## 保存内容
+
+点击“生成配置”会写入：
+
+- `res://assets/heroes/models_3d/<ID>/monster_profile.json`
+- `res://assets/heroes/models_3d/index.json`
+
+配置会记录角色路径、左右手武器路径、动作名、体型缩放、武器微调、攻击编排和命中帧，后续游戏运行时可按 ID 读取使用。

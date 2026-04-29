@@ -1,0 +1,151 @@
+[gd_scene format=3 uid="uid://cfji3a766lp6"]
+
+[ext_resource type="Texture2D" uid="uid://gce1v0e346xo" path="res://assets/ui/card_choice/frames/tier_1_white.png" id="1_frame"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_surface"]
+bg_color = Color(0.0980392, 0.0745098, 0.0588235, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.576471, 0.439216, 0.294118, 0.42)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+shadow_color = Color(0, 0, 0, 0.24)
+shadow_size = 6
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_icon_holder"]
+bg_color = Color(0.0784314, 0.0980392, 0.0862745, 0)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[node name="神权三选一卡牌" type="Button" unique_id=2092291244]
+custom_minimum_size = Vector2(300, 380)
+anchors_preset = -1
+anchor_right = 0.22900002
+anchor_bottom = 0.568
+offset_right = 0.23999023
+offset_bottom = -0.08001709
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+mouse_default_cursor_shape = 2
+
+[node name="根" type="Control" parent="." unique_id=1594183500]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="底板" type="Panel" parent="根" unique_id=724092305]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_surface")
+
+[node name="图标容器" type="Panel" parent="根" unique_id=1834752473]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.31500003
+anchor_right = 0.5
+anchor_bottom = 0.31500003
+offset_left = -64.0
+offset_top = -63.90001
+offset_right = 64.0
+offset_bottom = 64.09999
+theme_override_styles/panel = SubResource("StyleBoxFlat_icon_holder")
+
+[node name="图标" type="TextureRect" parent="根/图标容器" unique_id=1238812731]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -64.0
+offset_top = -64.0
+offset_right = 64.0
+offset_bottom = 64.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="占位" type="Label" parent="根/图标容器" unique_id=1549081257]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.96, 0.88, 0.92)
+theme_override_font_sizes/font_size = 60
+text = "?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="卡框" type="TextureRect" parent="根" unique_id=187606851]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.0050000004
+anchor_top = 0.0050000004
+anchor_right = 0.998
+anchor_bottom = 1.0
+offset_left = -1.6500001
+offset_top = -2.3000002
+offset_right = 0.66000366
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_frame")
+expand_mode = 1
+
+[node name="名字" type="Label" parent="根" unique_id=1073072145]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.523
+anchor_right = 0.5
+anchor_bottom = 0.523
+offset_left = -74.0
+offset_top = -13.0
+offset_right = 74.0
+offset_bottom = 13.0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_font_sizes/font_size = 18
+text = "示例神权"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+
+[node name="描述" type="Label" parent="根" unique_id=705959222]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.736
+anchor_right = 0.5
+anchor_bottom = 0.736
+offset_left = -102.0
+offset_top = -52.0
+offset_right = 102.0
+offset_bottom = 52.0
+theme_override_colors/font_color = Color(0.93, 0.89, 0.82, 0.92)
+theme_override_font_sizes/font_size = 13
+text = "这里显示两到三行的神权说明。"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+clip_text = true

@@ -1,0 +1,90 @@
+[gd_scene format=3 uid="uid://cfni1hhmvipld"]
+
+[ext_resource type="Script" uid="uid://odgldegwy7hy" path="res://scenes/ui/波次信息.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="1_frame"]
+bg_color = Color(0.09, 0.07, 0.04, 0.72)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.72, 0.57, 0.28, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="波次信息" type="Control" unique_id=1901618453]
+visible = false
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_top = 10.0
+offset_right = 120.0
+offset_bottom = 64.0
+grow_horizontal = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="背景" type="ColorRect" parent="." unique_id=2042077146]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07, 0.05, 0.03, 0.32)
+
+[node name="面板" type="Panel" parent="." unique_id=488212927]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("1_frame")
+
+[node name="标题" type="Label" parent="面板" unique_id=899510594]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 4.0
+offset_bottom = 20.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.68, 1)
+theme_override_font_sizes/font_size = 12
+text = "第1波  战斗中"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="进度" type="Label" parent="面板" unique_id=1606789276]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 20.0
+offset_bottom = 36.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.91, 0.81, 0.55, 1)
+theme_override_font_sizes/font_size = 12
+text = "场上怪物 0/50"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+
+[node name="计时" type="Label" parent="面板" unique_id=908151263]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 37.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.96, 0.9)
+theme_override_font_sizes/font_size = 8
+text = "剩余 80.0s"
+horizontal_alignment = 1
+vertical_alignment = 1

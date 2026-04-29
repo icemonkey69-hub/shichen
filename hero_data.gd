@@ -10,10 +10,6 @@ class_name HeroData
 @export var model_id: StringName = &"default_player"
 @export var preview_model_id: StringName = &""
 @export var bloodline_ids: PackedStringArray = PackedStringArray()
-@export var model_profile_overrides: Dictionary = {}
-@export var preview_model_profile_overrides: Dictionary = {}
-@export var model_profile_override_tag := ""
-@export var preview_model_profile_override_tag := ""
 @export var portrait_icon: Texture2D
 
 @export_group("Core Attributes")

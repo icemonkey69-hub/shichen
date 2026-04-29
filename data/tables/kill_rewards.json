@@ -1,22 +1,22 @@
-﻿[
+[
     {
-        "threshold":  25,
-        "reward_type":  "gold",
-        "reward_value":  "500"
+        "threshold": 25,
+        "reward_type": "gold",
+        "reward_value": "500"
     },
     {
-        "threshold":  60,
-        "reward_type":  "card",
-        "reward_value":  "random_tier_1"
+        "threshold": 60,
+        "reward_type": "card",
+        "reward_value": "random_tier_1"
     },
     {
-        "threshold":  120,
-        "reward_type":  "attribute",
-        "reward_value":  "attack_damage:+10%"
+        "threshold": 120,
+        "reward_type": "attribute",
+        "reward_value": "attack_damage:+10%"
     },
     {
-        "threshold":  200,
-        "reward_type":  "weapon",
-        "reward_value":  "random_quality_2"
+        "threshold": 200,
+        "reward_type": "weapon",
+        "reward_value": "random_quality_2"
     }
 ]

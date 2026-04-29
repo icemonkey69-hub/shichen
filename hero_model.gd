@@ -117,6 +117,10 @@ func set_jump_phase(phase_index: int) -> void:
 	_set_jump_phase_recursive(self, phase_index)
 
 
+func get_jump_motion_config() -> Dictionary:
+	return _get_jump_motion_config_recursive(self)
+
+
 func set_visual_height(offset_y: float) -> void:
 	_set_visual_height_recursive(self, offset_y)
 
@@ -302,6 +306,18 @@ func _set_jump_phase_recursive(node: Node, phase_index: int) -> void:
 
 	if node.has_method("set_jump_phase") and node != self:
 		node.call("set_jump_phase", phase_index)
+
+
+func _get_jump_motion_config_recursive(node: Node) -> Dictionary:
+	for child in node.get_children():
+		var child_config := _get_jump_motion_config_recursive(child)
+		if not child_config.is_empty():
+			return child_config
+	if node.has_method("get_jump_motion_config") and node != self:
+		var value: Variant = node.call("get_jump_motion_config")
+		if value is Dictionary:
+			return value as Dictionary
+	return {}
 
 
 func _set_visual_height_recursive(node: Node, offset_y: float) -> void:

@@ -35,9 +35,9 @@ const DRAW_ORDER_BASE := 2000
 const DRAW_ORDER_MIN := 1
 const DRAW_ORDER_MAX := 4095
 
-@export var camera_target_visible_size := Vector2(1100.0, 620.0)
+@export var camera_target_visible_size := Vector2(1450.0, 820.0)
 @export var min_camera_zoom := 0.68
-@export var max_camera_zoom := 1.0
+@export var max_camera_zoom := 1.2
 @export var enemy_push_min_distance := 54.0
 @export var enemy_push_max_step := 12.0
 
@@ -63,6 +63,11 @@ var jump_total_elapsed := 0.0
 var jump_start_position := Vector2.ZERO
 var jump_target_position := Vector2.ZERO
 var jump_travel_direction := Vector2.DOWN
+var jump_collision_ignore_seconds := -1.0
+var jump_collision_land_seconds := -1.0
+var jump_motion_duration_override := -1.0
+var jump_collision_ignore_applied := false
+var jump_collision_land_applied := false
 var facing_direction := Vector2.DOWN
 var attack_in_progress := false
 var attack_pending_projectile := false
@@ -184,6 +189,11 @@ func apply_hero_data(data: HeroData) -> void:
 	jump_start_position = Vector2.ZERO
 	jump_target_position = Vector2.ZERO
 	jump_travel_direction = Vector2.DOWN
+	jump_collision_ignore_seconds = -1.0
+	jump_collision_land_seconds = -1.0
+	jump_motion_duration_override = -1.0
+	jump_collision_ignore_applied = false
+	jump_collision_land_applied = false
 	facing_direction = Vector2.DOWN
 	visual_root.rotation = 0.0
 	_load_model_for_hero()
@@ -373,6 +383,11 @@ func respawn(respawn_position: Vector2, invulnerability: float = 1.5) -> void:
 	jump_start_position = Vector2.ZERO
 	jump_target_position = Vector2.ZERO
 	jump_travel_direction = Vector2.DOWN
+	jump_collision_ignore_seconds = -1.0
+	jump_collision_land_seconds = -1.0
+	jump_motion_duration_override = -1.0
+	jump_collision_ignore_applied = false
+	jump_collision_land_applied = false
 	if collision_shape != null:
 		collision_shape.disabled = false
 
@@ -540,8 +555,15 @@ func _start_jump(direction: Vector2) -> void:
 	jump_phase = 0
 	jump_total_elapsed = 0.0
 	jump_cooldown_remaining = jump_cooldown
+	_load_jump_motion_config()
 	_cancel_attack(true)
-	collision_shape.disabled = true
+	jump_collision_ignore_applied = false
+	jump_collision_land_applied = false
+	if jump_collision_ignore_seconds <= 0.0:
+		_set_jump_collision_disabled(true)
+		jump_collision_ignore_applied = true
+	else:
+		_set_jump_collision_disabled(false)
 	velocity = Vector2.ZERO
 	var travel_direction: Vector2 = direction
 	if travel_direction == Vector2.ZERO:
@@ -571,6 +593,7 @@ func _process_jump(delta: float) -> void:
 
 	jump_elapsed += delta
 	jump_total_elapsed += delta
+	_update_jump_collision_window()
 	var total_duration: float = phase_durations[0] + phase_durations[1] + phase_durations[2]
 	var travel_t: float = clampf(jump_total_elapsed / maxf(total_duration, 0.001), 0.0, 1.0)
 	global_position = jump_start_position.lerp(jump_target_position, travel_t)
@@ -602,9 +625,14 @@ func _finish_jump() -> void:
 	jump_elapsed = 0.0
 	jump_phase = 0
 	jump_total_elapsed = 0.0
+	jump_collision_ignore_seconds = -1.0
+	jump_collision_land_seconds = -1.0
+	jump_motion_duration_override = -1.0
+	jump_collision_ignore_applied = false
+	jump_collision_land_applied = false
 	global_position = jump_target_position
 	_set_jump_visual_height(0.0)
-	collision_shape.disabled = false
+	_set_jump_collision_disabled(false)
 	_push_overlapping_enemies()
 	if current_hero_model != null:
 		current_hero_model.stop_jump(facing_direction, false)
@@ -616,12 +644,43 @@ func _get_jump_phase_durations() -> PackedFloat32Array:
 	var landing: float = maxf(jump_landing_duration, 0.02)
 	var total: float = takeoff + air + landing
 	var max_total: float = maxf(jump_max_duration, 0.06)
+	if jump_motion_duration_override > 0.0:
+		max_total = maxf(jump_motion_duration_override, 0.06)
 	if total > max_total:
 		var duration_scale: float = max_total / total
 		takeoff *= duration_scale
 		air *= duration_scale
 		landing *= duration_scale
 	return PackedFloat32Array([takeoff, air, landing])
+
+
+func _load_jump_motion_config() -> void:
+	jump_collision_ignore_seconds = -1.0
+	jump_collision_land_seconds = -1.0
+	jump_motion_duration_override = -1.0
+	if current_hero_model == null or not current_hero_model.has_method("get_jump_motion_config"):
+		return
+	var config: Variant = current_hero_model.call("get_jump_motion_config")
+	if config is not Dictionary:
+		return
+	var jump_config := config as Dictionary
+	jump_collision_ignore_seconds = float(jump_config.get("ignore_collision_seconds", -1.0))
+	jump_collision_land_seconds = float(jump_config.get("land_seconds", -1.0))
+	jump_motion_duration_override = float(jump_config.get("duration_seconds", -1.0))
+
+
+func _update_jump_collision_window() -> void:
+	if jump_collision_ignore_seconds >= 0.0 and not jump_collision_ignore_applied and jump_total_elapsed >= jump_collision_ignore_seconds:
+		_set_jump_collision_disabled(true)
+		jump_collision_ignore_applied = true
+	if jump_collision_land_seconds >= 0.0 and not jump_collision_land_applied and jump_total_elapsed >= jump_collision_land_seconds:
+		_set_jump_collision_disabled(false)
+		jump_collision_land_applied = true
+
+
+func _set_jump_collision_disabled(disabled: bool) -> void:
+	if collision_shape != null:
+		collision_shape.set_deferred("disabled", disabled)
 
 
 func _set_jump_visual_height(offset_y: float) -> void:
@@ -718,19 +777,9 @@ func _load_model_for_hero() -> void:
 	current_hero_model = current_model_root as HeroModel
 
 	if current_hero_model != null:
-		_apply_runtime_model_profile_overrides()
 		_apply_collision_radius(current_hero_model.collision_radius)
 
 	_update_draw_order()
-
-
-func _apply_runtime_model_profile_overrides() -> void:
-	if hero_data == null or current_hero_model == null:
-		return
-	var overrides: Dictionary = hero_data.model_profile_overrides
-	if overrides.is_empty():
-		return
-	current_hero_model.apply_profile_overrides(overrides)
 
 
 func _apply_collision_radius(radius: float) -> void:

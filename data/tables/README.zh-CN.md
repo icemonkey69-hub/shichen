@@ -25,8 +25,12 @@
 - `kill_rewards.json`
 - `levelup.json`
 - `talents.json`
-- `actions.json`（3D非攻击状态动作映射）
+- `runtime_constants.json`（运行时常量 / 概率 / 冷却参数）
+
+## 对应源表
+- `runtime_constants.json` 来源于 `res://Excel/runtime_constants#运行时常量.xlsx`
 
 ## 角色选择界面相关 JSON
 - `heroes.json`：模板名称/描述/头像/展示色、`bloodline_ids`（可选血脉ID列表）与 `ban`（禁用开关）
 - `bloodlines.json`：血脉主属性、基础战斗属性、Q/W/R 名称描述图标、`skill_group_id/name`、`model_id`、颜色、icon、`ban`（禁用开关）
+- `model_id` 现在对应 `res://assets/heroes/models_3d/index.json` 中的 3D 配置 ID

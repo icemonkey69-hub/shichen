@@ -9,7 +9,7 @@ func rebuild(rows: Array[Dictionary]) -> void:
 	for row in rows:
 		if not bool(row.get("enabled", true)):
 			continue
-		var template_id := str(row.get("template_id", "")).strip_edges()
+		var template_id: String = str(row.get("template_id", "")).strip_edges()
 		if template_id.is_empty():
 			continue
 		if not rows_by_template.has(template_id):
@@ -20,7 +20,7 @@ func rebuild(rows: Array[Dictionary]) -> void:
 
 
 func get_rows(template_id: String) -> Array[Dictionary]:
-	var normalized_template_id := template_id.strip_edges()
+	var normalized_template_id: String = template_id.strip_edges()
 	if normalized_template_id.is_empty():
 		return []
 	var raw_rows: Array = rows_by_template.get(normalized_template_id, []) as Array
