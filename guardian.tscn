@@ -11,12 +11,12 @@ script = ExtResource("1_guardian")
 [node name="VisualRoot" type="Node2D" parent="."]
 
 [node name="Body" type="Polygon2D" parent="VisualRoot"]
-color = Color(0.32, 0.72, 1, 0.92)
-polygon = PackedVector2Array(0, -24, 18, -6, 12, 18, 0, 26, -12, 18, -18, -6)
+color = Color(1, 0.48, 0.08, 0.96)
+polygon = PackedVector2Array(0, -28, 22, 0, 0, 28, -22, 0)
 
-[node name="Core" type="Polygon2D" parent="VisualRoot"]
-color = Color(0.92, 0.98, 1, 0.95)
-polygon = PackedVector2Array(0, -10, 8, 0, 0, 10, -8, 0)
+[node name="Highlight" type="Polygon2D" parent="VisualRoot"]
+color = Color(1, 0.82, 0.28, 0.82)
+polygon = PackedVector2Array(0, -18, 12, 0, 0, 18, -12, 0)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 enabled = false
