@@ -3306,7 +3306,7 @@ func _refresh_attribute_panel_values() -> void:
 	if attributes_panel == null or attribute_panel_entries.is_empty():
 		return
 
-	var stats = player.get_combat_stats() if player != null and player.has_method("get_combat_stats") else null
+	var stats = _get_player_combat_stats()
 	if stats == null and selected_hero != null:
 		stats = AttributeSystemScript.build_hero_stats(selected_hero)
 	if stats == null:
@@ -3884,8 +3884,8 @@ func _on_enemy_damaged(world_position: Vector2, amount: int) -> void:
 		24,
 		0.58
 	)
-	if player != null and player.has_method("get_combat_stats") and player.has_method("heal"):
-		var stats = player.get_combat_stats()
+	if player != null and player.has_method("heal"):
+		var stats = _get_player_combat_stats()
 		if stats != null:
 			var on_hit_heal := maxi(int(round(float(stats.get_stat(&"on_hit_heal")))), 0)
 			if on_hit_heal > 0:
@@ -4186,7 +4186,7 @@ func _process_card_runtime_effects(delta: float) -> void:
 	passive_tick_accumulator = 0.0
 	_update_conditional_card_passives()
 
-	var stats = player.get_combat_stats() if player.has_method("get_combat_stats") else null
+	var stats = _get_player_combat_stats()
 	if stats == null:
 		return
 
@@ -4194,7 +4194,9 @@ func _process_card_runtime_effects(delta: float) -> void:
 	bonuses_changed = _apply_card_runtime_specs_for_second(stats, tick_delta) or bonuses_changed
 	if bonuses_changed:
 		_push_runtime_bonus_values_to_player(true)
-		stats = player.get_combat_stats() if player.has_method("get_combat_stats") else stats
+		var refreshed_stats = _get_player_combat_stats()
+		if refreshed_stats != null:
+			stats = refreshed_stats
 
 	var progress_changed := _apply_builtin_runtime_progress_rates(stats, tick_delta)
 	if progress_changed:
@@ -4204,10 +4206,7 @@ func _process_card_runtime_effects(delta: float) -> void:
 
 
 func _apply_card_passives_on_kill() -> void:
-	if player == null or not player.has_method("get_combat_stats"):
-		return
-
-	var stats = player.get_combat_stats()
+	var stats = _get_player_combat_stats()
 	if stats == null:
 		return
 
@@ -4223,10 +4222,7 @@ func _apply_card_passives_on_kill() -> void:
 
 
 func _apply_card_passives_on_wave_cleared() -> void:
-	if player == null or not player.has_method("get_combat_stats"):
-		return
-
-	var stats = player.get_combat_stats()
+	var stats = _get_player_combat_stats()
 	if stats == null:
 		return
 
@@ -4249,10 +4245,7 @@ func _update_conditional_card_passives() -> void:
 			break
 	if not has_condition_spec and passive_conditional_bonus_values.is_empty():
 		return
-	if player == null or not player.has_method("get_combat_stats"):
-		return
-
-	var stats = player.get_combat_stats()
+	var stats = _get_player_combat_stats()
 	if stats == null:
 		return
 
