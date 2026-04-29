@@ -5,7 +5,7 @@ signal option_selected(index: int)
 signal refresh_requested
 
 const CARD_CHOICE_FRAME_DIR := "res://assets/ui/card_choice/frames"
-const CARD_CHOICE_SELECTION_SHADER := "res://assets/shaders/card_choice_selected_highlight.gdshader"
+const CARD_CHOICE_SELECTION_SHADER_RESOURCE := preload("res://assets/shaders/card_choice_selected_highlight.gdshader")
 const CARD_CHOICE_TEMPLATE_SLOT_COUNT := 9
 const CARD_ICON_FALLBACK_DIR := "res://assets/ui/icons/cards"
 const CARD_NAME_MAX_FONT_SIZE := 18
@@ -30,6 +30,8 @@ var selected_index := -1
 var refresh_remaining := 0
 var interaction_locked := false
 var open_transition_tween: Tween
+var frame_texture_cache: Dictionary = {}
+var icon_texture_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -408,10 +410,9 @@ func _build_selection_highlight() -> TextureRect:
 	overlay.z_index = 20
 	overlay.modulate = Color.WHITE
 	overlay.visible = false
-	var shader := load(CARD_CHOICE_SELECTION_SHADER) as Shader
-	if shader != null:
+	if CARD_CHOICE_SELECTION_SHADER_RESOURCE != null:
 		var selection_material := ShaderMaterial.new()
-		selection_material.shader = shader
+		selection_material.shader = CARD_CHOICE_SELECTION_SHADER_RESOURCE
 		selection_material.set_shader_parameter("strength", 0.0)
 		selection_material.set_shader_parameter("flash_strength", 0.0)
 		selection_material.set_shader_parameter("sweep_progress", 0.0)
@@ -580,9 +581,13 @@ func _get_tier_colors(tier: int) -> Dictionary:
 
 func _load_frame_texture(tier: int) -> Texture2D:
 	var path := "%s/tier_%d_%s.png" % [CARD_CHOICE_FRAME_DIR, tier, _tier_asset_suffix(tier)]
+	if frame_texture_cache.has(path):
+		return frame_texture_cache.get(path, null) as Texture2D
+	var texture: Texture2D = null
 	if ResourceLoader.exists(path):
-		return load(path) as Texture2D
-	return null
+		texture = load(path) as Texture2D
+	frame_texture_cache[path] = texture
+	return texture
 
 
 func _tier_asset_suffix(tier: int) -> String:
@@ -613,12 +618,18 @@ func _get_icon_texture(row: Dictionary) -> Texture2D:
 	var icon_ref := String(row.get("icon", "")).strip_edges()
 	if icon_ref.is_empty():
 		return null
+	if icon_texture_cache.has(icon_ref):
+		return icon_texture_cache.get(icon_ref, null) as Texture2D
+	var texture: Texture2D = null
 	if ResourceLoader.exists(icon_ref):
-		return load(icon_ref) as Texture2D
+		texture = load(icon_ref) as Texture2D
+		icon_texture_cache[icon_ref] = texture
+		return texture
 	var fallback_path := "%s/%s.png" % [CARD_ICON_FALLBACK_DIR, icon_ref]
 	if ResourceLoader.exists(fallback_path):
-		return load(fallback_path) as Texture2D
-	return null
+		texture = load(fallback_path) as Texture2D
+	icon_texture_cache[icon_ref] = texture
+	return texture
 
 
 func _build_placeholder_text(card_name: String) -> String:

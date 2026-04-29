@@ -13,6 +13,8 @@ const TemplateBloodlineOptionIndexScript := preload("res://systems/template_bloo
 const SelectionStateScript := preload("res://systems/selection_state.gd")
 const WaveRuntimeScript := preload("res://systems/wave_runtime.gd")
 const BattleResultFormatterScript := preload("res://systems/battle_result_formatter.gd")
+const WeaponGrowthRuntimeScript := preload("res://systems/weapon_growth_runtime.gd")
+const CardCollectionBuilderScript := preload("res://systems/card_collection_builder.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const MAX_PICKUPS_PER_REWARD_TYPE := 6
@@ -41,7 +43,6 @@ const CARD_CHOICE_DRAW_COUNT := 3
 const CARD_CHOICE_DEFAULT_REFRESH_COUNT := 2
 const CARD_CHOICE_PICKUP_REWARD_TYPE: StringName = &"card_choice"
 const WEAPON_GROWTH_TABLE_NAME: StringName = &"weapon_growth"
-const SWORD_SHIELD_BLOODLINE_ID := "2001"
 const RUNTIME_CONSTANT_TABLE_NAME: StringName = &"runtime_constants"
 const RUNTIME_CONSTANT_CARD_CHOICE_COOLDOWN_ID := "1"
 const RUNTIME_CONSTANT_CARD_CHOICE_INITIAL_CHANCE_ID := "2"
@@ -551,14 +552,6 @@ var passive_tick_accumulator := 0.0
 var passive_spec_progress: Dictionary = {}
 var card_rows: Array[Dictionary] = []
 var weapon_rows: Array[Dictionary] = []
-var weapon_growth_rows: Array[Dictionary] = []
-var weapon_growth_rows_by_slot: Dictionary = {}
-var weapon_growth_levels := {
-	"sword": 0,
-	"shield": 0,
-}
-var weapon_growth_bonus_values: Dictionary = {}
-var weapon_growth_available := false
 var bloodline_rows: Array[Dictionary] = []
 var template_bloodline_option_rows: Array[Dictionary] = []
 var kill_reward_rows: Array[Dictionary] = []
@@ -603,6 +596,7 @@ var data_table_provider: DataTableProvider
 var template_bloodline_option_index: TemplateBloodlineOptionIndex
 var selection_state: SelectionState
 var wave_runtime: WaveRuntime
+var weapon_growth_runtime: WeaponGrowthRuntime
 
 var attributes_panel: AttributesPanelUi
 var attributes_value_labels: Dictionary = {}
@@ -613,6 +607,7 @@ var card_collection_overlay: CardCollectionOverlayUi
 var card_collection_sort_mode := CARD_COLLECTION_SORT_QUALITY
 var card_collection_selected_stack_key := ""
 var card_collection_visible := false
+var card_icon_texture_cache: Dictionary = {}
 var card_choice_overlay: CardChoiceOverlayUi
 var card_choice_overlay_visible := false
 var card_choice_rows: Array[Dictionary] = []
@@ -661,6 +656,7 @@ func _ready() -> void:
 	template_bloodline_option_index = TemplateBloodlineOptionIndexScript.new()
 	selection_state = SelectionStateScript.new()
 	wave_runtime = WaveRuntimeScript.new()
+	weapon_growth_runtime = WeaponGrowthRuntimeScript.new()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	player.process_mode = Node.PROCESS_MODE_PAUSABLE
 	enemies.process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -1877,27 +1873,9 @@ func _load_weapon_rows() -> void:
 
 
 func _load_weapon_growth_rows() -> void:
-	weapon_growth_rows = _load_table_rows(WEAPON_GROWTH_TABLE_NAME, "step")
-	_rebuild_weapon_growth_row_index()
-
-
-func _rebuild_weapon_growth_row_index() -> void:
-	weapon_growth_rows_by_slot.clear()
-	for row in weapon_growth_rows:
-		if String(row.get("bloodline_id", "")).strip_edges() != SWORD_SHIELD_BLOODLINE_ID:
-			continue
-		var slot := String(row.get("slot", "")).strip_edges()
-		if slot.is_empty():
-			continue
-		var slot_rows: Array = weapon_growth_rows_by_slot.get(slot, [])
-		slot_rows.append(row)
-		weapon_growth_rows_by_slot[slot] = slot_rows
-
-	for slot in weapon_growth_rows_by_slot.keys():
-		var rows: Array = weapon_growth_rows_by_slot[slot]
-		rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-			return int(a.get("step", 0)) < int(b.get("step", 0))
-		)
+	if weapon_growth_runtime == null:
+		weapon_growth_runtime = WeaponGrowthRuntimeScript.new()
+	weapon_growth_runtime.setup_rows(_load_table_rows(WEAPON_GROWTH_TABLE_NAME, "step"))
 
 
 func _load_bloodline_rows() -> void:
@@ -2874,7 +2852,7 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 	player_respawn_anchor = player.global_position
 	player.visible = true
 	player.apply_hero_data(hero)
-	if weapon_growth_available:
+	if weapon_growth_runtime != null and weapon_growth_runtime.is_available():
 		_push_runtime_bonus_values_to_player(false)
 	else:
 		_sync_player_runtime_progress()
@@ -2941,107 +2919,26 @@ func clear_runtime_bonus_values(preserve_resources: bool = true) -> void:
 
 
 func _reset_weapon_growth_runtime_state(hero: HeroData, bloodline_option: Dictionary) -> void:
-	weapon_growth_levels["sword"] = 0
-	weapon_growth_levels["shield"] = 0
-	weapon_growth_bonus_values.clear()
-	weapon_growth_available = _is_weapon_growth_supported(hero, bloodline_option)
-	if weapon_growth_available:
-		_refresh_weapon_growth_bonus_values()
+	if weapon_growth_runtime == null:
+		weapon_growth_runtime = WeaponGrowthRuntimeScript.new()
+	weapon_growth_runtime.reset(hero, bloodline_option)
 	_refresh_weapon_growth_panel()
 
 
-func _is_weapon_growth_supported(hero: HeroData, bloodline_option: Dictionary) -> bool:
-	if weapon_growth_rows_by_slot.is_empty():
-		return false
-	var bloodline_id := _normalize_bloodline_id_token(bloodline_option.get("bloodline_id", ""))
-	if bloodline_id.is_empty():
-		bloodline_id = _normalize_bloodline_id_token(bloodline_option.get("id", ""))
-	if bloodline_id == SWORD_SHIELD_BLOODLINE_ID:
-		return true
-	if hero != null and String(hero.model_id) == SWORD_SHIELD_BLOODLINE_ID:
-		return true
-	return false
-
-
-func _refresh_weapon_growth_bonus_values() -> void:
-	weapon_growth_bonus_values.clear()
-	if not weapon_growth_available:
-		return
-
-	for slot in ["sword", "shield"]:
-		var rows: Array = weapon_growth_rows_by_slot.get(slot, [])
-		if rows.is_empty():
-			continue
-		var current_step := clampi(int(weapon_growth_levels.get(slot, 0)), 0, rows.size() - 1)
-		weapon_growth_levels[slot] = current_step
-		for index in range(current_step + 1):
-			_merge_weapon_growth_row_bonus(rows[index])
-
-
-func _merge_weapon_growth_row_bonus(row: Dictionary) -> void:
-	for slot_index in range(1, 4):
-		var stat_id_text := String(row.get("stat_%d_id" % slot_index, "")).strip_edges()
-		if stat_id_text.is_empty():
-			continue
-		var stat_id := _resolve_weapon_growth_stat_id(stat_id_text)
-		if stat_id == &"":
-			continue
-		var value := float(row.get("stat_%d_value" % slot_index, 0.0))
-		_add_dict_bonus_value(weapon_growth_bonus_values, stat_id, value)
-
-
-func _resolve_weapon_growth_stat_id(stat_id_text: String) -> StringName:
-	if stat_id_text != "primary_attr":
-		return StringName(stat_id_text)
-
-	var primary_attr := &"str"
-	if selected_hero != null:
-		primary_attr = selected_hero.primary_attr
-	match String(primary_attr):
-		"agi":
-			return &"added_agi"
-		"int":
-			return &"added_int"
-		_:
-			return &"added_str"
-
-
 func _on_weapon_growth_upgrade_requested(slot: String) -> void:
-	if selection_active or game_over or not weapon_growth_available:
+	if selection_active or game_over or weapon_growth_runtime == null or not weapon_growth_runtime.is_available():
 		return
-	var normalized_slot := slot.strip_edges().to_lower()
-	var current_step := int(weapon_growth_levels.get(normalized_slot, 0))
-	var next_row := _get_weapon_growth_row(normalized_slot, current_step + 1)
-	if next_row.is_empty():
-		_show_transient_message("%s已满级" % _get_weapon_growth_slot_title(normalized_slot), 1.2)
+	var result: Dictionary = weapon_growth_runtime.try_upgrade(slot, current_gold, selected_hero)
+	if not bool(result.get("success", false)):
+		var fail_message := String(result.get("message", "")).strip_edges()
+		if not fail_message.is_empty():
+			_show_transient_message(fail_message, 1.8)
 		_refresh_weapon_growth_panel()
 		return
 
-	var cost := maxi(int(next_row.get("cost_gold", 0)), 0)
-	if current_gold < cost:
-		_show_transient_message(
-			"金币不足\n%s升级需要 %d 金币\n当前金币 %d" % [
-				_get_weapon_growth_slot_title(normalized_slot),
-				cost,
-				current_gold,
-			],
-			1.8
-		)
-		_refresh_weapon_growth_panel()
-		return
-
-	current_gold -= cost
-	weapon_growth_levels[normalized_slot] = current_step + 1
-	_refresh_weapon_growth_bonus_values()
+	current_gold -= maxi(int(result.get("spent_gold", 0)), 0)
 	_push_runtime_bonus_values_to_player(true)
-	_show_transient_message(
-		"%s升级：%s\n%s" % [
-			_get_weapon_growth_slot_title(normalized_slot),
-			String(next_row.get("name", "")),
-			_build_weapon_growth_delta_text(next_row, false),
-		],
-		1.8
-	)
+	_show_transient_message(String(result.get("message", "")), 1.8)
 	_refresh_weapon_growth_panel()
 	_update_hud(player.health, player.max_health)
 
@@ -3049,108 +2946,10 @@ func _on_weapon_growth_upgrade_requested(slot: String) -> void:
 func _refresh_weapon_growth_panel() -> void:
 	if hud == null:
 		return
-	if selection_active or game_over or not weapon_growth_available:
+	if selection_active or game_over or weapon_growth_runtime == null or not weapon_growth_runtime.is_available():
 		hud.hide_weapon_growth_panel()
 		return
-	hud.configure_weapon_growth(_build_weapon_growth_slot_infos(), current_gold)
-
-
-func _build_weapon_growth_slot_infos() -> Array[Dictionary]:
-	var infos: Array[Dictionary] = []
-	for slot in ["sword", "shield"]:
-		var rows: Array = weapon_growth_rows_by_slot.get(slot, [])
-		if rows.is_empty():
-			continue
-		var current_step := clampi(int(weapon_growth_levels.get(slot, 0)), 0, rows.size() - 1)
-		var current_row: Dictionary = rows[current_step]
-		var next_row := _get_weapon_growth_row(slot, current_step + 1)
-		var is_max := next_row.is_empty()
-		infos.append({
-			"slot": slot,
-			"title": _get_weapon_growth_slot_title(slot),
-			"level_text": "阶%d Lv.%d  %d/%d" % [
-				int(current_row.get("tier", 0)),
-				int(current_row.get("level", current_step)),
-				current_step,
-				rows.size() - 1,
-			],
-			"current_text": _build_weapon_growth_total_text(slot, current_step),
-			"next_text": "下级：已满级" if is_max else _build_weapon_growth_delta_text(next_row, true),
-			"cost_gold": 0 if is_max else int(next_row.get("cost_gold", 0)),
-			"is_max": is_max,
-		})
-	return infos
-
-
-func _get_weapon_growth_row(slot: String, step: int) -> Dictionary:
-	var rows: Array = weapon_growth_rows_by_slot.get(slot, [])
-	if step < 0 or step >= rows.size():
-		return {}
-	return rows[step]
-
-
-func _get_weapon_growth_slot_title(slot: String) -> String:
-	match slot:
-		"sword":
-			return "剑"
-		"shield":
-			return "盾"
-		_:
-			return slot
-
-
-func _build_weapon_growth_total_text(slot: String, current_step: int) -> String:
-	var rows: Array = weapon_growth_rows_by_slot.get(slot, [])
-	if rows.is_empty():
-		return "当前：无"
-	var capped_step := clampi(current_step, 0, rows.size() - 1)
-	var totals: Dictionary = {}
-	var labels: Dictionary = {}
-	for index in range(capped_step + 1):
-		var row: Dictionary = rows[index]
-		for stat_index in range(1, 4):
-			var stat_id := String(row.get("stat_%d_id" % stat_index, "")).strip_edges()
-			if stat_id.is_empty():
-				continue
-			var label := String(row.get("stat_%d_label" % stat_index, stat_id)).strip_edges()
-			var key := stat_id
-			totals[key] = float(totals.get(key, 0.0)) + float(row.get("stat_%d_value" % stat_index, 0.0))
-			labels[key] = label
-
-	var parts := ["当前：%s" % String(rows[capped_step].get("name", ""))]
-	for key in totals.keys():
-		var value := float(totals[key])
-		if absf(value) < 0.0001:
-			continue
-		parts.append("%s +%s" % [String(labels.get(key, key)), _format_weapon_growth_value(key, value)])
-	return "\n".join(parts)
-
-
-func _build_weapon_growth_delta_text(row: Dictionary, include_name: bool) -> String:
-	var parts: Array[String] = []
-	if include_name:
-		parts.append("下级：%s" % String(row.get("name", "")))
-	for stat_index in range(1, 4):
-		var stat_id := String(row.get("stat_%d_id" % stat_index, "")).strip_edges()
-		if stat_id.is_empty():
-			continue
-		var value := float(row.get("stat_%d_value" % stat_index, 0.0))
-		if absf(value) < 0.0001:
-			continue
-		var label := String(row.get("stat_%d_label" % stat_index, stat_id)).strip_edges()
-		parts.append("%s +%s" % [label, _format_weapon_growth_value(stat_id, value)])
-	var special := String(row.get("special_effect", "")).strip_edges()
-	if not special.is_empty():
-		parts.append(special)
-	return "\n".join(parts)
-
-
-func _format_weapon_growth_value(stat_id_text: String, value: float) -> String:
-	if stat_id_text.ends_with("_percent"):
-		return "%.0f%%" % (value * 100.0)
-	if absf(value - roundf(value)) < 0.001:
-		return "%d" % int(roundf(value))
-	return "%.2f" % value
+	hud.configure_weapon_growth(weapon_growth_runtime.build_slot_infos(), current_gold)
 
 
 func _find_hero_index(hero_id: StringName) -> int:
@@ -4455,7 +4254,8 @@ func _compose_all_bonus_values() -> Dictionary:
 	_merge_bonus_dictionary(combined, reward_attribute_bonus_values)
 	_merge_bonus_dictionary(combined, passive_accumulated_bonus_values)
 	_merge_bonus_dictionary(combined, passive_conditional_bonus_values)
-	_merge_bonus_dictionary(combined, weapon_growth_bonus_values)
+	if weapon_growth_runtime != null:
+		_merge_bonus_dictionary(combined, weapon_growth_runtime.get_bonus_values())
 
 	for card_row in owned_cards:
 		_merge_bonus_dictionary(combined, _build_card_bonus_values(card_row))
@@ -5637,7 +5437,7 @@ func _build_card_choice_ui_rows(source_rows: Array[Dictionary]) -> Array[Diction
 	var ui_rows: Array[Dictionary] = []
 	for row in source_rows:
 		var ui_row := row.duplicate(true)
-		ui_row["owned_count"] = _get_owned_card_count_for_row(row)
+		ui_row["owned_count"] = CardCollectionBuilderScript.count_owned_card(owned_cards, row)
 		ui_row["icon_texture"] = _resolve_card_icon(row)
 		ui_rows.append(ui_row)
 	return ui_rows
@@ -5645,7 +5445,7 @@ func _build_card_choice_ui_rows(source_rows: Array[Dictionary]) -> Array[Diction
 
 func _build_card_collection_ui_stack_infos() -> Array[Dictionary]:
 	var ui_stack_infos: Array[Dictionary] = []
-	for stack_info in _build_owned_card_stack_infos():
+	for stack_info in CardCollectionBuilderScript.build_stack_infos(owned_cards, card_collection_sort_mode):
 		var ui_stack_info := stack_info.duplicate(true)
 		var card_row: Dictionary = ui_stack_info.get("row", {})
 		ui_stack_info["icon_texture"] = _resolve_card_icon(card_row)
@@ -5788,57 +5588,6 @@ func _on_card_collection_stack_selected(stack_key: String) -> void:
 	card_collection_selected_stack_key = stack_key.strip_edges()
 
 
-func _build_owned_card_stack_infos() -> Array[Dictionary]:
-	var stacks_by_key: Dictionary = {}
-	var ordered: Array[Dictionary] = []
-	var acquired_index := 0
-	for card_row in owned_cards:
-		var card_name := String(card_row.get("name", card_row.get("id", "神权"))).strip_edges()
-		if card_name.is_empty():
-			card_name = String(card_row.get("id", "神权"))
-		if not stacks_by_key.has(card_name):
-			var info := {
-				"stack_key": card_name,
-				"row": card_row,
-				"count": 1,
-				"first_acquired_index": acquired_index,
-			}
-			stacks_by_key[card_name] = info
-			ordered.append(info)
-		else:
-			var stack_info: Dictionary = stacks_by_key[card_name]
-			stack_info["count"] = int(stack_info.get("count", 0)) + 1
-			stacks_by_key[card_name] = stack_info
-		acquired_index += 1
-	for index in ordered.size():
-		var key := String(ordered[index].get("stack_key", ""))
-		ordered[index] = stacks_by_key.get(key, ordered[index])
-	ordered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		if card_collection_sort_mode == CARD_COLLECTION_SORT_TIME:
-			var time_a := int(a.get("first_acquired_index", 0))
-			var time_b := int(b.get("first_acquired_index", 0))
-			if time_a != time_b:
-				return time_a < time_b
-		else:
-			var tier_a := int((a.get("row", {}) as Dictionary).get("tier", 0))
-			var tier_b := int((b.get("row", {}) as Dictionary).get("tier", 0))
-			if tier_a != tier_b:
-				return tier_a > tier_b
-		return String(a.get("stack_key", "")) < String(b.get("stack_key", ""))
-	)
-	return ordered
-
-
-func _get_owned_card_count_for_row(card_row: Dictionary) -> int:
-	var stack_key := String(card_row.get("name", card_row.get("id", "神权"))).strip_edges()
-	var count := 0
-	for owned_row in owned_cards:
-		var owned_key := String(owned_row.get("name", owned_row.get("id", "神权"))).strip_edges()
-		if owned_key == stack_key:
-			count += 1
-	return count
-
-
 func _apply_card_collection_button_style() -> void:
 	if card_collection_button == null:
 		return
@@ -5890,10 +5639,15 @@ func _resolve_card_icon(card_row: Dictionary) -> Texture2D:
 			raw_icon = String(CARD_CHOICE_DEMO_ICON_BY_NAME.get(fallback_name, "")).strip_edges()
 		if raw_icon.is_empty():
 			return null
+	if card_icon_texture_cache.has(raw_icon):
+		return card_icon_texture_cache.get(raw_icon, null) as Texture2D
 	var candidates := _build_card_icon_candidates(raw_icon)
 	for candidate in candidates:
 		if ResourceLoader.exists(candidate):
-			return load(candidate) as Texture2D
+			var texture := load(candidate) as Texture2D
+			card_icon_texture_cache[raw_icon] = texture
+			return texture
+	card_icon_texture_cache[raw_icon] = null
 	return null
 
 

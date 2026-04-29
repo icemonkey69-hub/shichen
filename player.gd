@@ -77,6 +77,8 @@ var attack_direction := Vector2.DOWN
 var attack_cycle_duration := 0.0
 var combat_stats
 var runtime_bonus_values: Dictionary = {}
+var _enemy_query_frame := -1
+var _enemy_query_nodes: Array = []
 var runtime_progress_values: Dictionary = {
 	"gold": 0.0,
 	"exp": 0.0,
@@ -438,7 +440,7 @@ func _get_nearest_enemy() -> Node2D:
 	var nearest_enemy: Node2D = null
 	var nearest_distance_squared: float = INF
 
-	for enemy_node in get_tree().get_nodes_in_group("enemy"):
+	for enemy_node in _get_enemy_nodes_for_current_physics_frame():
 		var enemy := enemy_node as Node2D
 		if enemy == null:
 			continue
@@ -689,7 +691,7 @@ func _set_jump_visual_height(offset_y: float) -> void:
 
 
 func _push_overlapping_enemies() -> void:
-	for enemy_node in get_tree().get_nodes_in_group("enemy"):
+	for enemy_node in _get_enemy_nodes_for_current_physics_frame():
 		var enemy := enemy_node as Node2D
 		if enemy == null:
 			continue
@@ -802,7 +804,7 @@ func _apply_enemy_push_around_player() -> void:
 	if max_step <= 0.0:
 		return
 
-	for enemy_node in get_tree().get_nodes_in_group("enemy"):
+	for enemy_node in _get_enemy_nodes_for_current_physics_frame():
 		var enemy: Node2D = enemy_node as Node2D
 		if enemy == null or not is_instance_valid(enemy):
 			continue
@@ -816,3 +818,11 @@ func _apply_enemy_push_around_player() -> void:
 		var penetration: float = min_distance - distance
 		var push_step: float = minf(penetration, max_step)
 		enemy.global_position += push_dir * push_step
+
+
+func _get_enemy_nodes_for_current_physics_frame() -> Array:
+	var current_frame: int = Engine.get_physics_frames()
+	if _enemy_query_frame != current_frame:
+		_enemy_query_frame = current_frame
+		_enemy_query_nodes = get_tree().get_nodes_in_group("enemy")
+	return _enemy_query_nodes

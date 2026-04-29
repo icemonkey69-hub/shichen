@@ -31,6 +31,8 @@ var stack_infos: Array[Dictionary] = []
 var slot_buttons: Array[Button] = []
 var selected_stack_key := ""
 var sort_mode := "quality"
+var frame_texture_cache: Dictionary = {}
+var hover_glow_shader: Shader
 
 
 func _ready() -> void:
@@ -438,8 +440,9 @@ func _build_hover_glow(tier: int) -> ColorRect:
 	overlay_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	overlay_rect.color = Color.WHITE
 	overlay_rect.modulate = Color(1.0, 1.0, 1.0, 0.0)
-	var shader := Shader.new()
-	shader.code = """
+	if hover_glow_shader == null:
+		hover_glow_shader = Shader.new()
+		hover_glow_shader.code = """
 shader_type canvas_item;
 render_mode blend_add;
 
@@ -461,7 +464,7 @@ void fragment() {
 }
 """
 	var glow_material: ShaderMaterial = ShaderMaterial.new()
-	glow_material.shader = shader
+	glow_material.shader = hover_glow_shader
 	glow_material.set_shader_parameter("glow_color", (_get_tier_colors(tier).get("border", Color(0.98, 0.87, 0.46, 1.0)) as Color).lightened(0.18))
 	glow_material.set_shader_parameter("start_time", 0.0)
 	overlay_rect.material = glow_material
@@ -511,9 +514,13 @@ func _get_tier_colors(tier: int) -> Dictionary:
 
 func _load_frame_texture(tier: int) -> Texture2D:
 	var path := "%s/tier_%d_%s.png" % [CARD_CHOICE_FRAME_DIR, tier, _tier_asset_suffix(tier)]
+	if frame_texture_cache.has(path):
+		return frame_texture_cache.get(path, null) as Texture2D
+	var texture: Texture2D = null
 	if ResourceLoader.exists(path):
-		return load(path) as Texture2D
-	return null
+		texture = load(path) as Texture2D
+	frame_texture_cache[path] = texture
+	return texture
 
 
 func _tier_asset_suffix(tier: int) -> String:

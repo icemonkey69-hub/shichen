@@ -8,6 +8,9 @@ extends Node2D
 
 @onready var body: Node2D = $Body
 
+static var _enemy_query_frame := -1
+static var _enemy_query_nodes: Array = []
+
 var direction := Vector2.UP
 var source_stats
 
@@ -32,7 +35,7 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 		return
 
-	for enemy in get_tree().get_nodes_in_group("enemy"):
+	for enemy in _get_enemy_nodes_for_current_physics_frame():
 		if not is_instance_valid(enemy):
 			continue
 
@@ -43,3 +46,11 @@ func _physics_process(delta: float) -> void:
 				enemy.take_damage(damage)
 			queue_free()
 			return
+
+
+func _get_enemy_nodes_for_current_physics_frame() -> Array:
+	var current_frame: int = Engine.get_physics_frames()
+	if _enemy_query_frame != current_frame:
+		_enemy_query_frame = current_frame
+		_enemy_query_nodes = get_tree().get_nodes_in_group("enemy")
+	return _enemy_query_nodes
