@@ -56,6 +56,7 @@ var current_model_root: Node2D
 var current_hero_model: HeroModel
 var controls_enabled := false
 var tower_mode := false
+var tower_anchor_position := Vector2.ZERO
 var jump_elapsed := 0.0
 var jump_phase := 0
 var jump_cooldown_remaining := 0.0
@@ -108,6 +109,9 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if tower_mode:
+		_sync_tower_anchor_position()
+
 	if is_dead:
 		velocity = Vector2.ZERO
 		_update_model_animation(Vector2.ZERO)
@@ -190,12 +194,24 @@ func set_controls_enabled(is_enabled: bool) -> void:
 func set_tower_mode(is_enabled: bool) -> void:
 	tower_mode = is_enabled
 	if tower_mode:
+		tower_anchor_position = global_position
 		controls_enabled = false
 		velocity = Vector2.ZERO
 		is_jumping = false
 		_cancel_attack(false)
 	if camera != null:
 		camera.enabled = not tower_mode
+
+
+func set_tower_anchor_position(anchor_position: Vector2) -> void:
+	tower_anchor_position = anchor_position
+	if tower_mode:
+		_sync_tower_anchor_position(true)
+
+
+func _sync_tower_anchor_position(force: bool = false) -> void:
+	if force or global_position.distance_squared_to(tower_anchor_position) > 0.0001:
+		global_position = tower_anchor_position
 
 
 func apply_hero_data(data: HeroData) -> void:

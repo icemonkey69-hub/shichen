@@ -750,9 +750,18 @@ func _apply_terrain_settings() -> void:
 
 
 func _get_player_start_position() -> Vector2:
+	return _get_tower_anchor_position()
+
+
+func _get_tower_anchor_position() -> Vector2:
+	# 塔的逻辑锚点固定在战场中心；需要位移演出时只移动视觉层，逻辑点仍回到这里。
+	return play_area.position + play_area.size * 0.5
+
+
+func _get_legacy_spawn_position() -> Vector2:
 	if battle_terrain != null and battle_terrain.has_method("get_spawn_position"):
 		return battle_terrain.call("get_spawn_position")
-	return play_area.position + play_area.size * 0.5
+	return _get_tower_anchor_position()
 
 
 func _get_guardian_start_position() -> Vector2:
@@ -2850,6 +2859,8 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 	player.apply_hero_data(hero)
 	if player.has_method("set_tower_mode"):
 		player.set_tower_mode(true)
+	if player.has_method("set_tower_anchor_position"):
+		player.set_tower_anchor_position(_get_tower_anchor_position())
 	if weapon_growth_runtime != null and weapon_growth_runtime.is_available():
 		_push_runtime_bonus_values_to_player(false)
 	else:
