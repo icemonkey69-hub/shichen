@@ -55,6 +55,7 @@ var hero_data: HeroData
 var current_model_root: Node2D
 var current_hero_model: HeroModel
 var controls_enabled := false
+var tower_mode := false
 var jump_elapsed := 0.0
 var jump_phase := 0
 var jump_cooldown_remaining := 0.0
@@ -107,7 +108,28 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if is_dead or not controls_enabled:
+	if is_dead:
+		velocity = Vector2.ZERO
+		_update_model_animation(Vector2.ZERO)
+		_update_draw_order()
+		return
+
+	if tower_mode:
+		velocity = Vector2.ZERO
+		if not visible:
+			_update_model_animation(Vector2.ZERO)
+			_update_draw_order()
+			return
+		attack_cooldown = max(attack_cooldown - delta, 0.0)
+		damage_cooldown = max(damage_cooldown - delta, 0.0)
+		_process_attack(delta, Vector2.ZERO)
+		_update_model_animation(Vector2.ZERO)
+		_try_attack()
+		_update_visual_state()
+		_update_draw_order()
+		return
+
+	if not controls_enabled:
 		velocity = Vector2.ZERO
 		_update_model_animation(Vector2.ZERO)
 		_update_draw_order()
@@ -154,10 +176,26 @@ func configure(bounds: Rect2) -> void:
 
 
 func set_controls_enabled(is_enabled: bool) -> void:
+	if tower_mode:
+		controls_enabled = false
+		velocity = Vector2.ZERO
+		_sync_jump_key_state()
+		return
 	controls_enabled = is_enabled
 	if not controls_enabled:
 		velocity = Vector2.ZERO
 	_sync_jump_key_state()
+
+
+func set_tower_mode(is_enabled: bool) -> void:
+	tower_mode = is_enabled
+	if tower_mode:
+		controls_enabled = false
+		velocity = Vector2.ZERO
+		is_jumping = false
+		_cancel_attack(false)
+	if camera != null:
+		camera.enabled = not tower_mode
 
 
 func apply_hero_data(data: HeroData) -> void:

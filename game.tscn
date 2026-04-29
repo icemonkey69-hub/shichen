@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/战斗HUD.tscn" id="3_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/英雄选择界面.tscn" id="4_selection"]
 [ext_resource type="PackedScene" path="res://scenes/world/测试地形.tscn" id="5_terrain"]
+[ext_resource type="PackedScene" path="res://guardian.tscn" id="6_guardian"]
 
 [node name="Game" type="Node2D" unique_id=385267458]
 script = ExtResource("1_o0f7x")
@@ -16,6 +17,8 @@ script = ExtResource("1_o0f7x")
 [node name="Projectiles" type="Node2D" parent="." unique_id=1363344246]
 
 [node name="Player" parent="." unique_id=1620806188 instance=ExtResource("2_80nbo")]
+
+[node name="Guardian" parent="." instance=ExtResource("6_guardian")]
 
 [node name="战斗HUD" parent="." unique_id=2123291195 instance=ExtResource("3_hud")]
 

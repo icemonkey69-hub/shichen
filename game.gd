@@ -527,6 +527,7 @@ const COMBAT_INFO_REFRESH_INTERVAL := 0.12
 @export var selected_hero: HeroData
 
 @onready var player = $Player
+@onready var guardian: Guardian = $Guardian
 @onready var enemies = $Enemies
 @onready var projectiles = $Projectiles
 @onready var battle_terrain: Node = get_node_or_null("测试地形")
@@ -664,6 +665,7 @@ func _ready() -> void:
 	transient_message_runtime = TransientMessageRuntimeScript.new()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	player.process_mode = Node.PROCESS_MODE_PAUSABLE
+	guardian.process_mode = Node.PROCESS_MODE_PAUSABLE
 	enemies.process_mode = Node.PROCESS_MODE_PAUSABLE
 	projectiles.process_mode = Node.PROCESS_MODE_PAUSABLE
 	pickups = Node2D.new()
@@ -677,12 +679,18 @@ func _ready() -> void:
 
 	_apply_terrain_settings()
 	player.configure(play_area)
+	if player.has_method("set_tower_mode"):
+		player.set_tower_mode(true)
 	player.projectile_requested.connect(_on_player_projectile_requested)
 	player.health_changed.connect(_on_player_health_changed)
 	player.mana_changed.connect(_on_player_mana_changed)
 	player.died.connect(_on_player_died)
 	player.set_controls_enabled(false)
 	player.visible = false
+	guardian.configure(play_area)
+	guardian.set_controls_enabled(false)
+	guardian.set_camera_enabled(false)
+	guardian.visible = false
 
 	if hud == null:
 		push_warning("Battle HUD is missing from game.tscn.")
@@ -745,6 +753,24 @@ func _get_player_start_position() -> Vector2:
 	if battle_terrain != null and battle_terrain.has_method("get_spawn_position"):
 		return battle_terrain.call("get_spawn_position")
 	return play_area.position + play_area.size * 0.5
+
+
+func _get_guardian_start_position() -> Vector2:
+	var tower_position := _get_player_start_position()
+	var guardian_position := tower_position + Vector2(0.0, 96.0)
+	return guardian_position.clamp(play_area.position, play_area.position + play_area.size)
+
+
+func _get_pickup_target() -> Node2D:
+	if guardian != null and is_instance_valid(guardian) and guardian.visible:
+		return guardian
+	return player as Node2D
+
+
+func _get_camera_subject() -> Node2D:
+	if guardian != null and is_instance_valid(guardian) and guardian.visible:
+		return guardian
+	return player as Node2D
 
 
 func _process(delta: float) -> void:
@@ -846,8 +872,9 @@ func _on_player_mana_changed(current_mana: int, max_mana: int) -> void:
 
 func _on_player_died() -> void:
 	player.set_controls_enabled(false)
-	player_respawn_anchor = player.global_position
-	_start_player_respawn()
+	if guardian != null:
+		guardian.set_controls_enabled(false)
+	_finish_battle_defeat("防御塔被摧毁")
 
 
 func _start_player_respawn() -> void:
@@ -961,6 +988,8 @@ func _finish_battle_victory() -> void:
 	_hide_attributes_panel()
 	if player != null:
 		player.set_controls_enabled(false)
+	if guardian != null:
+		guardian.set_controls_enabled(false)
 
 	_save_run_record("victory")
 	_show_victory_overlay()
@@ -979,6 +1008,8 @@ func _finish_battle_defeat(reason: String) -> void:
 	_hide_attributes_panel()
 	if player != null:
 		player.set_controls_enabled(false)
+	if guardian != null:
+		guardian.set_controls_enabled(false)
 
 	_save_run_record("defeat")
 	_show_defeat_overlay(reason)
@@ -1127,10 +1158,11 @@ func _on_enemy_died(_world_position: Vector2, reward_info: Dictionary = {}) -> v
 
 
 func _debug_kill_enemies_around_player(radius: float) -> void:
-	if player == null or not is_instance_valid(player):
+	var debug_center_node := _get_camera_subject()
+	if debug_center_node == null or not is_instance_valid(debug_center_node):
 		return
 
-	var player_position: Vector2 = player.global_position
+	var player_position: Vector2 = debug_center_node.global_position
 	var safe_radius: float = maxf(radius, 0.0)
 	var radius_squared: float = safe_radius * safe_radius
 	var killed_count := 0
@@ -1318,7 +1350,7 @@ func _pick_spawn_position_outside_player_view() -> Vector2:
 
 
 func _get_player_visible_world_rect() -> Rect2:
-	var player_node: Node2D = player as Node2D
+	var player_node: Node2D = _get_camera_subject()
 	var center: Vector2 = player_node.global_position if player_node != null else Vector2.ZERO
 	if player_node != null and player_node.has_node("Camera2D"):
 		var camera: Camera2D = player_node.get_node_or_null("Camera2D") as Camera2D
@@ -2816,11 +2848,18 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 	player_respawn_anchor = player.global_position
 	player.visible = true
 	player.apply_hero_data(hero)
+	if player.has_method("set_tower_mode"):
+		player.set_tower_mode(true)
 	if weapon_growth_runtime != null and weapon_growth_runtime.is_available():
 		_push_runtime_bonus_values_to_player(false)
 	else:
 		_sync_player_runtime_progress()
-	player.set_controls_enabled(true)
+	player.set_controls_enabled(false)
+	if guardian != null:
+		guardian.global_position = _get_guardian_start_position()
+		guardian.visible = true
+		guardian.set_camera_enabled(true)
+		guardian.set_controls_enabled(true)
 	if card_collection_button != null:
 		card_collection_button.visible = true
 	_refresh_card_collection_button_state()
@@ -3879,18 +3918,20 @@ func _spawn_single_pickup(world_position: Vector2, reward_type: StringName, amou
 	pickup.collected.connect(_on_pickup_collected)
 	pickups.add_child(pickup)
 	if pickup.has_method("configure_pickup"):
-		pickup.configure_pickup(reward_type, amount, player, impulse)
+		pickup.configure_pickup(reward_type, amount, _get_pickup_target(), impulse)
 
 
 func _on_pickup_collected(reward_type: StringName, amount: int, world_position: Vector2) -> void:
 	match reward_type:
 		&"gold":
 			current_gold += maxi(amount, 0)
-			_spawn_pickup_gain_text(player.global_position + Vector2(randf_range(-14.0, 14.0), -36.0), amount, reward_type)
+			var gold_target := _get_pickup_target()
+			_spawn_pickup_gain_text(gold_target.global_position + Vector2(randf_range(-14.0, 14.0), -36.0), amount, reward_type)
 		&"exp":
 			current_exp += maxi(amount, 0)
 			_refresh_level_state(true)
-			_spawn_pickup_gain_text(player.global_position + Vector2(randf_range(-10.0, 10.0), -28.0), amount, reward_type)
+			var exp_target := _get_pickup_target()
+			_spawn_pickup_gain_text(exp_target.global_position + Vector2(randf_range(-10.0, 10.0), -28.0), amount, reward_type)
 		CARD_CHOICE_PICKUP_REWARD_TYPE:
 			for _i in range(maxi(amount, 1)):
 				_grant_card_choice_opportunity(world_position)
