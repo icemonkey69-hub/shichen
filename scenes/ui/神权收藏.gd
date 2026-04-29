@@ -7,6 +7,7 @@ signal stack_selected(stack_key: String)
 
 const CARD_CHOICE_BACKGROUND_PATH := "res://assets/ui/card_choice/backgrounds/god_demon_choice_bg_v1.png"
 const CARD_CHOICE_FRAME_DIR := "res://assets/ui/card_choice/frames"
+const CardDisplayTextScript := preload("res://systems/card_display_text.gd")
 
 @onready var overlay: CardCollectionOverlayUi = self
 @onready var shade: ColorRect = get_node("遮罩") as ColorRect
@@ -542,10 +543,7 @@ func _tier_asset_suffix(tier: int) -> String:
 
 
 func _build_placeholder_text(card_name: String) -> String:
-	var compact_name := card_name.strip_edges()
-	if compact_name.length() <= 4:
-		return compact_name
-	return compact_name.substr(0, 4)
+	return CardDisplayTextScript.build_placeholder(card_name)
 
 
 func _on_close_button_pressed() -> void:

@@ -6,6 +6,7 @@ signal refresh_requested
 
 const CARD_CHOICE_FRAME_DIR := "res://assets/ui/card_choice/frames"
 const CARD_CHOICE_SELECTION_SHADER_RESOURCE := preload("res://assets/shaders/card_choice_selected_highlight.gdshader")
+const CardDisplayTextScript := preload("res://systems/card_display_text.gd")
 const CARD_CHOICE_TEMPLATE_SLOT_COUNT := 9
 const CARD_ICON_FALLBACK_DIR := "res://assets/ui/icons/cards"
 const CARD_NAME_MAX_FONT_SIZE := 18
@@ -633,10 +634,7 @@ func _get_icon_texture(row: Dictionary) -> Texture2D:
 
 
 func _build_placeholder_text(card_name: String) -> String:
-	var compact_name := card_name.strip_edges()
-	if compact_name.length() <= 4:
-		return compact_name
-	return compact_name.substr(0, 4)
+	return CardDisplayTextScript.build_placeholder(card_name)
 
 
 func _set_label_text(label: Label, value: String) -> void:

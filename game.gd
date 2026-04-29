@@ -22,6 +22,8 @@ const KillRewardAmountCalculatorScript := preload("res://systems/kill_reward_amo
 const RewardPickupSplitterScript := preload("res://systems/reward_pickup_splitter.gd")
 const ThresholdRewardPickerScript := preload("res://systems/threshold_reward_picker.gd")
 const CardIconResolverScript := preload("res://systems/card_icon_resolver.gd")
+const TableValueUtilsScript := preload("res://systems/table_value_utils.gd")
+const CardDisplayTextScript := preload("res://systems/card_display_text.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const DEFAULT_RESPAWN_SECONDS := 5.0
@@ -1911,17 +1913,7 @@ func _load_runtime_constant_float(row_id: String, fallback_value: float) -> floa
 	var row: Dictionary = _load_table_row(RUNTIME_CONSTANT_TABLE_NAME, row_id)
 	if row.is_empty():
 		return fallback_value
-	var raw_value: Variant = row.get("value", fallback_value)
-	if raw_value is int or raw_value is float:
-		return float(raw_value)
-	var text: String = String(raw_value).strip_edges()
-	if text.is_empty():
-		return fallback_value
-	if text.is_valid_float():
-		return float(text)
-	if text.is_valid_int():
-		return float(int(text))
-	return fallback_value
+	return TableValueUtilsScript.float_or(row.get("value", fallback_value), fallback_value)
 
 
 func _reset_card_choice_pickup_runtime_state() -> void:
@@ -3717,24 +3709,7 @@ func _get_wave_number(index: int) -> int:
 
 
 func _normalize_optional_id(raw_value) -> String:
-	if raw_value == null:
-		return ""
-
-	var text: String = str(raw_value).strip_edges()
-	if text.begins_with("&\"") and text.ends_with("\"") and text.length() > 3:
-		text = text.substr(2, text.length() - 3)
-	if text.is_empty():
-		return ""
-
-	var lowered := text.to_lower()
-	if lowered == "null" or lowered == "<null>" or lowered == "nil":
-		return ""
-	if text.contains(".") and text.is_valid_float():
-		var numeric_value := float(text)
-		var rounded_value: float = round(numeric_value)
-		if is_equal_approx(numeric_value, rounded_value):
-			return str(int(rounded_value))
-	return text
+	return TableValueUtilsScript.normalize_optional_id(raw_value)
 
 
 func _grant_kill_rewards(reward_info: Dictionary) -> void:
@@ -3788,24 +3763,11 @@ func _load_table_row(table_name: StringName, row_id: Variant) -> Dictionary:
 func _is_table_row_banned(row: Dictionary) -> bool:
 	if row.is_empty():
 		return false
-	return row.has("ban") and _variant_flag_enabled(row.get("ban"))
+	return row.has("ban") and TableValueUtilsScript.flag_enabled(row.get("ban"))
 
 
 func _variant_flag_enabled(raw_value: Variant) -> bool:
-	if raw_value == null:
-		return false
-	if raw_value is bool:
-		return raw_value
-	if raw_value is int:
-		return int(raw_value) != 0
-	if raw_value is float:
-		return absf(float(raw_value)) >= 0.0001
-	var text := str(raw_value).strip_edges().to_lower()
-	if text.is_empty():
-		return false
-	if text in ["0", "false", "no", "n", "off", "null", "<null>"]:
-		return false
-	return true
+	return TableValueUtilsScript.flag_enabled(raw_value)
 
 
 func _refresh_level_state(show_feedback: bool = true) -> void:
@@ -5353,7 +5315,7 @@ func _build_card_collect_effect(card_row: Dictionary) -> Control:
 	else:
 		var label := Label.new()
 		label.set_anchors_preset(Control.PRESET_FULL_RECT)
-		label.text = _build_card_placeholder_text(String(card_row.get("name", card_row.get("id", "神权"))))
+		label.text = CardDisplayTextScript.build_placeholder(String(card_row.get("name", card_row.get("id", "神权"))))
 		label.add_theme_font_size_override("font_size", 22)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -5442,13 +5404,6 @@ func _resolve_card_icon(card_row: Dictionary) -> Texture2D:
 	if card_icon_resolver == null:
 		return null
 	return card_icon_resolver.resolve(card_row)
-
-
-func _build_card_placeholder_text(card_name: String) -> String:
-	var compact_name := card_name.strip_edges()
-	if compact_name.length() <= 4:
-		return compact_name
-	return compact_name.substr(0, 4)
 
 
 func _get_control_global_center(control: Control) -> Vector2:
