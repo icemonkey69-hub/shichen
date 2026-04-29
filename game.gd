@@ -15,6 +15,7 @@ const WaveRuntimeScript := preload("res://systems/wave_runtime.gd")
 const BattleResultFormatterScript := preload("res://systems/battle_result_formatter.gd")
 const WeaponGrowthRuntimeScript := preload("res://systems/weapon_growth_runtime.gd")
 const CardCollectionBuilderScript := preload("res://systems/card_collection_builder.gd")
+const CardChoiceDropRuntimeScript := preload("res://systems/card_choice_drop_runtime.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const MAX_PICKUPS_PER_REWARD_TYPE := 6
@@ -614,11 +615,9 @@ var card_choice_rows: Array[Dictionary] = []
 var card_choice_selected_index := -1
 var card_choice_refresh_remaining := 0
 var card_choice_title_text := CARD_CHOICE_DEBUG_TITLE
-var next_card_choice_pickup_time := 0.0
-var card_choice_pickup_available_rolls := 1
-var card_choice_pickup_current_chance_percent := 100.0
 var queued_card_choice_pickups := 0
 var card_choice_overlay_request_pending := false
+var card_choice_drop_runtime: CardChoiceDropRuntime
 var card_collect_effect_layer: Control
 var wave_info_panel: WaveInfoUi
 var wave_banner_panel: WaveBannerUi
@@ -657,6 +656,7 @@ func _ready() -> void:
 	selection_state = SelectionStateScript.new()
 	wave_runtime = WaveRuntimeScript.new()
 	weapon_growth_runtime = WeaponGrowthRuntimeScript.new()
+	card_choice_drop_runtime = CardChoiceDropRuntimeScript.new()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	player.process_mode = Node.PROCESS_MODE_PAUSABLE
 	enemies.process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -1812,39 +1812,20 @@ func _try_spawn_card_choice_pickup_from_enemy_death(world_position: Vector2, rew
 		return
 	if player == null or not is_instance_valid(player):
 		return
-	_refresh_card_choice_pickup_available_rolls()
-	if card_choice_pickup_available_rolls <= 0:
+	if card_choice_drop_runtime == null:
+		card_choice_drop_runtime = CardChoiceDropRuntimeScript.new()
+	var roll_count := card_choice_drop_runtime.consume_due_rolls(elapsed_time)
+	if roll_count <= 0:
 		return
-
-	var roll_count := card_choice_pickup_available_rolls
-	card_choice_pickup_available_rolls = 0
 	for _i in range(roll_count):
 		_roll_card_choice_pickup_at(world_position)
 
 
-func _refresh_card_choice_pickup_available_rolls() -> void:
-	if card_choice_pickup_interval_seconds <= 0.0:
-		card_choice_pickup_available_rolls = maxi(card_choice_pickup_available_rolls, 1)
-		return
-	if next_card_choice_pickup_time <= 0.0:
-		next_card_choice_pickup_time = card_choice_pickup_interval_seconds
-	while elapsed_time >= next_card_choice_pickup_time:
-		card_choice_pickup_available_rolls += 1
-		next_card_choice_pickup_time += card_choice_pickup_interval_seconds
-
-
 func _roll_card_choice_pickup_at(world_position: Vector2) -> void:
-	var roll_threshold: float = clampf(card_choice_pickup_current_chance_percent, 0.0, 100.0)
-	var roll_success: bool = roll_threshold >= 100.0 or randf() * 100.0 <= roll_threshold
-	if roll_success:
+	if card_choice_drop_runtime == null:
+		card_choice_drop_runtime = CardChoiceDropRuntimeScript.new()
+	if card_choice_drop_runtime.roll_succeeds(randf() * 100.0):
 		_spawn_card_choice_pickup_at(world_position)
-		_reset_card_choice_pickup_roll_state()
-		return
-	card_choice_pickup_current_chance_percent = clampf(
-		card_choice_pickup_current_chance_percent + card_choice_pickup_chance_increase_percent,
-		0.0,
-		100.0
-	)
 
 
 func _is_card_choice_drop_boss_reward(reward_info: Dictionary) -> bool:
@@ -1927,7 +1908,13 @@ func _load_runtime_constant_settings() -> void:
 		_load_runtime_constant_float(RUNTIME_CONSTANT_CARD_CHOICE_CHANCE_INCREASE_ID, card_choice_pickup_chance_increase_percent),
 		0.0
 	)
-	_reset_card_choice_pickup_roll_state()
+	if card_choice_drop_runtime == null:
+		card_choice_drop_runtime = CardChoiceDropRuntimeScript.new()
+	card_choice_drop_runtime.configure(
+		card_choice_pickup_interval_seconds,
+		card_choice_pickup_initial_chance_percent,
+		card_choice_pickup_chance_increase_percent
+	)
 
 
 func _load_runtime_constant_float(row_id: String, fallback_value: float) -> float:
@@ -1947,16 +1934,12 @@ func _load_runtime_constant_float(row_id: String, fallback_value: float) -> floa
 	return fallback_value
 
 
-func _reset_card_choice_pickup_roll_state() -> void:
-	card_choice_pickup_current_chance_percent = clampf(card_choice_pickup_initial_chance_percent, 0.0, 100.0)
-
-
 func _reset_card_choice_pickup_runtime_state() -> void:
-	card_choice_pickup_available_rolls = 1
-	next_card_choice_pickup_time = card_choice_pickup_interval_seconds if card_choice_pickup_interval_seconds > 0.0 else 0.0
+	if card_choice_drop_runtime == null:
+		card_choice_drop_runtime = CardChoiceDropRuntimeScript.new()
+	card_choice_drop_runtime.reset_runtime()
 	queued_card_choice_pickups = 0
 	card_choice_overlay_request_pending = false
-	_reset_card_choice_pickup_roll_state()
 
 
 func _reset_wave_runtime_state() -> void:
