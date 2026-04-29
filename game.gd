@@ -24,6 +24,7 @@ const ThresholdRewardPickerScript := preload("res://systems/threshold_reward_pic
 const CardIconResolverScript := preload("res://systems/card_icon_resolver.gd")
 const TableValueUtilsScript := preload("res://systems/table_value_utils.gd")
 const CardDisplayTextScript := preload("res://systems/card_display_text.gd")
+const CardDescriptionTextScript := preload("res://systems/card_description_text.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const DEFAULT_RESPAWN_SECONDS := 5.0
@@ -496,13 +497,6 @@ const CARD_DESCRIPTION_ALIAS_MAP := {
 	},
 }
 
-const CARD_PASSIVE_PREFIXES := [
-	"唯一被动[",
-	"唯一被动:",
-	"唯一被动",
-	"被动[",
-	"被动:",
-]
 const HERO_SELECTION_TABLE_NAME: StringName = &"heroes"
 const BLOODLINE_TABLE_NAME: StringName = &"bloodlines"
 const TEMPLATE_BLOODLINE_OPTION_TABLE_NAME: StringName = &"template_bloodline_options"
@@ -4390,39 +4384,15 @@ func _apply_card_runtime_specs_for_trigger(trigger: String, stats, delta: float)
 
 func _build_card_runtime_specs(card_row: Dictionary) -> Array[Dictionary]:
 	var specs: Array[Dictionary] = []
-	var description_lines := _get_card_description_lines(card_row)
+	var description_lines := CardDescriptionTextScript.get_lines(card_row)
 	for line in description_lines:
-		var should_try_runtime := _is_card_passive_line(line) or _parse_card_description_bonus_entries(line).is_empty()
+		var should_try_runtime := CardDescriptionTextScript.is_passive_line(line) or _parse_card_description_bonus_entries(line).is_empty()
 		if not should_try_runtime:
 			continue
-		var spec := _build_card_runtime_spec_from_line(card_row, _strip_card_passive_prefix(line), description_lines)
+		var spec := _build_card_runtime_spec_from_line(card_row, CardDescriptionTextScript.strip_passive_prefix(line), description_lines)
 		if not spec.is_empty():
 			specs.append(spec)
 	return specs
-
-
-func _get_card_description_lines(card_row: Dictionary) -> Array[String]:
-	var lines: Array[String] = []
-	for raw_line in str(card_row.get("description", "")).split("\n", false):
-		var line := _normalize_card_description_line(str(raw_line))
-		if not line.is_empty():
-			lines.append(line)
-	return lines
-
-
-func _strip_card_passive_prefix(line: String) -> String:
-	var text := line.strip_edges()
-	for prefix in CARD_PASSIVE_PREFIXES:
-		if not text.begins_with(prefix):
-			continue
-		var colon_index := text.find(":")
-		if colon_index != -1:
-			return text.substr(colon_index + 1).strip_edges()
-		var closing_bracket := text.find("]")
-		if closing_bracket != -1:
-			return text.substr(closing_bracket + 1).trim_prefix(":").strip_edges()
-		return text.trim_prefix(prefix).trim_prefix(":").strip_edges()
-	return text
 
 
 func _build_card_runtime_spec_from_line(card_row: Dictionary, line: String, description_lines: Array[String]) -> Dictionary:
@@ -4588,7 +4558,7 @@ func _match_card_runtime_pattern(pattern: String, line: String) -> RegExMatch:
 
 func _find_card_limit_value(description_lines: Array[String], prefixes: Array[String]) -> Dictionary:
 	for raw_line in description_lines:
-		var compact_line := _strip_card_passive_prefix(raw_line).replace(" ", "")
+		var compact_line := CardDescriptionTextScript.strip_passive_prefix(raw_line).replace(" ", "")
 		for prefix in prefixes:
 			if compact_line.begins_with(prefix):
 				return _parse_numeric_value_token(compact_line.substr(prefix.length()))
@@ -4671,10 +4641,10 @@ func _extract_card_effects(card_row: Dictionary) -> Dictionary:
 	var append_to_last_passive := false
 
 	for raw_line in lines:
-		var line := _normalize_card_description_line(str(raw_line))
+		var line := CardDescriptionTextScript.normalize_line(str(raw_line))
 		if line.is_empty():
 			continue
-		if _is_card_passive_line(line):
+		if CardDescriptionTextScript.is_passive_line(line):
 			passives.append(line)
 			append_to_last_passive = true
 			continue
@@ -4692,7 +4662,7 @@ func _extract_card_effects(card_row: Dictionary) -> Dictionary:
 				_add_dict_bonus_value(bonuses, bonus_id, bonus_value)
 			continue
 
-		if not _should_ignore_card_description_line(line):
+		if not CardDescriptionTextScript.should_ignore_line(line):
 			passives.append(line)
 			append_to_last_passive = true
 
@@ -4700,29 +4670,6 @@ func _extract_card_effects(card_row: Dictionary) -> Dictionary:
 		"bonuses": bonuses,
 		"passives": passives,
 	}
-
-
-func _normalize_card_description_line(raw_line: String) -> String:
-	return raw_line.strip_edges().replace("：", ":").replace("％", "%").replace("，", ",")
-
-
-func _is_card_passive_line(line: String) -> bool:
-	for prefix in CARD_PASSIVE_PREFIXES:
-		if line.begins_with(prefix):
-			return true
-	return false
-
-
-func _should_ignore_card_description_line(line: String) -> bool:
-	return (
-		line.begins_with("累计")
-		or line.begins_with("当前")
-		or line.begins_with("最多")
-		or line.begins_with("上限")
-		or line.begins_with("最大")
-		or line.begins_with("武器名称:")
-		or line.begins_with("卡牌上限:")
-	)
 
 
 func _parse_card_description_bonus_entries(line: String) -> Array:
