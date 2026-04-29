@@ -25,6 +25,7 @@ const CardIconResolverScript := preload("res://systems/card_icon_resolver.gd")
 const TableValueUtilsScript := preload("res://systems/table_value_utils.gd")
 const CardDisplayTextScript := preload("res://systems/card_display_text.gd")
 const CardDescriptionTextScript := preload("res://systems/card_description_text.gd")
+const RegexCacheScript := preload("res://systems/regex_cache.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const DEFAULT_RESPAWN_SECONDS := 5.0
@@ -597,6 +598,7 @@ var selection_state: SelectionState
 var wave_runtime: WaveRuntime
 var weapon_growth_runtime: WeaponGrowthRuntime
 var level_runtime: LevelRuntime
+var regex_cache: RegexCache
 
 var attributes_panel: AttributesPanelUi
 var attributes_value_labels: Dictionary = {}
@@ -658,6 +660,7 @@ func _ready() -> void:
 	card_choice_drop_runtime = CardChoiceDropRuntimeScript.new()
 	level_runtime = LevelRuntimeScript.new()
 	card_icon_resolver = CardIconResolverScript.new(CARD_CHOICE_DEMO_ICON_BY_ID, CARD_CHOICE_DEMO_ICON_BY_NAME)
+	regex_cache = RegexCacheScript.new()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	player.process_mode = Node.PROCESS_MODE_PAUSABLE
 	enemies.process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -4550,10 +4553,13 @@ func _make_condition_ratio_spec(card_row: Dictionary, source: String, source_ste
 
 
 func _match_card_runtime_pattern(pattern: String, line: String) -> RegExMatch:
-	var regex := RegEx.new()
-	if regex.compile(pattern) != OK:
-		return null
-	return regex.search(line)
+	return _search_cached_regex(pattern, line)
+
+
+func _search_cached_regex(pattern: String, text: String) -> RegExMatch:
+	if regex_cache == null:
+		regex_cache = RegexCacheScript.new()
+	return regex_cache.search(pattern, text)
 
 
 func _find_card_limit_value(description_lines: Array[String], prefixes: Array[String]) -> Dictionary:
@@ -4566,10 +4572,7 @@ func _find_card_limit_value(description_lines: Array[String], prefixes: Array[St
 
 
 func _parse_numeric_value_token(text: String) -> Dictionary:
-	var regex := RegEx.new()
-	if regex.compile("(-?\\d+(?:\\.\\d+)?)(%)?") != OK:
-		return {}
-	var match := regex.search(text)
+	var match := _search_cached_regex("(-?\\d+(?:\\.\\d+)?)(%)?", text)
 	if match == null:
 		return {}
 	var value := float(match.get_string(1))
@@ -4673,12 +4676,7 @@ func _extract_card_effects(card_row: Dictionary) -> Dictionary:
 
 
 func _parse_card_description_bonus_entries(line: String) -> Array:
-	var matcher := RegEx.new()
-	var compile_error := matcher.compile("^(.*?)([+-])\\s*(\\d+(?:\\.\\d+)?)\\s*(%)?\\s*(秒)?$")
-	if compile_error != OK:
-		return []
-
-	var match := matcher.search(line)
+	var match := _search_cached_regex("^(.*?)([+-])\\s*(\\d+(?:\\.\\d+)?)\\s*(%)?\\s*(秒)?$", line)
 	if match == null:
 		return []
 
