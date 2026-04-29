@@ -16,6 +16,7 @@ const BattleResultFormatterScript := preload("res://systems/battle_result_format
 const WeaponGrowthRuntimeScript := preload("res://systems/weapon_growth_runtime.gd")
 const CardCollectionBuilderScript := preload("res://systems/card_collection_builder.gd")
 const CardChoiceDropRuntimeScript := preload("res://systems/card_choice_drop_runtime.gd")
+const LevelRuntimeScript := preload("res://systems/level_runtime.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const MAX_PICKUPS_PER_REWARD_TYPE := 6
@@ -556,7 +557,6 @@ var weapon_rows: Array[Dictionary] = []
 var bloodline_rows: Array[Dictionary] = []
 var template_bloodline_option_rows: Array[Dictionary] = []
 var kill_reward_rows: Array[Dictionary] = []
-var levelup_rows: Array[Dictionary] = []
 var next_kill_reward_index := 0
 var owned_cards: Array[Dictionary] = []
 var owned_card_passives: Array[Dictionary] = []
@@ -598,6 +598,7 @@ var template_bloodline_option_index: TemplateBloodlineOptionIndex
 var selection_state: SelectionState
 var wave_runtime: WaveRuntime
 var weapon_growth_runtime: WeaponGrowthRuntime
+var level_runtime: LevelRuntime
 
 var attributes_panel: AttributesPanelUi
 var attributes_value_labels: Dictionary = {}
@@ -657,6 +658,7 @@ func _ready() -> void:
 	wave_runtime = WaveRuntimeScript.new()
 	weapon_growth_runtime = WeaponGrowthRuntimeScript.new()
 	card_choice_drop_runtime = CardChoiceDropRuntimeScript.new()
+	level_runtime = LevelRuntimeScript.new()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	player.process_mode = Node.PROCESS_MODE_PAUSABLE
 	enemies.process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -1891,7 +1893,9 @@ func _load_kill_reward_rows() -> void:
 
 
 func _load_levelup_rows() -> void:
-	levelup_rows = _load_table_rows(&"levelup", "level")
+	if level_runtime == null:
+		level_runtime = LevelRuntimeScript.new()
+	level_runtime.setup_rows(_load_table_rows(&"levelup", "level"))
 
 
 func _load_runtime_constant_settings() -> void:
@@ -3829,7 +3833,7 @@ func _variant_flag_enabled(raw_value: Variant) -> bool:
 
 func _refresh_level_state(show_feedback: bool = true) -> void:
 	var previous_level := current_level
-	current_level = _calculate_level_from_total_exp(current_exp)
+	current_level = level_runtime.calculate_level(current_exp) if level_runtime != null else 1
 	if current_level != previous_level:
 		if show_feedback and current_level > previous_level:
 			for reached_level in range(previous_level + 1, current_level + 1):
@@ -3840,55 +3844,18 @@ func _refresh_level_state(show_feedback: bool = true) -> void:
 		_sync_player_runtime_progress()
 
 
-func _calculate_level_from_total_exp(total_exp: int) -> int:
-	if levelup_rows.is_empty():
-		return 1
-
-	var resolved_level := 1
-	for row in levelup_rows:
-		var row_level := int(row.get("level", resolved_level))
-		var total_required := int(row.get("total_exp", 0))
-		if total_exp < total_required:
-			break
-		resolved_level = row_level
-
-	return clampi(resolved_level, 1, _get_max_level())
-
-
-func _get_level_row(level: int) -> Dictionary:
-	if levelup_rows.is_empty():
-		return {}
-
-	for row in levelup_rows:
-		if int(row.get("level", 0)) == level:
-			return row
-	return levelup_rows[levelup_rows.size() - 1]
-
-
 func _get_max_level() -> int:
-	if levelup_rows.is_empty():
-		return 100
-	return int(levelup_rows[levelup_rows.size() - 1].get("level", 100))
-
-
-func _get_total_exp_for_level(level: int) -> int:
-	var row := _get_level_row(level)
-	if row.is_empty():
-		return 0
-	return int(row.get("total_exp", 0))
+	return level_runtime.get_max_level() if level_runtime != null else 100
 
 
 func _get_exp_required_for_level(level: int) -> int:
-	var row := _get_level_row(level)
-	if row.is_empty():
-		return 0
-	return int(row.get("exp_to_next", 0))
+	return level_runtime.get_exp_required_for_level(level) if level_runtime != null else 0
 
 
 func _get_current_level_exp_progress() -> int:
-	if current_level >= _get_max_level():
-		return _get_exp_required_for_level(current_level)
-	return maxi(current_exp - _get_total_exp_for_level(current_level), 0)
+	if level_runtime == null:
+		return 0
+	return level_runtime.get_current_level_exp_progress(current_exp, current_level)
 
 
 func _update_transient_message(delta: float) -> void:
