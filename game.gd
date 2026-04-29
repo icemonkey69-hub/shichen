@@ -20,6 +20,7 @@ const LevelRuntimeScript := preload("res://systems/level_runtime.gd")
 const CombatInfoFormatterScript := preload("res://systems/combat_info_formatter.gd")
 const KillRewardAmountCalculatorScript := preload("res://systems/kill_reward_amount_calculator.gd")
 const RewardPickupSplitterScript := preload("res://systems/reward_pickup_splitter.gd")
+const ThresholdRewardPickerScript := preload("res://systems/threshold_reward_picker.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const DEFAULT_RESPAWN_SECONDS := 5.0
@@ -4043,7 +4044,7 @@ func _grant_threshold_reward(row: Dictionary) -> void:
 			_sync_player_runtime_progress()
 			_show_transient_message("击杀奖励达成\n获得金币 %d" % bonus_gold)
 		"card":
-			var card_row := _pick_card_reward(reward_value)
+			var card_row := ThresholdRewardPickerScript.pick_card(reward_value, card_rows, owned_cards)
 			if card_row.is_empty():
 				_show_transient_message("击杀奖励达成\n未找到可用卡牌奖励")
 				return
@@ -4059,7 +4060,7 @@ func _grant_threshold_reward(row: Dictionary) -> void:
 			_push_runtime_bonus_values_to_player(true)
 			_show_transient_message("击杀奖励达成\n属性奖励生效\n%s" % applied_text, 2.8)
 		"weapon":
-			var weapon_row := _pick_weapon_reward(reward_value)
+			var weapon_row := ThresholdRewardPickerScript.pick_weapon(reward_value, weapon_rows)
 			if weapon_row.is_empty():
 				_show_transient_message("击杀奖励达成\n未找到可用武器奖励")
 				return
@@ -4071,45 +4072,6 @@ func _grant_threshold_reward(row: Dictionary) -> void:
 			], 2.9)
 		_:
 			_show_transient_message("击杀奖励达成\n未识别奖励：%s" % reward_type)
-
-
-func _pick_card_reward(reward_value: String) -> Dictionary:
-	if reward_value.begins_with("random_tier_"):
-		var tier_text := reward_value.trim_prefix("random_tier_")
-		var target_tier := int(tier_text)
-		var candidates: Array[Dictionary] = []
-		for row in card_rows:
-			if int(row.get("tier", 0)) != target_tier:
-				continue
-			if bool(row.get("is_unique", false)) and _has_owned_reward_with_id(owned_cards, String(row.get("id", ""))):
-				continue
-			candidates.append(row)
-		if candidates.is_empty():
-			return {}
-		return candidates[randi() % candidates.size()]
-
-	for row in card_rows:
-		if String(row.get("id", "")) == reward_value:
-			return row
-	return {}
-
-
-func _pick_weapon_reward(reward_value: String) -> Dictionary:
-	if reward_value.begins_with("random_quality_"):
-		var quality_text := reward_value.trim_prefix("random_quality_")
-		var target_quality := int(quality_text)
-		var candidates: Array[Dictionary] = []
-		for row in weapon_rows:
-			if int(row.get("quality", 0)) == target_quality:
-				candidates.append(row)
-		if candidates.is_empty():
-			return {}
-		return _pick_weighted_row(candidates, "drop_weight")
-
-	for row in weapon_rows:
-		if String(row.get("id", "")) == reward_value:
-			return row
-	return {}
 
 
 func _apply_attribute_reward(reward_value: String) -> String:
@@ -5036,34 +4998,6 @@ func _convert_cdr_percent_to_haste(cdr_value: float) -> float:
 	if clamped_cdr <= 0.0:
 		return clamped_cdr * 100.0
 	return 100.0 * clamped_cdr / maxf(1.0 - clamped_cdr, 0.01)
-
-
-func _has_owned_reward_with_id(rows: Array[Dictionary], reward_id: String) -> bool:
-	for row in rows:
-		if String(row.get("id", "")) == reward_id:
-			return true
-	return false
-
-
-func _pick_weighted_row(rows: Array[Dictionary], weight_key: String) -> Dictionary:
-	if rows.is_empty():
-		return {}
-
-	var total_weight := 0.0
-	for row in rows:
-		total_weight += maxf(float(row.get(weight_key, 1.0)), 0.0)
-
-	if total_weight <= 0.0:
-		return rows[randi() % rows.size()]
-
-	var roll := randf() * total_weight
-	var cursor := 0.0
-	for row in rows:
-		cursor += maxf(float(row.get(weight_key, 1.0)), 0.0)
-		if roll <= cursor:
-			return row
-
-	return rows[rows.size() - 1]
 
 
 func _reload_data_tables() -> void:
