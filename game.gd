@@ -26,6 +26,7 @@ const TableValueUtilsScript := preload("res://systems/table_value_utils.gd")
 const CardDisplayTextScript := preload("res://systems/card_display_text.gd")
 const CardDescriptionTextScript := preload("res://systems/card_description_text.gd")
 const RegexCacheScript := preload("res://systems/regex_cache.gd")
+const TransientMessageRuntimeScript := preload("res://systems/transient_message_runtime.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const DEFAULT_RESPAWN_SECONDS := 5.0
@@ -567,8 +568,6 @@ var passive_fractional_progress := {
 	"mana": 0.0,
 }
 var owned_weapons: Array[Dictionary] = []
-var transient_message_remaining := 0.0
-var transient_message_queue: Array[Dictionary] = []
 
 var available_heroes: Array[HeroData] = []
 var hero_button_nodes: Array[Button] = []
@@ -599,6 +598,7 @@ var wave_runtime: WaveRuntime
 var weapon_growth_runtime: WeaponGrowthRuntime
 var level_runtime: LevelRuntime
 var regex_cache: RegexCache
+var transient_message_runtime: TransientMessageRuntime
 
 var attributes_panel: AttributesPanelUi
 var attributes_value_labels: Dictionary = {}
@@ -661,6 +661,7 @@ func _ready() -> void:
 	level_runtime = LevelRuntimeScript.new()
 	card_icon_resolver = CardIconResolverScript.new(CARD_CHOICE_DEMO_ICON_BY_ID, CARD_CHOICE_DEMO_ICON_BY_NAME)
 	regex_cache = RegexCacheScript.new()
+	transient_message_runtime = TransientMessageRuntimeScript.new()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	player.process_mode = Node.PROCESS_MODE_PAUSABLE
 	enemies.process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -1432,7 +1433,7 @@ func _update_hud(current_health: int, max_health: int, delta: float = 0.0) -> vo
 	_refresh_weapon_growth_panel()
 
 	if not game_over:
-		if transient_message_remaining <= 0.0:
+		if transient_message_runtime == null or not transient_message_runtime.is_active():
 			if hud != null:
 				hud.hide_message()
 
@@ -1818,7 +1819,7 @@ func _roll_card_choice_pickup_at(world_position: Vector2) -> void:
 func _is_card_choice_drop_boss_reward(reward_info: Dictionary) -> bool:
 	if int(reward_info.get("enemy_type", EnemyCatalog.TYPE_NORMAL)) == EnemyCatalog.TYPE_BOSS:
 		return true
-	return _variant_flag_enabled(reward_info.get("is_boss", false))
+	return TableValueUtilsScript.flag_enabled(reward_info.get("is_boss", false))
 
 
 func _spawn_card_choice_pickup_at(world_position: Vector2) -> void:
@@ -2793,8 +2794,9 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 	owned_weapons.clear()
 	_reset_weapon_growth_runtime_state(hero, bloodline_option)
 	next_kill_reward_index = 0
-	transient_message_remaining = 0.0
-	transient_message_queue.clear()
+	if transient_message_runtime == null:
+		transient_message_runtime = TransientMessageRuntimeScript.new()
+	transient_message_runtime.reset()
 	game_over = false
 	battle_finished = false
 	battle_result_reason = ""
@@ -3763,10 +3765,6 @@ func _is_table_row_banned(row: Dictionary) -> bool:
 	return row.has("ban") and TableValueUtilsScript.flag_enabled(row.get("ban"))
 
 
-func _variant_flag_enabled(raw_value: Variant) -> bool:
-	return TableValueUtilsScript.flag_enabled(raw_value)
-
-
 func _refresh_level_state(show_feedback: bool = true) -> void:
 	var previous_level := current_level
 	current_level = level_runtime.calculate_level(current_exp) if level_runtime != null else 1
@@ -3797,39 +3795,26 @@ func _get_current_level_exp_progress() -> int:
 func _update_transient_message(delta: float) -> void:
 	if game_over:
 		return
-
-	if transient_message_remaining > 0.0:
-		transient_message_remaining = maxf(transient_message_remaining - delta, 0.0)
-		if transient_message_remaining == 0.0:
-			if hud != null:
-				hud.hide_message()
-
-	if transient_message_remaining == 0.0 and not transient_message_queue.is_empty():
-		var next_message: Dictionary = transient_message_queue.pop_front()
-		_display_transient_message(
-			String(next_message.get("text", "")),
-			float(next_message.get("duration", DEFAULT_REWARD_MESSAGE_DURATION))
-		)
+	if transient_message_runtime == null:
+		transient_message_runtime = TransientMessageRuntimeScript.new()
+	_apply_transient_message_action(transient_message_runtime.update(delta, DEFAULT_REWARD_MESSAGE_DURATION))
 
 
 func _show_transient_message(text: String, duration: float = DEFAULT_REWARD_MESSAGE_DURATION) -> void:
 	if hud == null:
 		return
+	if transient_message_runtime == null:
+		transient_message_runtime = TransientMessageRuntimeScript.new()
+	_apply_transient_message_action(transient_message_runtime.show(text, duration, DEFAULT_MESSAGE_GAP_DURATION))
 
-	if transient_message_remaining > 0.0:
-		transient_message_queue.append({
-			"text": text,
-			"duration": duration + DEFAULT_MESSAGE_GAP_DURATION,
-		})
+
+func _apply_transient_message_action(action: Dictionary) -> void:
+	if action.is_empty() or hud == null:
 		return
-
-	_display_transient_message(text, duration)
-
-
-func _display_transient_message(text: String, duration: float) -> void:
-	if hud != null:
-		hud.show_message_text(text)
-	transient_message_remaining = maxf(duration, 0.01)
+	if bool(action.get("display", false)):
+		hud.show_message_text(String(action.get("text", "")))
+	elif bool(action.get("hide", false)):
+		hud.hide_message()
 
 
 func _on_enemy_damaged(world_position: Vector2, amount: int) -> void:
@@ -4639,14 +4624,10 @@ func _consume_fractional_progress(key: String, delta_value: float) -> int:
 func _extract_card_effects(card_row: Dictionary) -> Dictionary:
 	var bonuses: Dictionary = {}
 	var passives: Array[String] = []
-	var description := str(card_row.get("description", ""))
-	var lines := description.split("\n", false)
+	var lines := CardDescriptionTextScript.get_lines(card_row)
 	var append_to_last_passive := false
 
-	for raw_line in lines:
-		var line := CardDescriptionTextScript.normalize_line(str(raw_line))
-		if line.is_empty():
-			continue
+	for line in lines:
 		if CardDescriptionTextScript.is_passive_line(line):
 			passives.append(line)
 			append_to_last_passive = true
