@@ -18,6 +18,7 @@ const CardCollectionBuilderScript := preload("res://systems/card_collection_buil
 const CardChoiceDropRuntimeScript := preload("res://systems/card_choice_drop_runtime.gd")
 const LevelRuntimeScript := preload("res://systems/level_runtime.gd")
 const CombatInfoFormatterScript := preload("res://systems/combat_info_formatter.gd")
+const KillRewardAmountCalculatorScript := preload("res://systems/kill_reward_amount_calculator.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
 const MAX_PICKUPS_PER_REWARD_TYPE := 6
@@ -1437,15 +1438,20 @@ func _update_hud(current_health: int, max_health: int, delta: float = 0.0) -> vo
 
 
 func _build_combat_info_text() -> String:
-	var stats = player.get_combat_stats() if player != null and player.has_method("get_combat_stats") else null
 	return CombatInfoFormatterScript.build_text(
 		elapsed_time,
 		_get_wave_display_text(),
 		kill_count,
 		current_gold,
 		current_exp,
-		stats
+		_get_player_combat_stats()
 	)
+
+
+func _get_player_combat_stats():
+	if player == null or not player.has_method("get_combat_stats"):
+		return null
+	return player.get_combat_stats()
 
 
 func _update_resource_bars(current_health: int, max_health: int, current_mana: int, max_mana: int) -> void:
@@ -3731,19 +3737,10 @@ func _normalize_optional_id(raw_value) -> String:
 
 
 func _grant_kill_rewards(reward_info: Dictionary) -> void:
-	var base_gold := maxi(int(reward_info.get("gold", 0)), 0)
-	var base_exp := maxi(int(reward_info.get("exp", 0)), 0)
-	var final_gold := base_gold
-	var final_exp := base_exp
-	var stats = player.get_combat_stats() if player != null and player.has_method("get_combat_stats") else null
-	if stats != null:
-		final_gold = maxi(int(round(float(base_gold) * (1.0 + maxf(stats.get_stat(&"gold_gain_percent"), -1.0)))), 0)
-		final_gold += maxi(int(round(stats.get_stat(&"bonus_gold_per_kill"))), 0)
-		final_exp = maxi(int(round(float(base_exp) * (1.0 + maxf(stats.get_stat(&"exp_gain_percent"), -1.0)))), 0)
-		final_exp += maxi(int(round(stats.get_stat(&"bonus_exp_per_kill"))), 0)
+	var reward_amounts := KillRewardAmountCalculatorScript.calculate(reward_info, _get_player_combat_stats())
 
-	current_gold += final_gold
-	current_exp += final_exp
+	current_gold += int(reward_amounts.get("gold", 0))
+	current_exp += int(reward_amounts.get("exp", 0))
 	_refresh_level_state(true)
 
 
@@ -3905,7 +3902,7 @@ func _spawn_kill_reward_pickups(world_position: Vector2, reward_info: Dictionary
 		_grant_kill_rewards(reward_info)
 		return
 
-	var reward_amounts := _calculate_final_kill_reward_amounts(reward_info)
+	var reward_amounts := KillRewardAmountCalculatorScript.calculate(reward_info, _get_player_combat_stats())
 	var gold_amount := int(reward_amounts.get("gold", 0))
 	var exp_amount := int(reward_amounts.get("exp", 0))
 	if gold_amount <= 0 and exp_amount <= 0:
@@ -4130,24 +4127,6 @@ func _apply_attribute_reward(reward_value: String) -> String:
 	var bonus_value: float = float(parsed.get("bonus_value", 0.0))
 	_add_dict_bonus_value(reward_attribute_bonus_values, bonus_id, bonus_value)
 	return "%s %s" % [stat_key, value_text]
-
-
-func _calculate_final_kill_reward_amounts(reward_info: Dictionary) -> Dictionary:
-	var base_gold := maxi(int(reward_info.get("gold", 0)), 0)
-	var base_exp := maxi(int(reward_info.get("exp", 0)), 0)
-	var final_gold := base_gold
-	var final_exp := base_exp
-	var stats = player.get_combat_stats() if player != null and player.has_method("get_combat_stats") else null
-	if stats != null:
-		final_gold = maxi(int(round(float(base_gold) * (1.0 + maxf(stats.get_stat(&"gold_gain_percent"), -1.0)))), 0)
-		final_gold += maxi(int(round(stats.get_stat(&"bonus_gold_per_kill"))), 0)
-		final_exp = maxi(int(round(float(base_exp) * (1.0 + maxf(stats.get_stat(&"exp_gain_percent"), -1.0)))), 0)
-		final_exp += maxi(int(round(stats.get_stat(&"bonus_exp_per_kill"))), 0)
-
-	return {
-		"gold": final_gold,
-		"exp": final_exp,
-	}
 
 
 func _parse_bonus_value_expression(stat_key: String, value_text: String) -> Dictionary:
