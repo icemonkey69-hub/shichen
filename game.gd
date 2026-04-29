@@ -19,9 +19,9 @@ const CardChoiceDropRuntimeScript := preload("res://systems/card_choice_drop_run
 const LevelRuntimeScript := preload("res://systems/level_runtime.gd")
 const CombatInfoFormatterScript := preload("res://systems/combat_info_formatter.gd")
 const KillRewardAmountCalculatorScript := preload("res://systems/kill_reward_amount_calculator.gd")
+const RewardPickupSplitterScript := preload("res://systems/reward_pickup_splitter.gd")
 const DEFAULT_REWARD_MESSAGE_DURATION := 2.4
 const DEFAULT_MESSAGE_GAP_DURATION := 0.12
-const MAX_PICKUPS_PER_REWARD_TYPE := 6
 const DEFAULT_RESPAWN_SECONDS := 5.0
 const HIGH_LEVEL_RESPAWN_SECONDS := 10.0
 const HIGH_LEVEL_RESPAWN_THRESHOLD := 50
@@ -3915,7 +3915,7 @@ func _spawn_kill_reward_pickups(world_position: Vector2, reward_info: Dictionary
 
 
 func _spawn_pickup_burst(world_position: Vector2, reward_type: StringName, total_amount: int, ideal_chunk: int) -> void:
-	var chunks := _split_reward_amount(total_amount, ideal_chunk)
+	var chunks := RewardPickupSplitterScript.split_amount(total_amount, ideal_chunk)
 	var chunk_count := chunks.size()
 	if chunk_count == 0:
 		return
@@ -5043,28 +5043,6 @@ func _has_owned_reward_with_id(rows: Array[Dictionary], reward_id: String) -> bo
 		if String(row.get("id", "")) == reward_id:
 			return true
 	return false
-
-
-func _split_reward_amount(total_amount: int, ideal_chunk: int) -> Array[int]:
-	var result: Array[int] = []
-	var remaining := maxi(total_amount, 0)
-	if remaining <= 0:
-		return result
-
-	var safe_chunk := maxi(ideal_chunk, 1)
-	var chunk_count := mini(MAX_PICKUPS_PER_REWARD_TYPE, maxi(int(ceil(float(remaining) / float(safe_chunk))), 1))
-	for index in chunk_count:
-		var left_slots := chunk_count - index
-		var average := int(round(float(remaining) / float(left_slots)))
-		var jitter := int(floor(randf_range(-safe_chunk * 0.2, safe_chunk * 0.2)))
-		var chunk := clampi(average + jitter, 1, remaining - (left_slots - 1))
-		result.append(chunk)
-		remaining -= chunk
-
-	if remaining > 0:
-		result[result.size() - 1] += remaining
-
-	return result
 
 
 func _pick_weighted_row(rows: Array[Dictionary], weight_key: String) -> Dictionary:
