@@ -1,17 +1,17 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://xvjk5ymvnk8m"]
 
-[ext_resource type="Script" path="res://scenes/world/战斗地形.gd" id="1_terrain_script"]
+[ext_resource type="Script" uid="uid://c3oyf0rkc3pf8" path="res://scenes/world/战斗地形.gd" id="1_terrain_script"]
 
-[node name="测试地形" type="Node2D"]
+[node name="测试地形" type="Node2D" unique_id=349200941]
 z_index = -100
 script = ExtResource("1_terrain_script")
 play_area = Rect2(-1024, -1024, 2048, 2048)
 boss_spawn_offset = Vector2(760, -680)
 
-[node name="出生点" type="Marker2D" parent="."]
-position = Vector2(0, 0)
+[node name="出生点" type="Marker2D" parent="." unique_id=1140105529]
+visible = false
 
-[node name="场地边界" type="Line2D" parent="."]
+[node name="场地边界" type="Line2D" parent="." unique_id=1148292195]
 visible = false
 z_index = -10
 closed = true
