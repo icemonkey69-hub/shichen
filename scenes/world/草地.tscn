@@ -4,6 +4,22 @@
 [ext_resource type="Script" path="res://scenes/world/草地.gd" id="1_grass_script"]
 [ext_resource type="Texture2D" uid="uid://skaclm4idjxh" path="res://Tiny Swords (Free Pack)/Terrain/Tileset/Tilemap_color3.png" id="2_dlyk1"]
 [ext_resource type="Texture2D" uid="uid://d2n30mw5eayr5" path="res://Tiny Swords (Free Pack)/Terrain/Tileset/Water Foam.png" id="2_fh1ph"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Tree1.png" id="3_tree1"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Tree2.png" id="3_tree2"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Tree3.png" id="3_tree3"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Tree4.png" id="3_tree4"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Decorations/Bushes/Bushe1.png" id="4_bush1"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Decorations/Bushes/Bushe2.png" id="4_bush2"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Decorations/Bushes/Bushe3.png" id="4_bush3"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Decorations/Bushes/Bushe4.png" id="4_bush4"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock1.png" id="5_rock1"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock2.png" id="5_rock2"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock3.png" id="5_rock3"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock4.png" id="5_rock4"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Stump 1.png" id="6_stump1"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Stump 2.png" id="6_stump2"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Stump 3.png" id="6_stump3"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Terrain/Resources/Wood/Trees/Stump 4.png" id="6_stump4"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_fh1ph"]
 texture = ExtResource("1_mbpde")
@@ -184,3 +200,343 @@ tile_set = SubResource("TileSet_hyy7a")
 [node name="地面" type="TileMapLayer" parent="." unique_id=1759937708]
 tile_map_data = PackedByteArray("AAAGAAEAAAABAAAAAAAHAAIAAAABAAEAAAAHAAEAAAABAAAAAAAIAAEAAAABAAAAAAAJAAEAAAABAAAAAAAKAAEAAAABAAAAAAALAAEAAAABAAAAAAAMAAEAAAABAAAAAAANAAEAAAABAAAAAAAOAAEAAAABAAAAAAAPAAEAAAABAAAAAAAQAAEAAAABAAAAAAARAAEAAAABAAAAAAASAAEAAAABAAAAAAATAAEAAAABAAAAAAAUAAEAAAABAAAAAAAVAAEAAAABAAAAAAAVAAIAAAABAAEAAAAWAAIAAAABAAEAAAAXAAIAAAABAAEAAAAYAAIAAAABAAIAAAAZAAIAAAABAAIAAAAaAAIAAAABAAIAAAAWAAEAAAABAAAAAAAXAAEAAAABAAAAAAAYAAEAAAABAAAAAAAZAAUAAAACAAEAAAAZAAYAAAABAAEAAAAYAAYAAAABAAEAAAAYAAcAAAABAAEAAAAYAAgAAAABAAEAAAAYAAkAAAABAAEAAAAYAAoAAAABAAEAAAAZAAsAAAACAAEAAAAZAAoAAAABAAEAAAAcAA8AAAACAAIAAAAcAA4AAAACAAEAAAAcAA0AAAACAAEAAAAbAAwAAAAAAAEAAAAbAAsAAAAAAAEAAAAbAAoAAAABAAEAAAAbAAkAAAABAAEAAAAbAAgAAAABAAEAAAAbAAcAAAABAAEAAAAbAAYAAAABAAEAAAAbAAUAAAAAAAEAAAAbAAQAAAAAAAEAAAAcAAIAAAACAAEAAAAcAAEAAAACAAAAAAAcAAQAAAACAAEAAAAcAAMAAAACAAEAAAAcAAUAAAACAAEAAAAcAAYAAAACAAEAAAAcAAcAAAACAAEAAAAcAAgAAAACAAEAAAAcAAkAAAACAAEAAAAcAAoAAAACAAEAAAAcAAsAAAACAAEAAAAcAAwAAAACAAEAAAAZAAkAAAABAAEAAAAZAAgAAAABAAEAAAAYAAUAAAABAAEAAAAXAAUAAAABAAEAAAAXAAMAAAACAAEAAAAXAAQAAAABAAEAAAAYAAQAAAABAAAAAAAZAAcAAAABAAEAAAAZAAwAAAACAAIAAAAZAAQAAAACAAAAAAAaAAYAAAABAAAAAAAaAAcAAAABAAEAAAAaAAgAAAABAAEAAAAXAAYAAAABAAEAAAAYAAsAAAABAAEAAAAaAAkAAAABAAEAAAAaAAoAAAABAAIAAAAZAA4AAAABAAAAAAAaAA4AAAABAAAAAAAXAAgAAAABAAEAAAAXAAcAAAABAAEAAAAWAAYAAAABAAEAAAAWAAUAAAABAAEAAAAWAAQAAAABAAEAAAAWAAMAAAABAAEAAAAXAAkAAAABAAEAAAAYAAwAAAABAAIAAAAYAA4AAAABAAAAAAAYAA8AAAABAAIAAAAXAA4AAAABAAEAAAAXAA0AAAACAAEAAAAXAAwAAAABAAEAAAAWAAsAAAABAAEAAAAWAAoAAAABAAEAAAAWAAkAAAABAAEAAAAWAAgAAAABAAEAAAAVAAcAAAABAAEAAAAVAAYAAAABAAEAAAAWAAcAAAABAAEAAAAWAAwAAAABAAEAAAAWAA0AAAABAAEAAAAVAAoAAAABAAEAAAAVAAkAAAABAAEAAAAVAAgAAAABAAEAAAAUAAYAAAABAAEAAAAUAAUAAAABAAEAAAAUAAQAAAABAAEAAAAUAAcAAAABAAEAAAAUAAgAAAABAAEAAAAUAAkAAAABAAEAAAAUAAoAAAABAAEAAAAVAAsAAAABAAEAAAAVAAwAAAABAAEAAAAVAA0AAAABAAEAAAAXAAsAAAABAAEAAAAXAAoAAAABAAEAAAAVAAUAAAABAAEAAAAVAAQAAAABAAEAAAAVAAMAAAABAAEAAAAUAAIAAAABAAEAAAATAAIAAAABAAEAAAASAAIAAAABAAEAAAARAAIAAAABAAEAAAAQAAIAAAABAAEAAAAPAAIAAAABAAEAAAAOAAIAAAABAAEAAAANAAIAAAABAAEAAAAMAAIAAAABAAEAAAALAAIAAAABAAEAAAAKAAIAAAABAAEAAAAJAAIAAAABAAEAAAAIAAIAAAABAAEAAAAGAAIAAAABAAEAAAAFAAIAAAABAAIAAAAEAAIAAAABAAIAAAADAAIAAAABAAIAAAABAAIAAAAAAAEAAAABAAEAAAAAAAAAAAABAAMAAAAAAAEAAAABAAQAAAAAAAEAAAACAAQAAAACAAEAAAAEAAQAAAAAAAAAAAAEAAUAAAAAAAEAAAADAAYAAAABAAAAAAACAAYAAAABAAEAAAABAAUAAAAAAAEAAAACAAUAAAACAAEAAAAFAAUAAAABAAEAAAAFAAQAAAABAAAAAAAGAAQAAAABAAEAAAAGAAMAAAAAAAEAAAAHAAMAAAABAAEAAAAIAAMAAAABAAEAAAAJAAMAAAABAAEAAAAKAAMAAAABAAEAAAALAAMAAAABAAEAAAAMAAMAAAABAAEAAAANAAMAAAABAAEAAAAOAAMAAAABAAEAAAAPAAMAAAABAAEAAAAQAAMAAAABAAEAAAARAAMAAAABAAEAAAASAAMAAAABAAEAAAATAAMAAAABAAEAAAAUAAMAAAABAAEAAAATAAQAAAABAAEAAAASAAQAAAABAAEAAAASAAUAAAABAAEAAAARAAUAAAABAAEAAAAQAAUAAAABAAEAAAAQAAYAAAABAAEAAAAPAAYAAAABAAEAAAAOAAYAAAABAAEAAAANAAYAAAABAAEAAAAMAAYAAAABAAEAAAALAAcAAAABAAEAAAAKAAcAAAABAAEAAAAJAAcAAAABAAEAAAAIAAcAAAABAAEAAAAHAAcAAAABAAEAAAAHAAgAAAABAAEAAAAGAAgAAAABAAEAAAAFAAgAAAABAAEAAAAFAAcAAAABAAEAAAAGAAcAAAABAAEAAAAGAAYAAAABAAEAAAAHAAUAAAABAAEAAAAIAAUAAAABAAEAAAAJAAUAAAABAAEAAAAKAAUAAAABAAEAAAALAAUAAAABAAEAAAAMAAUAAAABAAEAAAANAAUAAAABAAEAAAAOAAUAAAABAAEAAAALAAYAAAABAAEAAAAKAAYAAAABAAEAAAAJAAYAAAABAAEAAAAIAAYAAAABAAEAAAAHAAYAAAABAAEAAAAGAAUAAAABAAEAAAAHAAQAAAABAAEAAAAIAAQAAAABAAEAAAAJAAQAAAABAAEAAAAKAAQAAAABAAEAAAALAAQAAAABAAEAAAAPAAUAAAABAAEAAAAPAAQAAAABAAEAAAAQAAQAAAABAAEAAAARAAQAAAABAAEAAAAOAAQAAAABAAEAAAANAAQAAAABAAEAAAAMAAQAAAABAAEAAAATAAUAAAABAAEAAAATAAYAAAABAAEAAAATAAcAAAABAAEAAAARAAgAAAABAAEAAAARAAkAAAABAAEAAAAQAAcAAAABAAEAAAARAAYAAAABAAEAAAASAAYAAAABAAEAAAAPAAcAAAABAAEAAAAFAAYAAAABAAEAAAAEAAcAAAABAAEAAAADAAcAAAABAAEAAAABAAYAAAAAAAEAAAABAAcAAAAAAAEAAAACAAcAAAABAAEAAAAEAAYAAAABAAEAAAAMAAcAAAABAAEAAAAQAAgAAAABAAEAAAAPAAgAAAABAAEAAAAOAAgAAAABAAEAAAANAAgAAAABAAEAAAANAAcAAAABAAEAAAAOAAcAAAABAAEAAAAJAAgAAAABAAEAAAAIAAgAAAABAAEAAAAHAAkAAAABAAEAAAAGAAkAAAABAAEAAAAEAAgAAAABAAEAAAADAAgAAAABAAEAAAACAAgAAAABAAEAAAABAAgAAAAAAAEAAAAKAAgAAAABAAEAAAALAAgAAAABAAEAAAAMAAgAAAABAAEAAAATAAgAAAABAAEAAAAXAA8AAAABAAIAAAAWAA8AAAABAAIAAAAVAA8AAAABAAIAAAAUAA8AAAABAAIAAAATAA8AAAABAAIAAAASAA8AAAABAAIAAAARAA8AAAABAAIAAAAQAA8AAAABAAIAAAAPAA8AAAABAAIAAAAOAA8AAAABAAIAAAANAA8AAAABAAIAAAAMAA8AAAABAAIAAAALAA8AAAABAAIAAAAKAA8AAAABAAIAAAAJAA8AAAABAAIAAAAIAA8AAAABAAIAAAAHAA8AAAABAAIAAAAGAA8AAAABAAIAAAAFAA8AAAABAAIAAAABAA8AAAAAAAIAAAABAA4AAAAAAAEAAAADAA4AAAABAAAAAAAEAA4AAAABAAAAAAAFAA4AAAABAAAAAAAGAA4AAAABAAEAAAAHAA4AAAABAAEAAAAIAA4AAAABAAEAAAAJAA4AAAABAAEAAAAKAA4AAAABAAEAAAALAA4AAAABAAEAAAAMAA4AAAABAAEAAAANAA4AAAABAAEAAAAOAA4AAAABAAEAAAAPAA4AAAABAAEAAAAQAA4AAAABAAEAAAARAA4AAAABAAEAAAASAA4AAAABAAEAAAATAA4AAAABAAEAAAAUAA4AAAABAAEAAAAVAA4AAAABAAEAAAAWAA4AAAABAAEAAAAUAA0AAAABAAEAAAATAA0AAAABAAEAAAASAA0AAAABAAEAAAARAA0AAAABAAEAAAAQAA0AAAABAAEAAAAPAA0AAAABAAEAAAAOAA0AAAABAAEAAAANAA0AAAABAAEAAAAMAA0AAAABAAEAAAALAA0AAAABAAEAAAAKAA0AAAABAAEAAAAJAA0AAAABAAEAAAAIAA0AAAABAAEAAAAHAA0AAAABAAEAAAABAA0AAAAAAAEAAAABAAwAAAAAAAEAAAACAAwAAAACAAEAAAAEAAwAAAAAAAIAAAAFAAwAAAABAAIAAAAGAAwAAAABAAEAAAAHAAwAAAABAAEAAAAIAAwAAAABAAEAAAAJAAwAAAABAAEAAAAKAAwAAAABAAEAAAALAAwAAAABAAEAAAAMAAwAAAABAAEAAAANAAwAAAABAAEAAAAOAAwAAAABAAEAAAAPAAwAAAABAAEAAAAQAAwAAAABAAEAAAARAAwAAAABAAEAAAASAAwAAAABAAEAAAATAAwAAAABAAEAAAAUAAwAAAABAAEAAAAUAAsAAAABAAEAAAATAAsAAAABAAEAAAASAAsAAAABAAEAAAARAAsAAAABAAEAAAAQAAsAAAABAAEAAAAPAAsAAAABAAEAAAAOAAsAAAABAAEAAAANAAsAAAABAAEAAAAMAAsAAAABAAEAAAALAAsAAAABAAEAAAAKAAsAAAABAAEAAAAJAAsAAAABAAEAAAAIAAsAAAABAAEAAAAHAAsAAAABAAEAAAAGAAsAAAABAAEAAAAFAAsAAAABAAEAAAAEAAsAAAAAAAEAAAACAAsAAAACAAEAAAACAAoAAAABAAEAAAABAAoAAAAAAAEAAAADAAoAAAABAAIAAAAEAAoAAAABAAEAAAAFAAoAAAABAAEAAAAGAAoAAAABAAEAAAAHAAoAAAABAAEAAAAIAAoAAAABAAEAAAAJAAoAAAABAAEAAAAKAAoAAAABAAEAAAALAAoAAAABAAEAAAAMAAoAAAABAAEAAAANAAoAAAABAAEAAAAOAAoAAAABAAEAAAAPAAoAAAABAAEAAAAQAAoAAAABAAEAAAARAAoAAAABAAEAAAASAAoAAAABAAEAAAATAAoAAAABAAEAAAATAAkAAAABAAEAAAAQAAkAAAABAAEAAAAPAAkAAAABAAEAAAAOAAkAAAABAAEAAAANAAkAAAABAAEAAAAMAAkAAAABAAEAAAALAAkAAAABAAEAAAAKAAkAAAABAAEAAAAJAAkAAAABAAEAAAAIAAkAAAABAAEAAAAFAAkAAAABAAEAAAAEAAkAAAABAAEAAAADAAkAAAABAAEAAAACAAkAAAABAAEAAAABAAkAAAAAAAEAAAABAAsAAAAAAAEAAAAFAAEAAAABAAAAAAACAAEAAAABAAAAAAADAAEAAAABAAAAAAAEAAEAAAABAAAAAAACAAIAAAABAAEAAAACAAMAAAACAAEAAAACAA8AAAABAAIAAAADAA8AAAABAAIAAAAEAA8AAAABAAIAAAAZAA8AAAABAAIAAAAaAA8AAAABAAIAAAAbAA8AAAABAAIAAAAbAA4AAAABAAEAAAAbAA0AAAAAAAEAAAACAA4AAAABAAEAAAACAA0AAAACAAEAAAAbAAMAAAAAAAEAAAAbAAIAAAABAAEAAAAbAAEAAAABAAAAAAAaAAEAAAABAAAAAAAZAAEAAAABAAAAAAAGAA0AAAAAAAEAAAARAAcAAAABAAEAAAASAAcAAAABAAEAAAASAAgAAAABAAEAAAASAAkAAAABAAEAAAA=")
 tile_set = SubResource("TileSet_wq1y4")
+
+[node name="StaticTerrainBlocks" type="Node2D" parent="."]
+
+[node name="PlateauTopLeft" type="Sprite2D" parent="StaticTerrainBlocks"]
+position = Vector2(-770, -705)
+scale = Vector2(1.65, 1.65)
+z_as_relative = false
+z_index = 40
+texture = ExtResource("2_dlyk1")
+region_enabled = true
+region_rect = Rect2(0, 0, 192, 192)
+
+[node name="PlateauTopRight" type="Sprite2D" parent="StaticTerrainBlocks"]
+position = Vector2(560, -720)
+scale = Vector2(1.7, 1.7)
+z_as_relative = false
+z_index = 40
+texture = ExtResource("2_dlyk1")
+region_enabled = true
+region_rect = Rect2(320, 0, 192, 256)
+
+[node name="PlateauBottomLeft" type="Sprite2D" parent="StaticTerrainBlocks"]
+position = Vector2(-720, 565)
+scale = Vector2(1.8, 1.8)
+z_as_relative = false
+z_index = 40
+texture = ExtResource("2_dlyk1")
+region_enabled = true
+region_rect = Rect2(0, 0, 192, 192)
+
+[node name="PlateauBottomRight" type="Sprite2D" parent="StaticTerrainBlocks"]
+position = Vector2(735, 450)
+scale = Vector2(1.9, 1.9)
+z_as_relative = false
+z_index = 40
+texture = ExtResource("2_dlyk1")
+region_enabled = true
+region_rect = Rect2(320, 0, 192, 256)
+
+[node name="StaticDecorations" type="Node2D" parent="."]
+
+[node name="TreeTL01" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-970, -885)
+scale = Vector2(0.78, 0.78)
+z_as_relative = false
+z_index = 1115
+texture = ExtResource("3_tree1")
+region_enabled = true
+region_rect = Rect2(0, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeTL02" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-835, -925)
+scale = Vector2(0.82, 0.82)
+z_as_relative = false
+z_index = 1075
+texture = ExtResource("3_tree2")
+region_enabled = true
+region_rect = Rect2(384, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeTL03" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-675, -850)
+scale = Vector2(0.76, 0.76)
+z_as_relative = false
+z_index = 1150
+texture = ExtResource("3_tree3")
+region_enabled = true
+region_rect = Rect2(768, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeTL04" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-910, -705)
+scale = Vector2(0.8, 0.8)
+z_as_relative = false
+z_index = 1295
+texture = ExtResource("3_tree4")
+region_enabled = true
+region_rect = Rect2(1152, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeTR01" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(420, -910)
+scale = Vector2(0.78, 0.78)
+z_as_relative = false
+z_index = 1090
+texture = ExtResource("3_tree1")
+region_enabled = true
+region_rect = Rect2(192, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeTR02" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(575, -880)
+scale = Vector2(0.84, 0.84)
+z_as_relative = false
+z_index = 1120
+texture = ExtResource("3_tree2")
+region_enabled = true
+region_rect = Rect2(576, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeTR03" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(745, -830)
+scale = Vector2(0.78, 0.78)
+z_as_relative = false
+z_index = 1170
+texture = ExtResource("3_tree1")
+region_enabled = true
+region_rect = Rect2(960, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeTR04" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(940, -520)
+scale = Vector2(0.74, 0.74)
+z_as_relative = false
+z_index = 1480
+texture = ExtResource("3_tree3")
+region_enabled = true
+region_rect = Rect2(0, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeBL01" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-950, 390)
+scale = Vector2(0.8, 0.8)
+z_as_relative = false
+z_index = 2390
+texture = ExtResource("3_tree1")
+region_enabled = true
+region_rect = Rect2(384, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeBL02" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-790, 520)
+scale = Vector2(0.86, 0.86)
+z_as_relative = false
+z_index = 2520
+texture = ExtResource("3_tree2")
+region_enabled = true
+region_rect = Rect2(768, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeBL03" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-595, 590)
+scale = Vector2(0.82, 0.82)
+z_as_relative = false
+z_index = 2590
+texture = ExtResource("3_tree4")
+region_enabled = true
+region_rect = Rect2(192, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeBL04" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-860, 790)
+scale = Vector2(0.78, 0.78)
+z_as_relative = false
+z_index = 2790
+texture = ExtResource("3_tree1")
+region_enabled = true
+region_rect = Rect2(1152, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeBR01" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(650, 360)
+scale = Vector2(0.82, 0.82)
+z_as_relative = false
+z_index = 2360
+texture = ExtResource("3_tree1")
+region_enabled = true
+region_rect = Rect2(576, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeBR02" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(820, 430)
+scale = Vector2(0.86, 0.86)
+z_as_relative = false
+z_index = 2430
+texture = ExtResource("3_tree2")
+region_enabled = true
+region_rect = Rect2(960, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeBR03" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(965, 540)
+scale = Vector2(0.78, 0.78)
+z_as_relative = false
+z_index = 2540
+texture = ExtResource("3_tree3")
+region_enabled = true
+region_rect = Rect2(384, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="TreeBR04" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(500, 840)
+scale = Vector2(0.74, 0.74)
+z_as_relative = false
+z_index = 2840
+texture = ExtResource("3_tree4")
+region_enabled = true
+region_rect = Rect2(1344, 0, 192, 256)
+offset = Vector2(0, -128)
+
+[node name="BushTopLeft" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-515, -690)
+scale = Vector2(0.72, 0.72)
+z_as_relative = false
+z_index = 1310
+texture = ExtResource("4_bush2")
+region_enabled = true
+region_rect = Rect2(512, 0, 128, 128)
+offset = Vector2(0, -64)
+
+[node name="BushTopMid" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-140, -610)
+scale = Vector2(0.7, 0.7)
+z_as_relative = false
+z_index = 1390
+texture = ExtResource("4_bush1")
+region_enabled = true
+region_rect = Rect2(128, 0, 128, 128)
+offset = Vector2(0, -64)
+
+[node name="BushTopRight" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(830, -235)
+scale = Vector2(0.72, 0.72)
+z_as_relative = false
+z_index = 1765
+texture = ExtResource("4_bush4")
+region_enabled = true
+region_rect = Rect2(768, 0, 128, 128)
+offset = Vector2(0, -64)
+
+[node name="BushLeft" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-855, 170)
+scale = Vector2(0.75, 0.75)
+z_as_relative = false
+z_index = 2170
+texture = ExtResource("4_bush3")
+region_enabled = true
+region_rect = Rect2(384, 0, 128, 128)
+offset = Vector2(0, -64)
+
+[node name="BushBottomMid" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-230, 710)
+scale = Vector2(0.7, 0.7)
+z_as_relative = false
+z_index = 2710
+texture = ExtResource("4_bush1")
+region_enabled = true
+region_rect = Rect2(896, 0, 128, 128)
+offset = Vector2(0, -64)
+
+[node name="BushBottomRight" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(720, 760)
+scale = Vector2(0.74, 0.74)
+z_as_relative = false
+z_index = 2760
+texture = ExtResource("4_bush2")
+region_enabled = true
+region_rect = Rect2(0, 0, 128, 128)
+offset = Vector2(0, -64)
+
+[node name="RockTopLeft" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-410, -455)
+scale = Vector2(0.82, 0.82)
+z_as_relative = false
+z_index = 1545
+texture = ExtResource("5_rock1")
+offset = Vector2(0, -32)
+
+[node name="RockTopRight" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(245, -560)
+scale = Vector2(0.86, 0.86)
+z_as_relative = false
+z_index = 1440
+texture = ExtResource("5_rock2")
+offset = Vector2(0, -32)
+
+[node name="RockRight" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(965, -80)
+scale = Vector2(0.78, 0.78)
+z_as_relative = false
+z_index = 1920
+texture = ExtResource("5_rock3")
+offset = Vector2(0, -32)
+
+[node name="RockLeft" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-915, 285)
+scale = Vector2(0.78, 0.78)
+z_as_relative = false
+z_index = 2285
+texture = ExtResource("5_rock4")
+offset = Vector2(0, -32)
+
+[node name="RockBottomMid" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(35, 660)
+scale = Vector2(0.86, 0.86)
+z_as_relative = false
+z_index = 2660
+texture = ExtResource("5_rock1")
+offset = Vector2(0, -32)
+
+[node name="RockBottomRight" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(405, 760)
+scale = Vector2(0.76, 0.76)
+z_as_relative = false
+z_index = 2760
+texture = ExtResource("5_rock2")
+offset = Vector2(0, -32)
+
+[node name="StumpTop" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-40, -765)
+scale = Vector2(0.52, 0.52)
+z_as_relative = false
+z_index = 1235
+texture = ExtResource("6_stump1")
+offset = Vector2(0, -128)
+
+[node name="StumpUpperRight" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(390, -505)
+scale = Vector2(0.52, 0.52)
+z_as_relative = false
+z_index = 1495
+texture = ExtResource("6_stump2")
+offset = Vector2(0, -128)
+
+[node name="StumpBottomLeft" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(-510, 845)
+scale = Vector2(0.5, 0.5)
+z_as_relative = false
+z_index = 2845
+texture = ExtResource("6_stump3")
+offset = Vector2(0, -128)
+
+[node name="StumpRight" type="Sprite2D" parent="StaticDecorations"]
+position = Vector2(850, 230)
+scale = Vector2(0.5, 0.5)
+z_as_relative = false
+z_index = 2230
+texture = ExtResource("6_stump4")
+offset = Vector2(0, -128)
