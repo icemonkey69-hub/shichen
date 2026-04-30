@@ -9,6 +9,8 @@ class_name GrassBattleTerrain
 @onready var boss_spawn_marker: Marker2D = get_node("Boss出生点") as Marker2D
 @onready var enemy_spawn_root: Node = get_node("普通怪刷怪点")
 
+var enemy_spawn_marker_bag: Array[Marker2D] = []
+
 
 func _ready() -> void:
 	if disable_tilemap_collision:
@@ -32,21 +34,12 @@ func get_boss_spawn_position() -> Vector2:
 	return boss_spawn_marker.global_position
 
 
-func get_enemy_spawn_position(avoid_rect := Rect2()) -> Vector2:
-	var markers := _get_enemy_spawn_markers()
-	if markers.is_empty():
+func get_enemy_spawn_position(_avoid_rect := Rect2()) -> Vector2:
+	var marker := _take_random_enemy_spawn_marker()
+	if marker == null:
 		push_error("草地战斗地形要求 `普通怪刷怪点` 下至少有一个 Marker2D。")
 		return Vector2.ZERO
-
-	var candidates: Array[Marker2D] = []
-	for marker in markers:
-		if not avoid_rect.has_point(marker.global_position):
-			candidates.append(marker)
-
-	if candidates.is_empty():
-		candidates = markers
-
-	return candidates[randi() % candidates.size()].global_position
+	return marker.global_position
 
 
 func _draw() -> void:
@@ -67,3 +60,14 @@ func _get_enemy_spawn_markers() -> Array[Marker2D]:
 		if child is Marker2D:
 			markers.append(child)
 	return markers
+
+
+func _take_random_enemy_spawn_marker() -> Marker2D:
+	if enemy_spawn_marker_bag.is_empty():
+		enemy_spawn_marker_bag = _get_enemy_spawn_markers()
+	if enemy_spawn_marker_bag.is_empty():
+		return null
+	var index := randi() % enemy_spawn_marker_bag.size()
+	var marker := enemy_spawn_marker_bag[index]
+	enemy_spawn_marker_bag.remove_at(index)
+	return marker

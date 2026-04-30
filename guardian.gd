@@ -3,6 +3,8 @@ class_name Guardian
 
 @export var move_speed := 320.0
 @export var movement_bounds := Rect2(-1000.0, -1000.0, 2000.0, 2000.0)
+@export var clamp_to_movement_bounds := false
+@export var use_camera_limits := false
 @export var camera_target_visible_size := Vector2(1450.0, 820.0)
 @export var min_camera_zoom := 0.68
 @export var max_camera_zoom := 1.2
@@ -32,7 +34,8 @@ func _physics_process(_delta: float) -> void:
 	var input_direction := _get_move_input()
 	velocity = input_direction * move_speed
 	move_and_slide()
-	global_position = global_position.clamp(movement_bounds.position, movement_bounds.position + movement_bounds.size)
+	if clamp_to_movement_bounds:
+		global_position = global_position.clamp(movement_bounds.position, movement_bounds.position + movement_bounds.size)
 
 	if input_direction != Vector2.ZERO:
 		facing_direction = input_direction
@@ -78,6 +81,12 @@ func _get_move_input() -> Vector2:
 
 func _apply_camera_limits() -> void:
 	if camera == null:
+		return
+	if not use_camera_limits:
+		camera.limit_left = -10000000
+		camera.limit_top = -10000000
+		camera.limit_right = 10000000
+		camera.limit_bottom = 10000000
 		return
 	var bounds_end := movement_bounds.position + movement_bounds.size
 	camera.limit_left = int(movement_bounds.position.x)
