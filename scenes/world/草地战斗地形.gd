@@ -5,9 +5,9 @@ class_name GrassBattleTerrain
 @export var disable_tilemap_collision := true
 @export var show_bounds := false
 
-@onready var tower_spawn_marker: Marker2D = $TowerSpawn
-@onready var boss_spawn_marker: Marker2D = $BossSpawn
-@onready var enemy_spawn_root: Node = $EnemySpawnPoints
+@onready var tower_spawn_marker: Marker2D = get_node("塔出生点") as Marker2D
+@onready var boss_spawn_marker: Marker2D = get_node("Boss出生点") as Marker2D
+@onready var enemy_spawn_root: Node = get_node("普通怪刷怪点")
 
 
 func _ready() -> void:
@@ -35,7 +35,7 @@ func get_boss_spawn_position() -> Vector2:
 func get_enemy_spawn_position(avoid_rect := Rect2()) -> Vector2:
 	var markers := _get_enemy_spawn_markers()
 	if markers.is_empty():
-		push_error("GrassBattleTerrain requires at least one Marker2D under EnemySpawnPoints.")
+		push_error("草地战斗地形要求 `普通怪刷怪点` 下至少有一个 Marker2D。")
 		return Vector2.ZERO
 
 	var candidates: Array[Marker2D] = []
