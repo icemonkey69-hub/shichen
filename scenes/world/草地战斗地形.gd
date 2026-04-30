@@ -2,7 +2,6 @@ extends Node2D
 class_name GrassBattleTerrain
 
 @export var play_area := Rect2(96.0, 96.0, 1344.0, 704.0)
-@export var disable_tilemap_collision := true
 @export var show_bounds := false
 
 @onready var tower_spawn_marker: Marker2D = get_node("塔出生点") as Marker2D
@@ -13,8 +12,6 @@ var enemy_spawn_marker_bag: Array[Marker2D] = []
 
 
 func _ready() -> void:
-	if disable_tilemap_collision:
-		_disable_tilemap_collision()
 	queue_redraw()
 
 
@@ -46,12 +43,6 @@ func _draw() -> void:
 	if not show_bounds:
 		return
 	draw_rect(play_area, Color(0.85, 1.0, 0.55, 0.72), false, 3.0)
-
-
-func _disable_tilemap_collision() -> void:
-	for child in get_children():
-		if child is TileMapLayer:
-			child.set("collision_enabled", false)
 
 
 func _get_enemy_spawn_markers() -> Array[Marker2D]:
