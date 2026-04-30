@@ -1,12 +1,13 @@
 extends CharacterBody2D
 class_name Guardian
 
-const GUARDIAN_IDLE_TEXTURE := preload("res://Tiny Swords (Free Pack)/2D HD Character Knight/Spritesheets/With shadows/Idle.png")
-const GUARDIAN_RUN_TEXTURE := preload("res://Tiny Swords (Free Pack)/2D HD Character Knight/Spritesheets/With shadows/Run.png")
-const GUARDIAN_FRAME_SIZE := Vector2(128.0, 128.0)
-const GUARDIAN_FRAMES_PER_DIRECTION := 15
-const GUARDIAN_IDLE_FPS := 7.0
-const GUARDIAN_RUN_FPS := 13.0
+const WARRIOR_IDLE_TEXTURE := preload("res://Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Idle.png")
+const WARRIOR_RUN_TEXTURE := preload("res://Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Run.png")
+const WARRIOR_FRAME_SIZE := Vector2(192.0, 192.0)
+const WARRIOR_IDLE_FRAMES := 8
+const WARRIOR_RUN_FRAMES := 6
+const WARRIOR_IDLE_FPS := 7.0
+const WARRIOR_RUN_FPS := 10.0
 
 @export var move_speed := 320.0
 @export var movement_bounds := Rect2(-1000.0, -1000.0, 2000.0, 2000.0)
@@ -24,7 +25,6 @@ var controls_enabled := false
 var facing_direction := Vector2.DOWN
 var animation_name: StringName = &"idle"
 var animation_frame := 0
-var animation_direction_row := 5
 var animation_elapsed := 0.0
 
 
@@ -54,6 +54,7 @@ func _physics_process(_delta: float) -> void:
 
 	if input_direction != Vector2.ZERO:
 		facing_direction = input_direction
+		sprite.flip_h = input_direction.x < -0.01
 		_apply_animation(&"run")
 	else:
 		_apply_animation(&"idle")
@@ -98,62 +99,27 @@ func _apply_animation(next_animation: StringName, force_restart := false) -> voi
 	animation_frame = 0
 	animation_elapsed = 0.0
 	sprite.region_enabled = true
-	sprite.texture = GUARDIAN_RUN_TEXTURE if animation_name == &"run" else GUARDIAN_IDLE_TEXTURE
+	sprite.texture = WARRIOR_RUN_TEXTURE if animation_name == &"run" else WARRIOR_IDLE_TEXTURE
 	_apply_animation_frame()
 
 
 func _advance_animation(delta: float) -> void:
 	if sprite == null:
 		return
-	var fps := GUARDIAN_RUN_FPS if animation_name == &"run" else GUARDIAN_IDLE_FPS
+	var fps := WARRIOR_RUN_FPS if animation_name == &"run" else WARRIOR_IDLE_FPS
+	var frame_count := WARRIOR_RUN_FRAMES if animation_name == &"run" else WARRIOR_IDLE_FRAMES
 	animation_elapsed += delta
 	var frame_duration := 1.0 / fps
 	while animation_elapsed >= frame_duration:
 		animation_elapsed -= frame_duration
-		animation_frame = (animation_frame + 1) % GUARDIAN_FRAMES_PER_DIRECTION
+		animation_frame = (animation_frame + 1) % frame_count
 		_apply_animation_frame()
 
 
 func _apply_animation_frame() -> void:
 	if sprite == null:
 		return
-	animation_direction_row = _get_direction_row(facing_direction)
-	sprite.region_rect = Rect2(
-		Vector2(
-			GUARDIAN_FRAME_SIZE.x * float(animation_frame),
-			GUARDIAN_FRAME_SIZE.y * float(animation_direction_row)
-		),
-		GUARDIAN_FRAME_SIZE
-	)
-
-
-func _get_direction_row(direction: Vector2) -> int:
-	if direction == Vector2.ZERO:
-		direction = facing_direction
-	if direction == Vector2.ZERO:
-		return animation_direction_row
-
-	var angle := direction.angle()
-	if angle < 0.0:
-		angle += TAU
-	var sector := int(round(angle / (PI / 4.0))) % 8
-	match sector:
-		0:
-			return 3
-		1:
-			return 4
-		2:
-			return 5
-		3:
-			return 6
-		4:
-			return 7
-		5:
-			return 0
-		6:
-			return 1
-		_:
-			return 2
+	sprite.region_rect = Rect2(Vector2(WARRIOR_FRAME_SIZE.x * float(animation_frame), 0.0), WARRIOR_FRAME_SIZE)
 
 
 func _get_move_input() -> Vector2:
