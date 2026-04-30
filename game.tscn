@@ -10,7 +10,7 @@
 [node name="Game" type="Node2D" unique_id=385267458]
 script = ExtResource("1_o0f7x")
 
-[node name="测试地形" parent="." instance=ExtResource("5_terrain")]
+[node name="战斗地形" parent="." instance=ExtResource("5_terrain")]
 
 [node name="Enemies" type="Node2D" parent="." unique_id=884180405]
 

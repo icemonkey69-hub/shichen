@@ -1,6 +1,14 @@
 extends CharacterBody2D
 class_name Guardian
 
+const WARRIOR_IDLE_TEXTURE := preload("res://Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Idle.png")
+const WARRIOR_RUN_TEXTURE := preload("res://Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Run.png")
+const WARRIOR_FRAME_SIZE := Vector2(192.0, 192.0)
+const WARRIOR_IDLE_FRAMES := 8
+const WARRIOR_RUN_FRAMES := 6
+const WARRIOR_IDLE_FPS := 7.0
+const WARRIOR_RUN_FPS := 10.0
+
 @export var move_speed := 320.0
 @export var movement_bounds := Rect2(-1000.0, -1000.0, 2000.0, 2000.0)
 @export var clamp_to_movement_bounds := false
@@ -11,12 +19,17 @@ class_name Guardian
 
 @onready var camera: Camera2D = $Camera2D
 @onready var visual_root: Node2D = $VisualRoot
+@onready var sprite: Sprite2D = $VisualRoot/Sprite
 
 var controls_enabled := false
 var facing_direction := Vector2.DOWN
+var animation_name: StringName = &"idle"
+var animation_frame := 0
+var animation_elapsed := 0.0
 
 
 func _ready() -> void:
+	_apply_animation(&"idle", true)
 	_apply_camera_limits()
 	_update_camera_zoom()
 	if not get_viewport().size_changed.is_connected(_update_camera_zoom):
@@ -29,6 +42,8 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if not controls_enabled:
 		velocity = Vector2.ZERO
+		_apply_animation(&"idle")
+		_advance_animation(_delta)
 		return
 
 	var input_direction := _get_move_input()
@@ -39,8 +54,12 @@ func _physics_process(_delta: float) -> void:
 
 	if input_direction != Vector2.ZERO:
 		facing_direction = input_direction
-		visual_root.rotation = round(Vector2.UP.angle_to(input_direction) / (PI / 4.0)) * (PI / 4.0)
+		sprite.flip_h = input_direction.x < -0.01
+		_apply_animation(&"run")
+	else:
+		_apply_animation(&"idle")
 
+	_advance_animation(_delta)
 	z_index = clampi(2000 + int(round(global_position.y)), 1, 4095)
 
 
@@ -68,6 +87,39 @@ func can_receive_enemy_damage() -> bool:
 
 func receive_damage(_amount: int) -> void:
 	pass
+
+
+func _apply_animation(next_animation: StringName, force_restart := false) -> void:
+	if sprite == null:
+		return
+	if not force_restart and animation_name == next_animation:
+		return
+
+	animation_name = next_animation
+	animation_frame = 0
+	animation_elapsed = 0.0
+	sprite.region_enabled = true
+	sprite.texture = WARRIOR_RUN_TEXTURE if animation_name == &"run" else WARRIOR_IDLE_TEXTURE
+	_apply_animation_frame()
+
+
+func _advance_animation(delta: float) -> void:
+	if sprite == null:
+		return
+	var fps := WARRIOR_RUN_FPS if animation_name == &"run" else WARRIOR_IDLE_FPS
+	var frame_count := WARRIOR_RUN_FRAMES if animation_name == &"run" else WARRIOR_IDLE_FRAMES
+	animation_elapsed += delta
+	var frame_duration := 1.0 / fps
+	while animation_elapsed >= frame_duration:
+		animation_elapsed -= frame_duration
+		animation_frame = (animation_frame + 1) % frame_count
+		_apply_animation_frame()
+
+
+func _apply_animation_frame() -> void:
+	if sprite == null:
+		return
+	sprite.region_rect = Rect2(Vector2(WARRIOR_FRAME_SIZE.x * float(animation_frame), 0.0), WARRIOR_FRAME_SIZE)
 
 
 func _get_move_input() -> Vector2:

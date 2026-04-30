@@ -530,7 +530,7 @@ const COMBAT_INFO_REFRESH_INTERVAL := 0.12
 @onready var guardian: Guardian = $Guardian
 @onready var enemies = $Enemies
 @onready var projectiles = $Projectiles
-@onready var battle_terrain: Node = get_node_or_null("测试地形")
+@onready var battle_terrain: Node = get_node_or_null("战斗地形")
 @onready var hud: BattleHudUi = $战斗HUD
 @onready var selection_overlay: HeroSelectionOverlayUi = $SelectionLayer/SelectionOverlay
 

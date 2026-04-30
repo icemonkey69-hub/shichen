@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://guardian.gd" id="1_guardian"]
+[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Idle.png" id="2_warrior_idle"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_guardian"]
 radius = 18.0
@@ -12,13 +13,12 @@ script = ExtResource("1_guardian")
 
 [node name="VisualRoot" type="Node2D" parent="."]
 
-[node name="Body" type="Polygon2D" parent="VisualRoot"]
-color = Color(1, 0.48, 0.08, 0.96)
-polygon = PackedVector2Array(0, -28, 22, 0, 0, 28, -22, 0)
-
-[node name="Highlight" type="Polygon2D" parent="VisualRoot"]
-color = Color(1, 0.82, 0.28, 0.82)
-polygon = PackedVector2Array(0, -18, 12, 0, 0, 18, -12, 0)
+[node name="Sprite" type="Sprite2D" parent="VisualRoot"]
+texture = ExtResource("2_warrior_idle")
+centered = false
+offset = Vector2(-78, -124)
+region_enabled = true
+region_rect = Rect2(0, 0, 192, 192)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 enabled = false
