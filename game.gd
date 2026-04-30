@@ -754,6 +754,9 @@ func _get_player_start_position() -> Vector2:
 
 
 func _get_tower_anchor_position() -> Vector2:
+	if battle_terrain != null and battle_terrain.has_method("get_tower_spawn_position"):
+		return battle_terrain.call("get_tower_spawn_position")
+	return play_area.position + play_area.size * 0.5
 	# 塔的逻辑锚点固定在战场中心；需要位移演出时只移动视觉层，逻辑点仍回到这里。
 	return play_area.position + play_area.size * 0.5
 
@@ -1294,6 +1297,9 @@ func _pick_spawn_position(force_boss: bool = false) -> Vector2:
 	if player != null and is_instance_valid(player):
 		return _pick_spawn_position_outside_player_view()
 
+	if battle_terrain != null and battle_terrain.has_method("get_enemy_spawn_position"):
+		return battle_terrain.call("get_enemy_spawn_position")
+
 	var min_corner := play_area.position
 	var max_corner := play_area.position + play_area.size
 	var spawn_margin := 36.0
@@ -1321,6 +1327,9 @@ func _pick_spawn_position_outside_player_view() -> Vector2:
 
 	var visible_rect: Rect2 = _get_player_visible_world_rect()
 	var avoid_rect: Rect2 = visible_rect.grow(36.0)
+	if battle_terrain != null and battle_terrain.has_method("get_enemy_spawn_position"):
+		return battle_terrain.call("get_enemy_spawn_position", avoid_rect)
+
 	var spawn_band := 120.0
 	var play_rect: Rect2 = play_area.grow(-6.0)
 
