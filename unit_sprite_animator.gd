@@ -276,7 +276,7 @@ func _play_state(state: String, direction: Vector2, force_restart := false) -> v
 	_current_frame_width = _get_float_from_config(state_config, "frame_width", 0.0)
 	_current_frame_height = _get_float_from_config(state_config, "frame_height", 0.0)
 	_fps = _get_state_fps(state)
-	_loop = _get_bool_from_config(state_config, "loop", _get_default_loop_for_state(state))
+	_loop = _get_bool_from_config(state_config, "loop", state != "attack" and state != "death")
 	if should_restart:
 		_current_file_index = 0
 		_frame_index = 0
@@ -540,10 +540,6 @@ func _get_state_fps(state: String) -> float:
 			return DEATH_FPS
 		_:
 			return DEFAULT_FPS
-
-
-func _get_default_loop_for_state(state: String) -> bool:
-	return state != "attack" and state != "death"
 
 
 func _load_anim_config(model_dir: String) -> Dictionary:

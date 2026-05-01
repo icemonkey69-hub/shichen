@@ -5,13 +5,15 @@ signal collected(reward_type: StringName, amount: int, world_position: Vector2)
 const CARD_CHOICE_REWARD_TYPE: StringName = &"card_choice"
 const CARD_PICKUP_FRAME_TEXTURE: Texture2D = preload("res://assets/ui/card_choice/frames/tier_1_white.png")
 const CARD_PICKUP_ICON_TEXTURE: Texture2D = preload("res://assets/ui/card_choice/icons/sample/titan_heart_icon_v1.png")
+const GOLD_PICKUP_TEXTURE: Texture2D = preload("res://assets/pickups/gold/Gold_Resource_Highlight.png")
+const EXP_PICKUP_TEXTURE: Texture2D = preload("res://assets/pickups/exp/Meat_Resource.png")
 
 @export var reward_type: StringName = &"gold"
 @export var amount := 1
 @export var float_duration := 0.22
 @export var idle_delay := 0.12
 @export var close_magnet_delay := 0.04
-@export var magnet_range := 9999.0
+@export var magnet_range := 150.0
 @export var card_choice_magnet_range := 150.0
 @export var card_choice_idle_delay := 0.05
 @export var collect_range := 28.0
@@ -23,6 +25,7 @@ const CARD_PICKUP_ICON_TEXTURE: Texture2D = preload("res://assets/ui/card_choice
 @onready var ground_glow: Polygon2D = $GroundGlow
 @onready var card_aura: Polygon2D = $CardAura
 @onready var orb: Polygon2D = $Orb
+@onready var resource_sprite: Sprite2D = $ResourceSprite
 @onready var card_frame: Sprite2D = $CardFrame
 @onready var card_icon: Sprite2D = $CardIcon
 
@@ -31,6 +34,11 @@ var launch_velocity := Vector2.ZERO
 var elapsed := 0.0
 var collecting := false
 var bob_seed := 0.0
+var resource_regions: Array[Rect2] = []
+var resource_frame_index := 0
+var resource_frame_elapsed := 0.0
+var resource_fps := 8.0
+var resource_base_y := -8.0
 
 
 func _ready() -> void:
@@ -40,6 +48,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	elapsed += delta
+	_update_resource_animation(delta)
 
 	if not is_instance_valid(player):
 		global_position += launch_velocity * delta
@@ -79,6 +88,8 @@ func _process(delta: float) -> void:
 			card_aura.rotation = -card_rotation * 0.65
 			card_aura.scale = Vector2.ONE * (1.0 + sin(elapsed * 2.9 + bob_seed) * 0.06)
 			card_aura.color.a = 0.12 + sin(elapsed * 3.2 + bob_seed) * 0.05
+	elif resource_sprite != null and resource_sprite.visible:
+		resource_sprite.position.y = resource_base_y + sin(elapsed * 3.2 + bob_seed) * 2.0
 
 	if distance <= collect_range:
 		collected.emit(reward_type, amount, global_position)
@@ -101,16 +112,28 @@ func _update_visual() -> void:
 	var main_color := Color(0.95, 0.81, 0.22, 1.0)
 	var shadow_color := Color(0.35, 0.24, 0.08, 0.5)
 	var use_card_visual := reward_type == CARD_CHOICE_REWARD_TYPE
+	var resource_texture: Texture2D = null
+	var resource_scale := Vector2.ONE
 	if reward_type == &"exp":
 		main_color = Color(0.35, 0.88, 0.68, 1.0)
 		shadow_color = Color(0.08, 0.28, 0.2, 0.5)
+		resource_texture = EXP_PICKUP_TEXTURE
+		resource_scale = Vector2(0.5, 0.5)
+	elif reward_type == &"gold":
+		resource_texture = GOLD_PICKUP_TEXTURE
+		resource_scale = Vector2(0.32, 0.32)
 	elif use_card_visual:
 		main_color = Color(0.96, 0.84, 0.42, 0.32)
 		shadow_color = Color(0.18, 0.12, 0.05, 0.44)
 
 	orb.color = main_color
 	shadow.color = shadow_color
-	orb.visible = not use_card_visual
+	orb.visible = not use_card_visual and resource_texture == null
+	if resource_texture != null:
+		_configure_resource_sprite(resource_texture, resource_scale)
+	else:
+		resource_sprite.visible = false
+		resource_regions.clear()
 	if ground_glow != null:
 		ground_glow.visible = use_card_visual
 		ground_glow.scale = Vector2.ONE
@@ -137,3 +160,50 @@ func _update_visual() -> void:
 	if use_card_visual:
 		size_scale = clampf(size_scale * 0.92, 0.92, 1.18)
 	scale = Vector2.ONE * size_scale
+
+
+func _configure_resource_sprite(texture: Texture2D, sprite_scale: Vector2) -> void:
+	resource_sprite.visible = true
+	resource_sprite.texture = texture
+	resource_sprite.centered = true
+	resource_sprite.position = Vector2(0, resource_base_y)
+	resource_sprite.rotation = 0.0
+	resource_sprite.scale = sprite_scale
+	resource_sprite.modulate = Color.WHITE
+	resource_regions = _build_texture_regions(texture)
+	resource_frame_index = 0
+	resource_frame_elapsed = 0.0
+	resource_sprite.region_enabled = not resource_regions.is_empty()
+	_apply_resource_frame()
+
+
+func _build_texture_regions(texture: Texture2D) -> Array[Rect2]:
+	var regions: Array[Rect2] = []
+	var width := texture.get_width()
+	var height := texture.get_height()
+	if height > 0 and width > height and width % height == 0:
+		var frame_count := int(float(width) / float(height))
+		for i in frame_count:
+			regions.append(Rect2(i * height, 0, height, height))
+	else:
+		regions.append(Rect2(0, 0, width, height))
+	return regions
+
+
+func _update_resource_animation(delta: float) -> void:
+	if resource_regions.size() <= 1 or resource_sprite == null or not resource_sprite.visible:
+		return
+
+	resource_frame_elapsed += delta
+	var frame_duration := 1.0 / maxf(resource_fps, 1.0)
+	while resource_frame_elapsed >= frame_duration:
+		resource_frame_elapsed -= frame_duration
+		resource_frame_index = (resource_frame_index + 1) % resource_regions.size()
+		_apply_resource_frame()
+
+
+func _apply_resource_frame() -> void:
+	if resource_regions.is_empty() or resource_sprite == null:
+		return
+
+	resource_sprite.region_rect = resource_regions[resource_frame_index]

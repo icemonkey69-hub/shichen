@@ -26,6 +26,10 @@ polygon = PackedVector2Array(0, -18, 13, 0, 0, 18, -13, 0)
 color = Color(0.95, 0.81, 0.22, 1)
 polygon = PackedVector2Array(0, -9, 7, 0, 0, 9, -7, 0)
 
+[node name="ResourceSprite" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(0, -8)
+
 [node name="CardFrame" type="Sprite2D" parent="."]
 visible = false
 scale = Vector2(0.09, 0.09)
