@@ -49,6 +49,7 @@
 - 不建议把所有特殊规则继续写进 `enemy.gd`；`enemy.gd` 只保留通用生命周期
 
 ## 2D 动画配置
+- 详细规则见 `res://assets/2D单位动画管线.zh-CN.md`
 - 每个 2D 模型文件夹可选添加 `anim_config.json`
 - 没有 `anim_config.json` 时，仍按文件名关键词自动识别：`idle/tower`、`run/walk/move`、`attack/shoot/melee/cast`、`death/die`
 - 有 `anim_config.json` 时，可单独配置动画文件、帧率、循环、帧宽高、显示缩放和视觉偏移

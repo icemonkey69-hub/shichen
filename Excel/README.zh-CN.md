@@ -92,6 +92,7 @@
 - 塔：血脉表 `bloodlines.model_id_point` 对应 `assets/heroes/point_2d/<ID>_备注/`
 - 文件夹名只用 `_` 前 ID 做匹配，后半段仅作为人工备注。
 - 模型文件夹可选添加 `anim_config.json`，用于单独指定动画文件、帧率、帧尺寸、缩放和视觉偏移；没有配置时按文件名自动识别。
+- 详细动画管线见 `assets/2D单位动画管线.zh-CN.md`。
 
 ## 敌人行为说明
 - `enemies#怪物.xlsx` 可新增 `behavior_id` 字段；当前不填也能运行，默认 `melee_chaser`。

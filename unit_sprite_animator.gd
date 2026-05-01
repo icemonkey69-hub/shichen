@@ -29,6 +29,7 @@ var _fps := DEFAULT_FPS
 var _loop := true
 var _last_direction := Vector2.DOWN
 var _attack_locked := false
+var _attack_started := false
 var _dead := false
 var _runtime_active := true
 var _dissolve_progress := 0.0
@@ -96,25 +97,37 @@ func start_attack_preview(direction: Vector2) -> void:
 	_attack_locked = true
 	if direction != Vector2.ZERO:
 		_last_direction = direction.normalized()
-	_play_state("attack", _last_direction, true)
+	_play_state("attack", _last_direction, not _attack_started)
+	_attack_started = true
 
 
 func set_attack_preview_progress(direction: Vector2, _progress: float) -> void:
-	start_attack_preview(direction)
+	if _dead:
+		return
+	if direction != Vector2.ZERO:
+		_last_direction = direction.normalized()
+	if not _attack_started:
+		start_attack_preview(_last_direction)
 
 
 func play_attack_hit(direction: Vector2) -> void:
-	start_attack_preview(direction)
+	set_attack_preview_progress(direction, 1.0)
 
 
 func set_attack_recover_progress(direction: Vector2, _progress: float) -> void:
-	start_attack_preview(direction)
+	if _dead:
+		return
+	if direction != Vector2.ZERO:
+		_last_direction = direction.normalized()
+	if not _attack_started:
+		start_attack_preview(_last_direction)
 
 
 func stop_attack(direction: Vector2) -> void:
 	if _dead:
 		return
 	_attack_locked = false
+	_attack_started = false
 	if direction != Vector2.ZERO:
 		_last_direction = direction.normalized()
 	_play_state("idle", _last_direction, true)
@@ -127,6 +140,7 @@ func cancel_attack() -> void:
 func play_death() -> void:
 	_dead = true
 	_attack_locked = false
+	_attack_started = false
 	_play_state("death", _last_direction, true)
 
 
@@ -156,6 +170,7 @@ func set_runtime_active(enabled: bool) -> void:
 func reset_runtime_state(default_direction: Vector2 = Vector2.DOWN, force_idle: bool = true) -> void:
 	_dead = false
 	_attack_locked = false
+	_attack_started = false
 	_dissolve_progress = 0.0
 	modulate = Color(1, 1, 1, 1)
 	_last_direction = default_direction.normalized() if default_direction != Vector2.ZERO else Vector2.DOWN
@@ -261,7 +276,7 @@ func _play_state(state: String, direction: Vector2, force_restart := false) -> v
 	_current_frame_width = _get_float_from_config(state_config, "frame_width", 0.0)
 	_current_frame_height = _get_float_from_config(state_config, "frame_height", 0.0)
 	_fps = _get_state_fps(state)
-	_loop = _get_bool_from_config(state_config, "loop", state != "death")
+	_loop = _get_bool_from_config(state_config, "loop", _get_default_loop_for_state(state))
 	if should_restart:
 		_current_file_index = 0
 		_frame_index = 0
@@ -274,21 +289,29 @@ func _advance_frame() -> void:
 		return
 	_frame_index += 1
 	if _frame_index >= _current_regions.size():
-		if _current_files.size() > 1 and _current_regions.size() <= 1:
-			_current_file_index += 1
-			if _current_file_index >= _current_files.size():
-				if _loop:
-					_current_file_index = 0
-				else:
-					_current_file_index = _current_files.size() - 1
-			_frame_index = 0
-			_load_current_file()
+		if _advance_to_next_file():
 			return
 		if _loop:
 			_frame_index = 0
 		else:
 			_frame_index = _current_regions.size() - 1
 	_apply_frame()
+
+
+func _advance_to_next_file() -> bool:
+	if _current_files.size() <= 1:
+		return false
+	if _current_file_index < _current_files.size() - 1:
+		_current_file_index += 1
+		_frame_index = 0
+		_load_current_file()
+		return true
+	if _loop:
+		_current_file_index = 0
+		_frame_index = 0
+		_load_current_file()
+		return true
+	return false
 
 
 func _load_current_file() -> void:
@@ -517,6 +540,10 @@ func _get_state_fps(state: String) -> float:
 			return DEATH_FPS
 		_:
 			return DEFAULT_FPS
+
+
+func _get_default_loop_for_state(state: String) -> bool:
+	return state != "attack" and state != "death"
 
 
 func _load_anim_config(model_dir: String) -> Dictionary:
