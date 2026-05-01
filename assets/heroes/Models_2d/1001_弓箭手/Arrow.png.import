@@ -1,4 +1,4 @@
-[remap]
+﻿[remap]
 
 importer="texture"
 type="CompressedTexture2D"
@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://Tiny Swords (Free Pack)/Units/Blue Units/Archer/Arrow.png"
+source_file="res://assets/heroes/Models_2d/1001_弓箭手/Arrow.png"
 dest_files=["res://.godot/imported/Arrow.png-d0c794ddb55bc560d3fb0d8c589b9128.ctex"]
 
 [params]

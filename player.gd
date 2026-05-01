@@ -819,13 +819,16 @@ func _load_model_for_hero() -> void:
 	current_model_root = null
 	current_hero_model = null
 
-	var instance := HeroModelCatalog.instantiate_model(hero_data.model_id)
+	var tower_model_id: StringName = hero_data.model_id_point
+	if String(tower_model_id).strip_edges().is_empty():
+		tower_model_id = hero_data.model_id
+	var instance := HeroModelCatalog.instantiate_model(tower_model_id, HeroModelCatalog.TOWER_MODEL_ROOT)
 	if instance == null:
-		push_warning("Missing hero model for model_id: %s" % String(hero_data.model_id))
+		push_warning("Missing tower model for model_id_point: %s" % String(tower_model_id))
 		return
 
 	if instance is not Node2D:
-		push_warning("Hero model scene root must inherit Node2D: %s" % String(hero_data.model_id))
+		push_warning("Tower model scene root must inherit Node2D: %s" % String(tower_model_id))
 		return
 
 	current_model_root = instance as Node2D

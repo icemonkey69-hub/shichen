@@ -1,4 +1,4 @@
-[remap]
+﻿[remap]
 
 importer="texture"
 type="CompressedTexture2D"
@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://Tiny Swords (Free Pack)/Buildings/Blue Buildings/Tower.png"
+source_file="res://assets/heroes/point_2d/1001_塔/Tower.png"
 dest_files=["res://.godot/imported/Tower.png-e373f213caa4bf9ea32b9e8a3f85a65a.ctex"]
 
 [params]

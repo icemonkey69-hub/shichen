@@ -1,4 +1,4 @@
-[remap]
+﻿[remap]
 
 importer="texture"
 type="CompressedTexture2D"
@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://Tiny Swords (Free Pack)/Units/Blue Units/Monk/Idle.png"
+source_file="res://assets/enemies/Models_2d/1003_僧侣/Idle.png"
 dest_files=["res://.godot/imported/Idle.png-b89e189d5f38d30d1cb9d648d138a7a6.ctex"]
 
 [params]

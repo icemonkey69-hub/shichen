@@ -1,4 +1,4 @@
-[remap]
+﻿[remap]
 
 importer="texture"
 type="CompressedTexture2D"
@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://Tiny Swords (Free Pack)/Units/Blue Units/Archer/Archer_Idle.png"
+source_file="res://assets/heroes/Models_2d/1001_弓箭手/Archer_Idle.png"
 dest_files=["res://.godot/imported/Archer_Idle.png-4049096e495d8f22d8603b5517eaabfa.ctex"]
 
 [params]

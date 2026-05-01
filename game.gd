@@ -1789,7 +1789,7 @@ func _validate_md04_wave_rows(target_wave_count: int = MD04_TARGET_WAVE_COUNT) -
 		if raw_wave_type == null or str(raw_wave_type).strip_edges().is_empty():
 			issues.append("%s 缺少 wave_type。" % wave_label)
 		var wave_type := _get_wave_type(row)
-		var main_spawn_total := int(row.get("total", 0))
+		var main_spawn_total := int(row.get("total", 0) if row.get("total", null) != null else 0)
 		var main_spawn_interval := _get_wave_spawn_interval(row)
 
 		if wave_type == WAVE_TYPE_BOSS:
@@ -2066,6 +2066,9 @@ func _resolve_selection_preview_model_id(hero: HeroData) -> StringName:
 	var preview_text: String = str(hero.preview_model_id).strip_edges()
 	if not preview_text.is_empty():
 		return hero.preview_model_id
+	var point_text: String = str(hero.model_id_point).strip_edges()
+	if not point_text.is_empty():
+		return hero.model_id_point
 	return hero.model_id
 
 
@@ -2413,6 +2416,7 @@ func _build_bloodline_option_row(template_id: String, bloodline_row: Dictionary,
 		"skill_group_id": _get_optional_text(bloodline_row.get("skill_group_id", "")),
 		"skill_group_name": _get_optional_text(bloodline_row.get("skill_group_name", "")),
 		"model_id_override": _get_optional_text(bloodline_row.get("model_id", "")),
+		"model_id_point_override": _get_optional_text(bloodline_row.get("model_id_point", "")),
 		"visual_label": _get_optional_text(bloodline_row.get("visual_label", "")),
 		"ui_color": _get_optional_text(bloodline_row.get("ui_color", "")),
 		"icon": _get_optional_text(bloodline_row.get("icon", "")),
@@ -2490,26 +2494,30 @@ func _build_runtime_selected_hero(template_hero: HeroData, option_row: Dictionar
 	if model_text.is_empty():
 		model_text = _get_optional_text(runtime_hero.model_id)
 	var bloodline_model_text: String = _get_optional_text(option_row.get("model_id_override", bloodline_row.get("model_id", "")))
-	var bloodline_model_valid := not bloodline_model_text.is_empty() and _has_visual_model_profile(bloodline_model_text)
+	var bloodline_model_valid := not bloodline_model_text.is_empty() and _has_2d_model_folder(HeroModelCatalog.GUARDIAN_MODEL_ROOT, bloodline_model_text)
 	if bloodline_model_valid:
 		# 统一规则：血脉模型优先，确保与 F6 生成配置一致。
 		if model_text.is_empty():
 			model_text = bloodline_model_text
-	if not model_text.is_empty() and not _has_visual_model_profile(model_text):
+	if not model_text.is_empty() and not _has_2d_model_folder(HeroModelCatalog.GUARDIAN_MODEL_ROOT, model_text):
 		if bloodline_model_valid:
 			model_text = bloodline_model_text
 	if not model_text.is_empty():
 		runtime_hero.model_id = StringName(model_text)
 
+	var point_model_text: String = _get_optional_text(option_row.get("model_id_point_override", bloodline_row.get("model_id_point", runtime_hero.model_id_point)))
+	if point_model_text.is_empty():
+		point_model_text = _get_optional_text(runtime_hero.model_id_point)
+	if not point_model_text.is_empty() and _has_2d_model_folder(HeroModelCatalog.TOWER_MODEL_ROOT, point_model_text):
+		runtime_hero.model_id_point = StringName(point_model_text)
+
 	var preview_text: String = _get_optional_text(option_row.get("base_preview_model_id_override", runtime_hero.preview_model_id))
 	if preview_text.is_empty():
 		preview_text = _get_optional_text(runtime_hero.preview_model_id)
 	if preview_text.is_empty():
-		preview_text = _get_optional_text(option_row.get("preview_model_id_override", bloodline_row.get("model_id", "")))
-	if bloodline_model_valid:
-		preview_text = bloodline_model_text
+		preview_text = _get_optional_text(option_row.get("preview_model_id_override", runtime_hero.model_id_point))
 	if preview_text.is_empty():
-		preview_text = _get_optional_text(runtime_hero.model_id)
+		preview_text = _get_optional_text(runtime_hero.model_id_point)
 	if not preview_text.is_empty():
 		runtime_hero.preview_model_id = StringName(preview_text)
 
@@ -2666,18 +2674,18 @@ func _get_optional_text(value: Variant) -> String:
 	return "" if text == "<null>" else text
 
 
-func _has_visual_model_profile(model_id_text: String) -> bool:
+func _has_2d_model_folder(root_dir: String, model_id_text: String) -> bool:
 	var clean_model_id := model_id_text.strip_edges()
 	if clean_model_id.is_empty():
 		return false
-	var index_path := "res://assets/heroes/models_3d/index.json"
-	if not FileAccess.file_exists(index_path):
+	var dir := DirAccess.open(root_dir)
+	if dir == null:
 		return false
-	var file := FileAccess.open(index_path, FileAccess.READ)
-	if file == null:
-		return false
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	return parsed is Dictionary and (parsed as Dictionary).has(clean_model_id)
+	for child_name in dir.get_directories():
+		var id_part := child_name.split("_", false, 1)[0]
+		if id_part == clean_model_id:
+			return true
+	return false
 
 
 func _connect_selection_skill_signals() -> void:
@@ -2876,6 +2884,7 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 		_sync_player_runtime_progress()
 	player.set_controls_enabled(false)
 	if guardian != null:
+		guardian.configure_model_id(hero.model_id)
 		guardian.global_position = _get_guardian_start_position()
 		guardian.visible = true
 		guardian.set_camera_enabled(true)
@@ -3027,7 +3036,7 @@ func _update_selection_preview_model(hero: HeroData, force_replay_intro: bool = 
 
 	_clear_selection_preview_model()
 
-	var instance := HeroModelCatalog.instantiate_model(preview_model_id)
+	var instance := HeroModelCatalog.instantiate_model(preview_model_id, HeroModelCatalog.TOWER_MODEL_ROOT)
 	if instance == null:
 		return
 

@@ -1,4 +1,4 @@
-[remap]
+﻿[remap]
 
 importer="texture"
 type="CompressedTexture2D"
@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://Tiny Swords (Free Pack)/Units/Blue Units/Lancer/Lancer_Right_Attack.png"
+source_file="res://assets/heroes/Models_2d/1002_枪兵/Lancer_Right_Attack.png"
 dest_files=["res://.godot/imported/Lancer_Right_Attack.png-1021593c9ac3cb39d9e4f54751714af7.ctex"]
 
 [params]

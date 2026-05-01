@@ -61,9 +61,11 @@ static func _row_to_hero_data(row: Dictionary) -> HeroData:
 	hero.hero_description = str(row.get("description", ""))
 	var model_text: String = str(row.get("model_id", "")).strip_edges()
 	hero.model_id = StringName(model_text)
+	var point_model_text: String = str(row.get("model_id_point", row.get("point_model_id", ""))).strip_edges()
+	hero.model_id_point = StringName(point_model_text)
 	var preview_model_text: String = str(row.get("preview_model_id", row.get("selection_model_id", ""))).strip_edges()
 	if preview_model_text.is_empty():
-		preview_model_text = model_text
+		preview_model_text = point_model_text if not point_model_text.is_empty() else model_text
 	hero.preview_model_id = StringName(preview_model_text)
 	hero.bloodline_ids = _parse_bloodline_ids(row.get("bloodline_ids", row.get("bloodline_id_list", "")))
 	hero.primary_attr = StringName(str(row.get("primary_attr", hero.primary_attr)))

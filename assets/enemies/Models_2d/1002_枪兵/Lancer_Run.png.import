@@ -1,4 +1,4 @@
-[remap]
+﻿[remap]
 
 importer="texture"
 type="CompressedTexture2D"
@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://Tiny Swords (Free Pack)/Units/Blue Units/Lancer/Lancer_Run.png"
+source_file="res://assets/enemies/Models_2d/1002_枪兵/Lancer_Run.png"
 dest_files=["res://.godot/imported/Lancer_Run.png-6d33df61a97462f181da77a5ff7376a7.ctex"]
 
 [params]

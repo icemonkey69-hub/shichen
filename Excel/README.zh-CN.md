@@ -28,18 +28,6 @@
 - `levelup#等级.xlsx`
 - `talents#局外成长.xlsx`
 - `runtime_constants#运行时常量.xlsx`（运行时常量 / 概率 / 冷却参数）
-- `actions#动作.xlsx`（模型行为动作映射；行为树状态 -> F6 动作文件名）
-
-## 动作表说明
-- `actions#动作.xlsx` 用于配置每个 `model_id` 在行为状态下播放哪个 F6 动作文件名。
-- 动作名建议直接填写 F6 下拉里看到的文件名，例如 `sishuang_run`、`sishuang_jump`、`sishuang_death`。
-- `jump` 现在按完整动作配置，不再拆 `jump_1/jump_2/jump_3`。
-- `default_fps`：该模型动作默认 FPS，用于把帧号换算成秒；空白默认 30。
-- `<状态>_start_frame / <状态>_end_frame`：动作裁剪区间，用于跳过 AI 动作文件前后多余帧；目前已接入 `idle/move/attack/death/jump`，空白表示不裁剪。
-- `jump_start_frame / jump_end_frame / jump_fps`：跳跃动作专用裁剪与 FPS；例如完整跳跃前面有跑动帧时，可把 `jump_start_frame` 填到真正起跳前一帧附近。
-- `jump_ignore_collision_frame`：跳跃动作播放到这一帧后开始无视碰撞盒；空白则沿用旧流程，起跳立即关闭碰撞。
-- `jump_land_frame`：跳跃动作播放到这一帧视为落地并恢复碰撞；空白则沿用旧流程，跳跃结束恢复碰撞。
-- `death_loop` 通常填 `FALSE`，死亡动作不循环；`idle_loop/move_loop/stun_loop` 通常填 `TRUE`。
 
 ## 角色选择核心主表（优先编辑）
 - `heroes#英雄.xlsx`
@@ -77,7 +65,8 @@
 - `bloodlines#血脉.xlsx`
 - 新增并维护 `primary_attr`（`str/agi/int`）
 - 新增并维护基础战斗属性（`base_str/base_agi/base_int/base_hp/base_mana/move_speed/attack_damage/attack_interval/attack_range`）
-- `model_id` 作为预览与战斗统一 3D 配置来源，对应 `assets/heroes/models_3d/index.json`
+- `model_id` 对应守护者 2D 资源：`assets/heroes/Models_2d/<ID>_备注/`
+- `model_id_point` 对应塔 2D 资源：`assets/heroes/point_2d/<ID>_备注/`
 - 不再维护 `preview_model_id`
 - 新增并维护 `q_skill_name / q_skill_description / q_skill_icon`
 - 新增并维护 `w_skill_name / w_skill_description / w_skill_icon`
@@ -91,7 +80,9 @@
 - 血脉图标：`assets/ui/icons/bloodlines/`
 - 技能图标：`assets/ui/icons/skills/`
 
-## 3D 资源说明
-- 当前使用 F6 3D 模型配置管线，不再维护 2D 像素序列帧管线。
-- 角色与怪物的 `model_id` 统一对接 `assets/heroes/models_3d/index.json`。
-- 新增角色或怪物时，先把白模和动作放入 `E:/Godot/model_3D/Ai_Model/<角色文件夹>/`，在 F6 生成对应 ID 配置。
+## 2D 资源说明
+- 3D / 三渲二 / F6 动作表管线已废弃，不再维护 `actions#动作.xlsx`。
+- 敌人 `model_id` 对应：`assets/enemies/Models_2d/<ID>_备注/`
+- 守护者 `model_id` 对应：`assets/heroes/Models_2d/<ID>_备注/`
+- 塔 `model_id_point` 对应：`assets/heroes/point_2d/<ID>_备注/`
+- 文件夹名只用 `_` 前 ID 做匹配，后半段仅作为人工备注。

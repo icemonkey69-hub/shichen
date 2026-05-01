@@ -8,6 +8,7 @@ class_name HeroData
 @export var hero_name := "Crimson Hunter"
 @export_multiline var hero_description := "A balanced starter hero for early survival runs."
 @export var model_id: StringName = &"default_player"
+@export var model_id_point: StringName = &""
 @export var preview_model_id: StringName = &""
 @export var bloodline_ids: PackedStringArray = PackedStringArray()
 @export var portrait_icon: Texture2D

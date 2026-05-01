@@ -32,5 +32,7 @@
 
 ## 角色选择界面相关 JSON
 - `heroes.json`：模板名称/描述/头像/展示色、`bloodline_ids`（可选血脉ID列表）与 `ban`（禁用开关）
-- `bloodlines.json`：血脉主属性、基础战斗属性、Q/W/R 名称描述图标、`skill_group_id/name`、`model_id`、颜色、icon、`ban`（禁用开关）
-- `model_id` 现在对应 `res://assets/heroes/models_3d/index.json` 中的 3D 配置 ID
+- `bloodlines.json`：血脉主属性、基础战斗属性、Q/W/R 名称描述图标、`skill_group_id/name`、`model_id`、`model_id_point`、颜色、icon、`ban`（禁用开关）
+- `bloodlines.model_id` 对应守护者 2D 资源：`res://assets/heroes/Models_2d/<ID>_备注/`
+- `bloodlines.model_id_point` 对应塔 2D 资源：`res://assets/heroes/point_2d/<ID>_备注/`
+- `enemies.model_id` 对应敌人 2D 资源：`res://assets/enemies/Models_2d/<ID>_备注/`

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://guardian.gd" id="1_guardian"]
-[ext_resource type="Texture2D" path="res://Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Idle.png" id="2_warrior_idle"]
+[ext_resource type="Script" path="res://unit_sprite_animator.gd" id="2_unit_sprite"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_guardian"]
 radius = 18.0
@@ -13,12 +13,9 @@ script = ExtResource("1_guardian")
 
 [node name="VisualRoot" type="Node2D" parent="."]
 
-[node name="Sprite" type="Sprite2D" parent="VisualRoot"]
-texture = ExtResource("2_warrior_idle")
-centered = false
-offset = Vector2(-78, -124)
-region_enabled = true
-region_rect = Rect2(0, 0, 192, 192)
+[node name="Sprite" type="Node2D" parent="VisualRoot"]
+script = ExtResource("2_unit_sprite")
+model_root_dir = "res://assets/heroes/Models_2d"
 
 [node name="Camera2D" type="Camera2D" parent="."]
 enabled = false

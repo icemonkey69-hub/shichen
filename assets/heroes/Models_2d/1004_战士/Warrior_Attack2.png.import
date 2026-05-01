@@ -1,4 +1,4 @@
-[remap]
+﻿[remap]
 
 importer="texture"
 type="CompressedTexture2D"
@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://Tiny Swords (Free Pack)/Units/Blue Units/Warrior/Warrior_Attack2.png"
+source_file="res://assets/heroes/Models_2d/1004_战士/Warrior_Attack2.png"
 dest_files=["res://.godot/imported/Warrior_Attack2.png-6b0a2714aed4503bdfae6a53d18137cf.ctex"]
 
 [params]

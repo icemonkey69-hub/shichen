@@ -1,4 +1,4 @@
-[remap]
+﻿[remap]
 
 importer="texture"
 type="CompressedTexture2D"
@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://Tiny Swords (Free Pack)/Units/Blue Units/Lancer/Lancer_Idle.png"
+source_file="res://assets/heroes/Models_2d/1002_枪兵/Lancer_Idle.png"
 dest_files=["res://.godot/imported/Lancer_Idle.png-ff038243af17b3bf11dd93b61713eb84.ctex"]
 
 [params]

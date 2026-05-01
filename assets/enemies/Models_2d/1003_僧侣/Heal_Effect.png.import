@@ -1,4 +1,4 @@
-[remap]
+﻿[remap]
 
 importer="texture"
 type="CompressedTexture2D"
@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://Tiny Swords (Free Pack)/Units/Blue Units/Monk/Heal_Effect.png"
+source_file="res://assets/enemies/Models_2d/1003_僧侣/Heal_Effect.png"
 dest_files=["res://.godot/imported/Heal_Effect.png-fb03e9cc9b691c640a2342e37b5dac65.ctex"]
 
 [params]

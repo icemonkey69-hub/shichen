@@ -1,4 +1,4 @@
-[remap]
+﻿[remap]
 
 importer="texture"
 type="CompressedTexture2D"
@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://Tiny Swords (Free Pack)/Units/Blue Units/Archer/Archer_Run.png"
+source_file="res://assets/enemies/Models_2d/1001_弓箭手/Archer_Run.png"
 dest_files=["res://.godot/imported/Archer_Run.png-24cc9e9bcf6daa6584540bd84c25623e.ctex"]
 
 [params]
