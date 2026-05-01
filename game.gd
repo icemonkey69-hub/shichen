@@ -754,10 +754,9 @@ func _get_player_start_position() -> Vector2:
 
 
 func _get_tower_anchor_position() -> Vector2:
+	# 塔的逻辑锚点固定在战场中心；需要位移演出时只移动视觉层，逻辑点仍回到这里。
 	if battle_terrain != null and battle_terrain.has_method("get_tower_spawn_position"):
 		return battle_terrain.call("get_tower_spawn_position")
-	return play_area.position + play_area.size * 0.5
-	# 塔的逻辑锚点固定在战场中心；需要位移演出时只移动视觉层，逻辑点仍回到这里。
 	return play_area.position + play_area.size * 0.5
 
 
@@ -1427,7 +1426,7 @@ func _process_wave_spawning(delta: float) -> void:
 	var current_wave_duration: float = _get_current_wave_duration()
 	var row: Dictionary = wave_rows[current_wave_index]
 	var is_boss_wave := _get_wave_type(row) == WAVE_TYPE_BOSS
-	var total: int = int(row.get("total", 0))
+	var total: int = _read_int(row.get("total", null), 0)
 	var enemy_id = row.get("enemy_id", "")
 	if is_boss_wave:
 		enemy_id = _get_wave_boss_id(row, current_wave_index)
@@ -3488,16 +3487,16 @@ func _get_current_wave_duration() -> float:
 
 	var clamped_index: int = clampi(current_wave_index, 0, wave_rows.size() - 1)
 	var row: Dictionary = wave_rows[clamped_index]
-	var duration_from_table: float = float(row.get("duration", wave_duration_seconds))
+	var duration_from_table: float = _read_float(row.get("duration", null), wave_duration_seconds)
 	return maxf(duration_from_table, 1.0)
 
 
 func _get_wave_spawn_interval(row: Dictionary) -> float:
-	var explicit_interval := float(row.get("spawn_interval", 0.0))
+	var explicit_interval := _read_float(row.get("spawn_interval", null), 0.0)
 	if explicit_interval > 0.0:
 		return explicit_interval
 
-	var spawn_rate: float = maxf(float(row.get("spawn_rate", 0.0)), 0.0)
+	var spawn_rate: float = maxf(_read_float(row.get("spawn_rate", null), 0.0), 0.0)
 	if spawn_rate <= 0.0:
 		return 0.0
 	return 1.0 / spawn_rate
@@ -3517,7 +3516,7 @@ func _get_wave_type(row: Dictionary) -> int:
 	if type_text.is_empty():
 		return WAVE_TYPE_NORMAL
 	if type_text.is_valid_int():
-		var enum_value := int(type_text)
+		var enum_value := type_text.to_int()
 		if enum_value == WAVE_TYPE_BOSS:
 			return WAVE_TYPE_BOSS
 		return WAVE_TYPE_NORMAL
@@ -3545,15 +3544,15 @@ func _build_wave_timed_spawns(row: Dictionary) -> Array[Dictionary]:
 				_append_wave_timed_spawn(
 					timed_spawns,
 					event_row.get("enemy_id", ""),
-					float(event_row.get("spawn_time", 0.0)),
-					int(event_row.get("count", 1))
+					_read_float(event_row.get("spawn_time", null), 0.0),
+					_read_int(event_row.get("count", null), 1)
 				)
 
 	_append_wave_timed_spawn(
 		timed_spawns,
 		row.get("special_enemy_id", ""),
-		float(0.0 if row.get("special_spawn_time", null) == null else row.get("special_spawn_time", 0.0)),
-		int(0 if row.get("special_spawn_count", null) == null else row.get("special_spawn_count", 1))
+		_read_float(row.get("special_spawn_time", null), 0.0),
+		_read_int(row.get("special_spawn_count", null), 0)
 	)
 	return timed_spawns
 
@@ -3582,12 +3581,12 @@ func _process_wave_timed_spawns(alive_count: int, force_boss: bool = false) -> i
 	var updated_alive_count := alive_count
 	for event_index in current_wave_timed_spawns.size():
 		var event: Dictionary = current_wave_timed_spawns[event_index]
-		var spawn_time := float(event.get("spawn_time", 0.0))
+		var spawn_time := _read_float(event.get("spawn_time", null), 0.0)
 		if current_wave_elapsed < spawn_time:
 			continue
 
-		var count := int(event.get("count", 0))
-		var spawned_count := int(event.get("spawned_count", 0))
+		var count := _read_int(event.get("count", null), 0)
+		var spawned_count := _read_int(event.get("spawned_count", null), 0)
 		while spawned_count < count:
 			_spawn_enemy(_resolve_enemy_by_id(event.get("enemy_id", "")), force_boss)
 			if force_boss:
@@ -3687,7 +3686,7 @@ func _start_current_wave() -> void:
 		var boss_data: EnemyData = enemy_data_by_id.get(boss_id_text)
 		var boss_name := boss_data.enemy_name if boss_data != null else "Boss"
 		var subtitle := wave_runtime.build_wave_banner_subtitle(
-			int(row.get("total", 0)),
+			_read_int(row.get("total", null), 0),
 			_get_wave_spawn_interval(row),
 			boss_name if not boss_id_text.is_empty() else ""
 		)
@@ -3728,7 +3727,7 @@ func _is_current_wave_cleared(row: Dictionary, alive_count: int) -> bool:
 	if alive_count > 0:
 		return false
 
-	var total: int = int(row.get("total", 0))
+	var total: int = _read_int(row.get("total", null), 0)
 	var boss_id_text := _get_wave_boss_id(row, current_wave_index)
 	var has_boss := not boss_id_text.is_empty()
 	var has_limited_spawn := total > 0
@@ -3740,11 +3739,45 @@ func _is_current_wave_cleared(row: Dictionary, alive_count: int) -> bool:
 		return false
 	if has_timed_spawn:
 		for event in current_wave_timed_spawns:
-			if int(event.get("spawned_count", 0)) < int(event.get("count", 0)):
+			if _read_int(event.get("spawned_count", null), 0) < _read_int(event.get("count", null), 0):
 				return false
 	if not has_boss and not has_limited_spawn and not has_timed_spawn:
 		return false
 	return true
+
+
+func _read_int(raw_value, default_value: int = 0) -> int:
+	if raw_value == null:
+		return default_value
+	if raw_value is int:
+		return raw_value
+	if raw_value is float:
+		return int(round(raw_value))
+
+	var text := str(raw_value).strip_edges()
+	if text.is_empty():
+		return default_value
+	if text.is_valid_int():
+		return text.to_int()
+	if text.is_valid_float():
+		return int(round(text.to_float()))
+	return default_value
+
+
+func _read_float(raw_value, default_value: float = 0.0) -> float:
+	if raw_value == null:
+		return default_value
+	if raw_value is float or raw_value is int:
+		return float(raw_value)
+
+	var text := str(raw_value).strip_edges()
+	if text.is_empty():
+		return default_value
+	if text.is_valid_float():
+		return text.to_float()
+	if text.is_valid_int():
+		return text.to_int() * 1.0
+	return default_value
 
 
 func _update_enemy_overload_state(delta: float, alive_enemy_count: int = -1) -> void:

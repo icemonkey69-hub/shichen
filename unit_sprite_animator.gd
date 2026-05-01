@@ -325,8 +325,8 @@ func _build_regions_for_texture(texture: Texture2D) -> Array[Rect2]:
 	if _current_frame_width > 0.0 and _current_frame_height > 0.0:
 		var frame_width := int(_current_frame_width)
 		var frame_height := int(_current_frame_height)
-		var columns := maxi(int(size.x) / frame_width, 1)
-		var rows := maxi(int(size.y) / frame_height, 1)
+		var columns := maxi(int(floor(size.x / float(frame_width))), 1)
+		var rows := maxi(int(floor(size.y / float(frame_height))), 1)
 		for y in rows:
 			for x in columns:
 				regions.append(Rect2(Vector2(frame_width * x, frame_height * y), Vector2(frame_width, frame_height)))
