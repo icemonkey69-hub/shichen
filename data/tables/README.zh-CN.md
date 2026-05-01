@@ -27,6 +27,11 @@
 - `talents.json`
 - `runtime_constants.json`（运行时常量 / 概率 / 冷却参数）
 
+## 表数据规则
+- 运行时不为必填数值字段做静默默认值；缺字段、空值、非法数值应视为数据错误，优先修 Excel 源表并重新导出。
+- `waves.total` 必须显式填写数字；`0` 不再表示空值，若需要不限总数，应后续新增明确规则字段。
+- `waves.special_spawn_time=0` 且 `waves.special_spawn_count=0` 表示本波没有插刷；有 `special_enemy_id` 时二者必须大于 0。
+
 ## 对应源表
 - `runtime_constants.json` 来源于 `res://Excel/runtime_constants#运行时常量.xlsx`
 

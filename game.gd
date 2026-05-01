@@ -1426,7 +1426,7 @@ func _process_wave_spawning(delta: float) -> void:
 	var current_wave_duration: float = _get_current_wave_duration()
 	var row: Dictionary = wave_rows[current_wave_index]
 	var is_boss_wave := _get_wave_type(row) == WAVE_TYPE_BOSS
-	var total: int = _read_int(row.get("total", null), 0)
+	var total: int = _require_int(row, "total", _get_wave_context(row))
 	var enemy_id = row.get("enemy_id", "")
 	if is_boss_wave:
 		enemy_id = _get_wave_boss_id(row, current_wave_index)
@@ -1808,8 +1808,10 @@ func _validate_md04_wave_rows(target_wave_count: int = MD04_TARGET_WAVE_COUNT) -
 
 		var special_enemy_id := _normalize_optional_id(row.get("special_enemy_id", ""))
 		var has_special_id := not special_enemy_id.is_empty()
-		var has_special_time := row.get("special_spawn_time", null) != null
-		var has_special_count := row.get("special_spawn_count", null) != null
+		var special_spawn_time := _require_float(row, "special_spawn_time", wave_label)
+		var special_spawn_count := _require_int(row, "special_spawn_count", wave_label)
+		var has_special_time := special_spawn_time > 0.0
+		var has_special_count := special_spawn_count > 0
 		if has_special_id or has_special_time or has_special_count:
 			if not has_special_id:
 				issues.append("%s 插刷配置缺少 special_enemy_id。" % wave_label)
@@ -1818,12 +1820,12 @@ func _validate_md04_wave_rows(target_wave_count: int = MD04_TARGET_WAVE_COUNT) -
 
 			if not has_special_time:
 				issues.append("%s 插刷配置缺少 special_spawn_time。" % wave_label)
-			elif float(row.get("special_spawn_time", 0.0)) < 0.0:
+			elif special_spawn_time < 0.0:
 				issues.append("%s special_spawn_time 不能小于 0。" % wave_label)
 
 			if not has_special_count:
 				issues.append("%s 插刷配置缺少 special_spawn_count。" % wave_label)
-			elif int(row.get("special_spawn_count", 0)) <= 0:
+			elif special_spawn_count <= 0:
 				issues.append("%s special_spawn_count 必须大于 0。" % wave_label)
 
 	if issues.is_empty():
@@ -3487,16 +3489,16 @@ func _get_current_wave_duration() -> float:
 
 	var clamped_index: int = clampi(current_wave_index, 0, wave_rows.size() - 1)
 	var row: Dictionary = wave_rows[clamped_index]
-	var duration_from_table: float = _read_float(row.get("duration", null), wave_duration_seconds)
+	var duration_from_table: float = _require_float(row, "duration", _get_wave_context(row))
 	return maxf(duration_from_table, 1.0)
 
 
 func _get_wave_spawn_interval(row: Dictionary) -> float:
-	var explicit_interval := _read_float(row.get("spawn_interval", null), 0.0)
+	var explicit_interval := _require_float(row, "spawn_interval", _get_wave_context(row))
 	if explicit_interval > 0.0:
 		return explicit_interval
 
-	var spawn_rate: float = maxf(_read_float(row.get("spawn_rate", null), 0.0), 0.0)
+	var spawn_rate: float = maxf(_require_float(row, "spawn_rate", _get_wave_context(row)), 0.0)
 	if spawn_rate <= 0.0:
 		return 0.0
 	return 1.0 / spawn_rate
@@ -3544,15 +3546,15 @@ func _build_wave_timed_spawns(row: Dictionary) -> Array[Dictionary]:
 				_append_wave_timed_spawn(
 					timed_spawns,
 					event_row.get("enemy_id", ""),
-					_read_float(event_row.get("spawn_time", null), 0.0),
-					_read_int(event_row.get("count", null), 1)
+					_require_float(event_row, "spawn_time", "timed_spawns"),
+					_require_int(event_row, "count", "timed_spawns")
 				)
 
 	_append_wave_timed_spawn(
 		timed_spawns,
 		row.get("special_enemy_id", ""),
-		_read_float(row.get("special_spawn_time", null), 0.0),
-		_read_int(row.get("special_spawn_count", null), 0)
+		_require_float(row, "special_spawn_time", _get_wave_context(row)),
+		_require_int(row, "special_spawn_count", _get_wave_context(row))
 	)
 	return timed_spawns
 
@@ -3581,12 +3583,12 @@ func _process_wave_timed_spawns(alive_count: int, force_boss: bool = false) -> i
 	var updated_alive_count := alive_count
 	for event_index in current_wave_timed_spawns.size():
 		var event: Dictionary = current_wave_timed_spawns[event_index]
-		var spawn_time := _read_float(event.get("spawn_time", null), 0.0)
+		var spawn_time := _require_float(event, "spawn_time", "wave timed spawn")
 		if current_wave_elapsed < spawn_time:
 			continue
 
-		var count := _read_int(event.get("count", null), 0)
-		var spawned_count := _read_int(event.get("spawned_count", null), 0)
+		var count := _require_int(event, "count", "wave timed spawn")
+		var spawned_count := _require_int(event, "spawned_count", "wave timed spawn")
 		while spawned_count < count:
 			_spawn_enemy(_resolve_enemy_by_id(event.get("enemy_id", "")), force_boss)
 			if force_boss:
@@ -3686,7 +3688,7 @@ func _start_current_wave() -> void:
 		var boss_data: EnemyData = enemy_data_by_id.get(boss_id_text)
 		var boss_name := boss_data.enemy_name if boss_data != null else "Boss"
 		var subtitle := wave_runtime.build_wave_banner_subtitle(
-			_read_int(row.get("total", null), 0),
+			_require_int(row, "total", _get_wave_context(row)),
 			_get_wave_spawn_interval(row),
 			boss_name if not boss_id_text.is_empty() else ""
 		)
@@ -3727,7 +3729,7 @@ func _is_current_wave_cleared(row: Dictionary, alive_count: int) -> bool:
 	if alive_count > 0:
 		return false
 
-	var total: int = _read_int(row.get("total", null), 0)
+	var total: int = _require_int(row, "total", _get_wave_context(row))
 	var boss_id_text := _get_wave_boss_id(row, current_wave_index)
 	var has_boss := not boss_id_text.is_empty()
 	var has_limited_spawn := total > 0
@@ -3739,16 +3741,21 @@ func _is_current_wave_cleared(row: Dictionary, alive_count: int) -> bool:
 		return false
 	if has_timed_spawn:
 		for event in current_wave_timed_spawns:
-			if _read_int(event.get("spawned_count", null), 0) < _read_int(event.get("count", null), 0):
+			if _require_int(event, "spawned_count", "wave timed spawn") < _require_int(event, "count", "wave timed spawn"):
 				return false
 	if not has_boss and not has_limited_spawn and not has_timed_spawn:
 		return false
 	return true
 
 
-func _read_int(raw_value, default_value: int = 0) -> int:
+func _require_int(row: Dictionary, key: String, context: String) -> int:
+	if not row.has(key):
+		_fail_required_number(context, key, "int", null)
+		return 0
+	var raw_value = row.get(key)
 	if raw_value == null:
-		return default_value
+		_fail_required_number(context, key, "int", raw_value)
+		return 0
 	if raw_value is int:
 		return raw_value
 	if raw_value is float:
@@ -3756,28 +3763,54 @@ func _read_int(raw_value, default_value: int = 0) -> int:
 
 	var text := str(raw_value).strip_edges()
 	if text.is_empty():
-		return default_value
+		_fail_required_number(context, key, "int", raw_value)
+		return 0
 	if text.is_valid_int():
 		return text.to_int()
 	if text.is_valid_float():
 		return int(round(text.to_float()))
-	return default_value
+	_fail_required_number(context, key, "int", raw_value)
+	return 0
 
 
-func _read_float(raw_value, default_value: float = 0.0) -> float:
+func _require_float(row: Dictionary, key: String, context: String) -> float:
+	if not row.has(key):
+		_fail_required_number(context, key, "float", null)
+		return 0.0
+	var raw_value = row.get(key)
 	if raw_value == null:
-		return default_value
+		_fail_required_number(context, key, "float", raw_value)
+		return 0.0
 	if raw_value is float or raw_value is int:
 		return float(raw_value)
 
 	var text := str(raw_value).strip_edges()
 	if text.is_empty():
-		return default_value
+		_fail_required_number(context, key, "float", raw_value)
+		return 0.0
 	if text.is_valid_float():
 		return text.to_float()
 	if text.is_valid_int():
 		return text.to_int() * 1.0
-	return default_value
+	_fail_required_number(context, key, "float", raw_value)
+	return 0.0
+
+
+func _fail_required_number(context: String, key: String, expected_type: String, raw_value) -> void:
+	var message := "%s 缺少有效数值字段 %s（需要 %s，当前值：%s）。请修正 Excel 源表并重新导出。" % [
+		context,
+		key,
+		expected_type,
+		str(raw_value),
+	]
+	push_error(message)
+	assert(false, message)
+
+
+func _get_wave_context(row: Dictionary) -> String:
+	if row.has("wave"):
+		return "waves.json wave=%s" % str(row.get("wave"))
+	return "waves.json"
 
 
 func _update_enemy_overload_state(delta: float, alive_enemy_count: int = -1) -> void:

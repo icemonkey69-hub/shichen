@@ -29,6 +29,11 @@
 - `talents#局外成长.xlsx`
 - `runtime_constants#运行时常量.xlsx`（运行时常量 / 概率 / 冷却参数）
 
+## 源表填写规则
+- 必填数值字段不要留空，也不要依赖运行时默认值；发现空值应修表，而不是在代码里兜底。
+- `waves#波次.xlsx` 的 `total` 必须写成明确数字，不使用公式空缓存；例如 `duration / spawn_interval` 的结果应直接落成数值。
+- `waves#波次.xlsx` 没有插刷时，`special_enemy_id` 留空，`special_spawn_time=0`，`special_spawn_count=0`。
+
 ## 角色选择核心主表（优先编辑）
 - `heroes#英雄.xlsx`
 - `bloodlines#血脉.xlsx`

@@ -1,7 +1,7 @@
 [
     {
         "wave": 1,
-        "total": null,
+        "total": 64,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.25,
@@ -13,7 +13,7 @@
     },
     {
         "wave": 2,
-        "total": null,
+        "total": 64,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.25,
@@ -25,7 +25,7 @@
     },
     {
         "wave": 3,
-        "total": null,
+        "total": 64,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.25,
@@ -37,7 +37,7 @@
     },
     {
         "wave": 4,
-        "total": null,
+        "total": 64,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.25,
@@ -49,7 +49,7 @@
     },
     {
         "wave": 5,
-        "total": null,
+        "total": 64,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.25,
@@ -61,7 +61,7 @@
     },
     {
         "wave": 6,
-        "total": null,
+        "total": 80,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.0,
@@ -73,7 +73,7 @@
     },
     {
         "wave": 7,
-        "total": null,
+        "total": 80,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.0,
@@ -85,7 +85,7 @@
     },
     {
         "wave": 8,
-        "total": null,
+        "total": 80,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.0,
@@ -97,7 +97,7 @@
     },
     {
         "wave": 9,
-        "total": null,
+        "total": 80,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.0,
@@ -109,19 +109,19 @@
     },
     {
         "wave": 10,
-        "total": null,
+        "total": 1,
         "spawn_rate": 1.0,
         "duration": 120.0,
         "spawn_interval": 120.0,
         "enemy_id": 1003010,
         "special_enemy_id": "",
-        "special_spawn_time": null,
-        "special_spawn_count": null,
+        "special_spawn_time": 0.0,
+        "special_spawn_count": 0,
         "wave_type": 2
     },
     {
         "wave": 11,
-        "total": null,
+        "total": 100,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.8,
@@ -133,7 +133,7 @@
     },
     {
         "wave": 12,
-        "total": null,
+        "total": 100,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.8,
@@ -145,7 +145,7 @@
     },
     {
         "wave": 13,
-        "total": null,
+        "total": 100,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.8,
@@ -157,7 +157,7 @@
     },
     {
         "wave": 14,
-        "total": null,
+        "total": 100,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.8,
@@ -169,7 +169,7 @@
     },
     {
         "wave": 15,
-        "total": null,
+        "total": 100,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.8,
@@ -181,7 +181,7 @@
     },
     {
         "wave": 16,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -193,7 +193,7 @@
     },
     {
         "wave": 17,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -205,7 +205,7 @@
     },
     {
         "wave": 18,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -229,19 +229,19 @@
     },
     {
         "wave": 20,
-        "total": null,
+        "total": 1,
         "spawn_rate": 1.0,
         "duration": 120.0,
         "spawn_interval": 120.0,
         "enemy_id": 1003020,
         "special_enemy_id": "",
-        "special_spawn_time": null,
-        "special_spawn_count": null,
+        "special_spawn_time": 0.0,
+        "special_spawn_count": 0,
         "wave_type": 2
     },
     {
         "wave": 21,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -253,7 +253,7 @@
     },
     {
         "wave": 22,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -265,7 +265,7 @@
     },
     {
         "wave": 23,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -277,7 +277,7 @@
     },
     {
         "wave": 24,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -289,7 +289,7 @@
     },
     {
         "wave": 25,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -301,7 +301,7 @@
     },
     {
         "wave": 26,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -313,7 +313,7 @@
     },
     {
         "wave": 27,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -325,7 +325,7 @@
     },
     {
         "wave": 28,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -337,7 +337,7 @@
     },
     {
         "wave": 29,
-        "total": null,
+        "total": 160,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -349,14 +349,14 @@
     },
     {
         "wave": 30,
-        "total": null,
+        "total": 1,
         "spawn_rate": 1.0,
         "duration": 120.0,
         "spawn_interval": 120.0,
         "enemy_id": 1003030,
         "special_enemy_id": "",
-        "special_spawn_time": null,
-        "special_spawn_count": null,
+        "special_spawn_time": 0.0,
+        "special_spawn_count": 0,
         "wave_type": 2
     }
 ]
