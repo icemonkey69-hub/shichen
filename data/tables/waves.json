@@ -1,7 +1,7 @@
 [
     {
         "wave": 1,
-        "total": 64,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.25,
@@ -13,7 +13,7 @@
     },
     {
         "wave": 2,
-        "total": 64,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.25,
@@ -25,7 +25,7 @@
     },
     {
         "wave": 3,
-        "total": 64,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.25,
@@ -37,7 +37,7 @@
     },
     {
         "wave": 4,
-        "total": 64,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.25,
@@ -49,7 +49,7 @@
     },
     {
         "wave": 5,
-        "total": 64,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.25,
@@ -61,7 +61,7 @@
     },
     {
         "wave": 6,
-        "total": 80,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.0,
@@ -73,7 +73,7 @@
     },
     {
         "wave": 7,
-        "total": 80,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.0,
@@ -85,7 +85,7 @@
     },
     {
         "wave": 8,
-        "total": 80,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.0,
@@ -97,7 +97,7 @@
     },
     {
         "wave": 9,
-        "total": 80,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 1.0,
@@ -109,7 +109,7 @@
     },
     {
         "wave": 10,
-        "total": 1,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 120.0,
         "spawn_interval": 120.0,
@@ -121,7 +121,7 @@
     },
     {
         "wave": 11,
-        "total": 100,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.8,
@@ -133,7 +133,7 @@
     },
     {
         "wave": 12,
-        "total": 100,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.8,
@@ -145,7 +145,7 @@
     },
     {
         "wave": 13,
-        "total": 100,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.8,
@@ -157,7 +157,7 @@
     },
     {
         "wave": 14,
-        "total": 100,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.8,
@@ -169,7 +169,7 @@
     },
     {
         "wave": 15,
-        "total": 100,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.8,
@@ -181,7 +181,7 @@
     },
     {
         "wave": 16,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -193,7 +193,7 @@
     },
     {
         "wave": 17,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -205,7 +205,7 @@
     },
     {
         "wave": 18,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -229,7 +229,7 @@
     },
     {
         "wave": 20,
-        "total": 1,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 120.0,
         "spawn_interval": 120.0,
@@ -241,7 +241,7 @@
     },
     {
         "wave": 21,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -253,7 +253,7 @@
     },
     {
         "wave": 22,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -265,7 +265,7 @@
     },
     {
         "wave": 23,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -277,7 +277,7 @@
     },
     {
         "wave": 24,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -289,7 +289,7 @@
     },
     {
         "wave": 25,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -301,7 +301,7 @@
     },
     {
         "wave": 26,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -313,7 +313,7 @@
     },
     {
         "wave": 27,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -325,7 +325,7 @@
     },
     {
         "wave": 28,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -337,7 +337,7 @@
     },
     {
         "wave": 29,
-        "total": 160,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 80.0,
         "spawn_interval": 0.5,
@@ -349,7 +349,7 @@
     },
     {
         "wave": 30,
-        "total": 1,
+        "total": null,
         "spawn_rate": 1.0,
         "duration": 120.0,
         "spawn_interval": 120.0,

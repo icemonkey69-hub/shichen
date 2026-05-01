@@ -14,7 +14,7 @@
         "exp_reward": 10,
         "gold_reward": 47,
         "skill_ids": "",
-        "notes": "第1波杂兵"
+        "notes": ""
     },
     {
         "id": 1001002,
@@ -31,7 +31,7 @@
         "exp_reward": 10,
         "gold_reward": 48,
         "skill_ids": "",
-        "notes": "第2波杂兵"
+        "notes": ""
     },
     {
         "id": 1001003,
@@ -48,7 +48,7 @@
         "exp_reward": 10,
         "gold_reward": 49,
         "skill_ids": "",
-        "notes": "第3波杂兵"
+        "notes": ""
     },
     {
         "id": 1001004,
@@ -65,7 +65,7 @@
         "exp_reward": 10,
         "gold_reward": 50,
         "skill_ids": "",
-        "notes": "第4波杂兵"
+        "notes": ""
     },
     {
         "id": 1001005,
@@ -82,7 +82,7 @@
         "exp_reward": 10,
         "gold_reward": 51,
         "skill_ids": "",
-        "notes": "第5波杂兵"
+        "notes": ""
     },
     {
         "id": 1001006,
@@ -99,7 +99,7 @@
         "exp_reward": 10,
         "gold_reward": 52,
         "skill_ids": "",
-        "notes": "第6波杂兵"
+        "notes": ""
     },
     {
         "id": 1001007,
@@ -116,7 +116,7 @@
         "exp_reward": 10,
         "gold_reward": 53,
         "skill_ids": "",
-        "notes": "第7波杂兵"
+        "notes": ""
     },
     {
         "id": 1001008,
@@ -133,7 +133,7 @@
         "exp_reward": 10,
         "gold_reward": 54,
         "skill_ids": "",
-        "notes": "第8波杂兵"
+        "notes": ""
     },
     {
         "id": 1001009,
@@ -150,7 +150,7 @@
         "exp_reward": 10,
         "gold_reward": 55,
         "skill_ids": "",
-        "notes": "第9波杂兵"
+        "notes": ""
     },
     {
         "id": 1001011,
@@ -167,7 +167,7 @@
         "exp_reward": 10,
         "gold_reward": 57,
         "skill_ids": "",
-        "notes": "第11波杂兵"
+        "notes": ""
     },
     {
         "id": 1001012,
@@ -184,7 +184,7 @@
         "exp_reward": 10,
         "gold_reward": 58,
         "skill_ids": "",
-        "notes": "第12波杂兵"
+        "notes": ""
     },
     {
         "id": 1001013,
@@ -201,7 +201,7 @@
         "exp_reward": 10,
         "gold_reward": 59,
         "skill_ids": "",
-        "notes": "第13波杂兵"
+        "notes": ""
     },
     {
         "id": 1001014,
@@ -218,7 +218,7 @@
         "exp_reward": 10,
         "gold_reward": 60,
         "skill_ids": "",
-        "notes": "第14波杂兵"
+        "notes": ""
     },
     {
         "id": 1001015,
@@ -235,7 +235,7 @@
         "exp_reward": 10,
         "gold_reward": 61,
         "skill_ids": "",
-        "notes": "第15波杂兵"
+        "notes": ""
     },
     {
         "id": 1001016,
@@ -252,7 +252,7 @@
         "exp_reward": 10,
         "gold_reward": 62,
         "skill_ids": "",
-        "notes": "第16波杂兵"
+        "notes": ""
     },
     {
         "id": 1001017,
@@ -269,7 +269,7 @@
         "exp_reward": 10,
         "gold_reward": 63,
         "skill_ids": "",
-        "notes": "第17波杂兵"
+        "notes": ""
     },
     {
         "id": 1001018,
@@ -286,14 +286,14 @@
         "exp_reward": 10,
         "gold_reward": 64,
         "skill_ids": "",
-        "notes": "第18波杂兵"
+        "notes": ""
     },
     {
         "id": 1001019,
         "name": "近战小兵",
         "enemy_type": 1,
         "model_id": "1001",
-        "max_hp": 52500,
+        "max_hp": null,
         "move_speed": 280.0,
         "touch_damage": 221,
         "collision_radius": 16.0,
@@ -303,7 +303,7 @@
         "exp_reward": 10,
         "gold_reward": 65,
         "skill_ids": "",
-        "notes": "第19波杂兵"
+        "notes": ""
     },
     {
         "id": 1001021,
@@ -320,7 +320,7 @@
         "exp_reward": 10,
         "gold_reward": 67,
         "skill_ids": "",
-        "notes": "第21波杂兵"
+        "notes": ""
     },
     {
         "id": 1001022,
@@ -337,7 +337,7 @@
         "exp_reward": 10,
         "gold_reward": 68,
         "skill_ids": "",
-        "notes": "第22波杂兵"
+        "notes": ""
     },
     {
         "id": 1001023,
@@ -354,7 +354,7 @@
         "exp_reward": 10,
         "gold_reward": 69,
         "skill_ids": "",
-        "notes": "第23波杂兵"
+        "notes": ""
     },
     {
         "id": 1001024,
@@ -371,7 +371,7 @@
         "exp_reward": 10,
         "gold_reward": 70,
         "skill_ids": "",
-        "notes": "第24波杂兵"
+        "notes": ""
     },
     {
         "id": 1001025,
@@ -388,7 +388,7 @@
         "exp_reward": 10,
         "gold_reward": 71,
         "skill_ids": "",
-        "notes": "第25波杂兵"
+        "notes": ""
     },
     {
         "id": 1001026,
@@ -405,7 +405,7 @@
         "exp_reward": 10,
         "gold_reward": 72,
         "skill_ids": "",
-        "notes": "第26波杂兵"
+        "notes": ""
     },
     {
         "id": 1001027,
@@ -422,7 +422,7 @@
         "exp_reward": 10,
         "gold_reward": 73,
         "skill_ids": "",
-        "notes": "第27波杂兵"
+        "notes": ""
     },
     {
         "id": 1001028,
@@ -439,7 +439,7 @@
         "exp_reward": 10,
         "gold_reward": 74,
         "skill_ids": "",
-        "notes": "第28波杂兵"
+        "notes": ""
     },
     {
         "id": 1001029,
@@ -456,7 +456,7 @@
         "exp_reward": 10,
         "gold_reward": 75,
         "skill_ids": "",
-        "notes": "第29波杂兵"
+        "notes": ""
     },
     {
         "id": 1002001,
@@ -473,7 +473,7 @@
         "exp_reward": 10,
         "gold_reward": 200,
         "skill_ids": "",
-        "notes": "第1波精英"
+        "notes": ""
     },
     {
         "id": 1002002,
@@ -490,7 +490,7 @@
         "exp_reward": 10,
         "gold_reward": 200,
         "skill_ids": "",
-        "notes": "第2波精英"
+        "notes": ""
     },
     {
         "id": 1002003,
@@ -507,7 +507,7 @@
         "exp_reward": 10,
         "gold_reward": 200,
         "skill_ids": "",
-        "notes": "第3波精英"
+        "notes": ""
     },
     {
         "id": 1002004,
@@ -524,7 +524,7 @@
         "exp_reward": 10,
         "gold_reward": 200,
         "skill_ids": "",
-        "notes": "第4波精英"
+        "notes": ""
     },
     {
         "id": 1002005,
@@ -541,7 +541,7 @@
         "exp_reward": 10,
         "gold_reward": 200,
         "skill_ids": "",
-        "notes": "第5波精英"
+        "notes": ""
     },
     {
         "id": 1002006,
@@ -558,7 +558,7 @@
         "exp_reward": 10,
         "gold_reward": 200,
         "skill_ids": "",
-        "notes": "第6波精英"
+        "notes": ""
     },
     {
         "id": 1002007,
@@ -575,7 +575,7 @@
         "exp_reward": 10,
         "gold_reward": 200,
         "skill_ids": "",
-        "notes": "第7波精英"
+        "notes": ""
     },
     {
         "id": 1002008,
@@ -592,7 +592,7 @@
         "exp_reward": 10,
         "gold_reward": 200,
         "skill_ids": "",
-        "notes": "第8波精英"
+        "notes": ""
     },
     {
         "id": 1002009,
@@ -609,7 +609,7 @@
         "exp_reward": 10,
         "gold_reward": 200,
         "skill_ids": "",
-        "notes": "第9波精英"
+        "notes": ""
     },
     {
         "id": 1002011,
@@ -626,7 +626,7 @@
         "exp_reward": 10,
         "gold_reward": 400,
         "skill_ids": "",
-        "notes": "第11波精英"
+        "notes": ""
     },
     {
         "id": 1002012,
@@ -643,7 +643,7 @@
         "exp_reward": 10,
         "gold_reward": 400,
         "skill_ids": "",
-        "notes": "第12波精英"
+        "notes": ""
     },
     {
         "id": 1002013,
@@ -660,7 +660,7 @@
         "exp_reward": 10,
         "gold_reward": 400,
         "skill_ids": "",
-        "notes": "第13波精英"
+        "notes": ""
     },
     {
         "id": 1002014,
@@ -677,7 +677,7 @@
         "exp_reward": 10,
         "gold_reward": 400,
         "skill_ids": "",
-        "notes": "第14波精英"
+        "notes": ""
     },
     {
         "id": 1002015,
@@ -694,7 +694,7 @@
         "exp_reward": 10,
         "gold_reward": 400,
         "skill_ids": "",
-        "notes": "第15波精英"
+        "notes": ""
     },
     {
         "id": 1002016,
@@ -711,7 +711,7 @@
         "exp_reward": 10,
         "gold_reward": 400,
         "skill_ids": "",
-        "notes": "第16波精英"
+        "notes": ""
     },
     {
         "id": 1002017,
@@ -728,7 +728,7 @@
         "exp_reward": 10,
         "gold_reward": 400,
         "skill_ids": "",
-        "notes": "第17波精英"
+        "notes": ""
     },
     {
         "id": 1002018,
@@ -745,7 +745,7 @@
         "exp_reward": 10,
         "gold_reward": 400,
         "skill_ids": "",
-        "notes": "第18波精英"
+        "notes": ""
     },
     {
         "id": 1002019,
@@ -762,7 +762,7 @@
         "exp_reward": 10,
         "gold_reward": 400,
         "skill_ids": "",
-        "notes": "第19波精英"
+        "notes": ""
     },
     {
         "id": 1002021,
@@ -779,7 +779,7 @@
         "exp_reward": 10,
         "gold_reward": 600,
         "skill_ids": "",
-        "notes": "第21波精英"
+        "notes": ""
     },
     {
         "id": 1002022,
@@ -796,7 +796,7 @@
         "exp_reward": 10,
         "gold_reward": 600,
         "skill_ids": "",
-        "notes": "第22波精英"
+        "notes": ""
     },
     {
         "id": 1002023,
@@ -813,7 +813,7 @@
         "exp_reward": 10,
         "gold_reward": 600,
         "skill_ids": "",
-        "notes": "第23波精英"
+        "notes": ""
     },
     {
         "id": 1002024,
@@ -830,7 +830,7 @@
         "exp_reward": 10,
         "gold_reward": 600,
         "skill_ids": "",
-        "notes": "第24波精英"
+        "notes": ""
     },
     {
         "id": 1002025,
@@ -847,7 +847,7 @@
         "exp_reward": 10,
         "gold_reward": 600,
         "skill_ids": "",
-        "notes": "第25波精英"
+        "notes": ""
     },
     {
         "id": 1002026,
@@ -864,7 +864,7 @@
         "exp_reward": 10,
         "gold_reward": 600,
         "skill_ids": "",
-        "notes": "第26波精英"
+        "notes": ""
     },
     {
         "id": 1002027,
@@ -881,7 +881,7 @@
         "exp_reward": 10,
         "gold_reward": 600,
         "skill_ids": "",
-        "notes": "第27波精英"
+        "notes": ""
     },
     {
         "id": 1002028,
@@ -898,7 +898,7 @@
         "exp_reward": 10,
         "gold_reward": 600,
         "skill_ids": "",
-        "notes": "第28波精英"
+        "notes": ""
     },
     {
         "id": 1002029,
@@ -915,7 +915,7 @@
         "exp_reward": 10,
         "gold_reward": 600,
         "skill_ids": "",
-        "notes": "第29波精英"
+        "notes": ""
     },
     {
         "id": 1003010,
@@ -932,7 +932,7 @@
         "exp_reward": null,
         "gold_reward": null,
         "skill_ids": "",
-        "notes": "第10波首领"
+        "notes": ""
     },
     {
         "id": 1003020,
@@ -949,7 +949,7 @@
         "exp_reward": null,
         "gold_reward": null,
         "skill_ids": "",
-        "notes": "第20波首领"
+        "notes": ""
     },
     {
         "id": 1003030,
@@ -966,6 +966,6 @@
         "exp_reward": null,
         "gold_reward": null,
         "skill_ids": "",
-        "notes": "第30波首领"
+        "notes": ""
     }
 ]
