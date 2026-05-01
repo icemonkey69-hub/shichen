@@ -82,9 +82,9 @@
 
 ## 2D 资源说明
 - 3D / 三渲二 / F6 动作表管线已废弃，不再维护 `actions#动作.xlsx`。
-- 敌人 `model_id` 对应：`assets/enemies/Models_2d/<ID>_备注/`
-- 守护者 `model_id` 对应：`assets/heroes/Models_2d/<ID>_备注/`
-- 塔 `model_id_point` 对应：`assets/heroes/point_2d/<ID>_备注/`
+- 敌人：怪物表 `enemies.model_id` 对应 `assets/enemies/Models_2d/<ID>_备注/`
+- 守护者：血脉表 `bloodlines.model_id` 对应 `assets/heroes/Models_2d/<ID>_备注/`
+- 塔：血脉表 `bloodlines.model_id_point` 对应 `assets/heroes/point_2d/<ID>_备注/`
 - 文件夹名只用 `_` 前 ID 做匹配，后半段仅作为人工备注。
 - 模型文件夹可选添加 `anim_config.json`，用于单独指定动画文件、帧率、帧尺寸、缩放和视觉偏移；没有配置时按文件名自动识别。
 
