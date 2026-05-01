@@ -6,6 +6,7 @@ class_name EnemyData
 # 1=normal, 2=elite, 3=boss
 @export var enemy_type: int = 1
 @export var model_id: StringName = &"1010"
+@export var behavior_id: StringName = &"melee_chaser"
 
 @export_group("Combat")
 @export var max_health: int = 20

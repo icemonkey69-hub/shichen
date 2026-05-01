@@ -52,6 +52,9 @@ static func _row_to_enemy_data(row: Dictionary) -> EnemyData:
 
 	var model_value = row.get("model_id", row.get("sprite", "1010"))
 	enemy.model_id = StringName(str(model_value))
+	enemy.behavior_id = StringName(str(row.get("behavior_id", row.get("ai_behavior", row.get("behavior", enemy.behavior_id)))).strip_edges())
+	if String(enemy.behavior_id).is_empty():
+		enemy.behavior_id = &"melee_chaser"
 
 	enemy.max_health = maxi(1, _to_int(row.get("max_hp", enemy.max_health), enemy.max_health))
 	enemy.move_speed = maxf(0.0, _to_float(row.get("move_speed", enemy.move_speed), enemy.move_speed))

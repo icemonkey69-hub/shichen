@@ -4,6 +4,7 @@ class_name UnitSpriteAnimator
 const DEFAULT_FPS := 8.0
 const ATTACK_FPS := 12.0
 const DEATH_FPS := 8.0
+const ANIM_CONFIG_FILE := "anim_config.json"
 
 @export var model_root_dir := "res://assets/enemies/Models_2d"
 @export var visual_offset := Vector2.ZERO
@@ -14,8 +15,11 @@ var _sprite: Sprite2D
 var _model_id: StringName = &""
 var _model_dir := ""
 var _available_files: Array[String] = []
+var _anim_config: Dictionary = {}
 var _current_state := "idle"
 var _current_files: Array[String] = []
+var _current_frame_width := 0.0
+var _current_frame_height := 0.0
 var _current_file_index := 0
 var _current_texture: Texture2D
 var _current_regions: Array[Rect2] = []
@@ -28,9 +32,14 @@ var _attack_locked := false
 var _dead := false
 var _runtime_active := true
 var _dissolve_progress := 0.0
+var _defaults_captured := false
+var _default_visual_offset := Vector2.ZERO
+var _default_visual_ground_offset := 10.0
+var _default_display_scale := 1.0
 
 
 func _ready() -> void:
+	_capture_visual_defaults()
 	_ensure_sprite()
 	set_process(true)
 
@@ -52,6 +61,10 @@ func configure_model_id(model_id: StringName) -> bool:
 	_available_files = _collect_png_files(_model_dir)
 	if _available_files.is_empty():
 		return false
+	_capture_visual_defaults()
+	_reset_visual_defaults()
+	_anim_config = _load_anim_config(_model_dir)
+	_apply_anim_config_defaults()
 
 	_dead = false
 	_attack_locked = false
@@ -244,8 +257,11 @@ func _play_state(state: String, direction: Vector2, force_restart := false) -> v
 	var should_restart := force_restart or state != _current_state or next_files != _current_files
 	_current_state = state
 	_current_files = next_files
+	var state_config := _get_animation_config(state, direction)
+	_current_frame_width = _get_float_from_config(state_config, "frame_width", 0.0)
+	_current_frame_height = _get_float_from_config(state_config, "frame_height", 0.0)
 	_fps = _get_state_fps(state)
-	_loop = state != "death"
+	_loop = _get_bool_from_config(state_config, "loop", state != "death")
 	if should_restart:
 		_current_file_index = 0
 		_frame_index = 0
@@ -306,7 +322,15 @@ func _apply_frame() -> void:
 func _build_regions_for_texture(texture: Texture2D) -> Array[Rect2]:
 	var regions: Array[Rect2] = []
 	var size := texture.get_size()
-	if size.x > size.y and int(size.x) % int(size.y) == 0:
+	if _current_frame_width > 0.0 and _current_frame_height > 0.0:
+		var frame_width := int(_current_frame_width)
+		var frame_height := int(_current_frame_height)
+		var columns := maxi(int(size.x) / frame_width, 1)
+		var rows := maxi(int(size.y) / frame_height, 1)
+		for y in rows:
+			for x in columns:
+				regions.append(Rect2(Vector2(frame_width * x, frame_height * y), Vector2(frame_width, frame_height)))
+	elif size.x > size.y and int(size.x) % int(size.y) == 0:
 		var frame_size := size.y
 		var frame_count := int(size.x / frame_size)
 		for i in frame_count:
@@ -347,6 +371,10 @@ func _collect_png_files_recursive(root: String, results: Array[String]) -> void:
 
 
 func _select_files_for_state(state: String, direction: Vector2) -> Array[String]:
+	var configured_files := _select_configured_files_for_state(state, direction)
+	if not configured_files.is_empty():
+		return configured_files
+
 	var keyword_matches: Array[String] = []
 	var keywords := _get_state_keywords(state)
 	for file_path in _available_files:
@@ -364,6 +392,55 @@ func _select_files_for_state(state: String, direction: Vector2) -> Array[String]
 	if not direction_matches.is_empty():
 		return direction_matches
 	return keyword_matches
+
+
+func _select_configured_files_for_state(state: String, direction: Vector2) -> Array[String]:
+	var state_config := _get_animation_config(state, direction)
+	if state_config.is_empty():
+		return []
+
+	var raw_files = state_config.get("files", state_config.get("file", []))
+	var configured_files: Array[String] = []
+	if raw_files is Array:
+		for raw_file in raw_files:
+			_append_configured_file(configured_files, str(raw_file))
+	else:
+		_append_configured_file(configured_files, str(raw_files))
+	return configured_files
+
+
+func _append_configured_file(target: Array[String], raw_file: String) -> void:
+	var file_name := raw_file.strip_edges()
+	if file_name.is_empty():
+		return
+
+	var path := file_name
+	if not path.begins_with("res://"):
+		path = "%s/%s" % [_model_dir, file_name]
+	if ResourceLoader.exists(path):
+		target.append(path)
+
+
+func _get_animation_config(state: String, direction: Vector2) -> Dictionary:
+	if _anim_config.is_empty():
+		return {}
+
+	var result: Dictionary = {}
+	var animations = _anim_config.get("animations", {})
+	if animations is Dictionary and (animations as Dictionary).has(state):
+		var state_value = (animations as Dictionary).get(state)
+		if state_value is Dictionary:
+			result.merge(state_value as Dictionary, true)
+
+	var direction_configs = _anim_config.get("directions", {})
+	if direction_configs is Dictionary:
+		var token := _get_direction_token(direction)
+		var direction_value = (direction_configs as Dictionary).get(token, {})
+		if direction_value is Dictionary and (direction_value as Dictionary).has(state):
+			var direction_state_value = (direction_value as Dictionary).get(state)
+			if direction_state_value is Dictionary:
+				result.merge(direction_state_value as Dictionary, true)
+	return result
 
 
 func _filter_direction_files(files: Array[String], direction: Vector2) -> Array[String]:
@@ -428,6 +505,11 @@ func _get_state_keywords(state: String) -> PackedStringArray:
 
 
 func _get_state_fps(state: String) -> float:
+	var state_config := _get_animation_config(state, _last_direction)
+	var configured_fps := _get_float_from_config(state_config, "fps", 0.0)
+	if configured_fps > 0.0:
+		return configured_fps
+
 	match state:
 		"attack":
 			return ATTACK_FPS
@@ -435,3 +517,77 @@ func _get_state_fps(state: String) -> float:
 			return DEATH_FPS
 		_:
 			return DEFAULT_FPS
+
+
+func _load_anim_config(model_dir: String) -> Dictionary:
+	var config_path := "%s/%s" % [model_dir, ANIM_CONFIG_FILE]
+	if not FileAccess.file_exists(config_path):
+		return {}
+
+	var file := FileAccess.open(config_path, FileAccess.READ)
+	if file == null:
+		push_warning("Unable to open animation config: %s" % config_path)
+		return {}
+
+	var json := JSON.new()
+	var parse_error := json.parse(file.get_as_text())
+	if parse_error != OK:
+		push_warning("Invalid animation config %s: %s" % [config_path, json.get_error_message()])
+		return {}
+
+	var parsed = json.data
+	if parsed is Dictionary:
+		return parsed as Dictionary
+	push_warning("Animation config root must be a Dictionary: %s" % config_path)
+	return {}
+
+
+func _apply_anim_config_defaults() -> void:
+	if _anim_config.is_empty():
+		return
+	display_scale = _get_float_from_config(_anim_config, "display_scale", display_scale)
+	visual_ground_offset = _get_float_from_config(_anim_config, "visual_ground_offset", visual_ground_offset)
+	var offset_value = _anim_config.get("visual_offset", null)
+	if offset_value is Array and (offset_value as Array).size() >= 2:
+		visual_offset = Vector2(float((offset_value as Array)[0]), float((offset_value as Array)[1]))
+
+
+func _capture_visual_defaults() -> void:
+	if _defaults_captured:
+		return
+	_default_visual_offset = visual_offset
+	_default_visual_ground_offset = visual_ground_offset
+	_default_display_scale = display_scale
+	_defaults_captured = true
+
+
+func _reset_visual_defaults() -> void:
+	visual_offset = _default_visual_offset
+	visual_ground_offset = _default_visual_ground_offset
+	display_scale = _default_display_scale
+
+
+func _get_float_from_config(config: Dictionary, key: String, default_value: float) -> float:
+	if not config.has(key):
+		return default_value
+	var value = config.get(key)
+	if value is float or value is int:
+		return float(value)
+	var text := str(value).strip_edges()
+	if text.is_valid_float():
+		return text.to_float()
+	return default_value
+
+
+func _get_bool_from_config(config: Dictionary, key: String, default_value: bool) -> bool:
+	if not config.has(key):
+		return default_value
+	var value = config.get(key)
+	if value is bool:
+		return value
+	var text := str(value).strip_edges().to_lower()
+	if text in ["1", "true", "yes", "y"]:
+		return true
+	if text in ["0", "false", "no", "n"]:
+		return false
+	return default_value

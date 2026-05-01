@@ -1,6 +1,7 @@
 extends CharacterBody2D
 
 const AttributeSystemScript := preload("res://attribute_system.gd")
+const EnemyMeleeChaserBehaviorScript := preload("res://enemy_behaviors/melee_chaser_behavior.gd")
 
 const ENEMY_TYPE_NORMAL := 1
 const ENEMY_TYPE_BOSS := 3
@@ -19,6 +20,7 @@ signal despawn_requested(enemy_node: Node2D)
 @export var enemy_name: String = "Enemy"
 @export var enemy_type: int = ENEMY_TYPE_NORMAL
 @export var model_id: StringName = &"1010"
+@export var behavior_id: StringName = &"melee_chaser"
 
 @export var move_speed := 110.0
 @export var max_health := 3
@@ -66,10 +68,13 @@ var _configured_model_id: StringName = &""
 var _pool_mode := false
 var _despawn_notified := false
 var _active_in_world := true
+var _behavior_node: Node
+var _configured_behavior_id: StringName = &""
 
 
 func _ready() -> void:
 	health = max_health
+	_ensure_behavior()
 	_sync_enemy_groups()
 	if not _pool_mode and not String(model_id).strip_edges().is_empty():
 		_request_model_apply()
@@ -87,6 +92,7 @@ func apply_enemy_data(data: EnemyData) -> void:
 	enemy_name = data.enemy_name
 	enemy_type = data.enemy_type
 	model_id = data.model_id
+	behavior_id = data.behavior_id
 
 	max_health = maxi(1, data.max_health)
 	health = max_health
@@ -106,6 +112,8 @@ func apply_enemy_data(data: EnemyData) -> void:
 		collision_shape.shape = circle
 
 	_sync_enemy_groups()
+	if is_inside_tree():
+		_ensure_behavior()
 	var model_changed: bool = String(previous_model_id).strip_edges() != String(model_id).strip_edges()
 	var model_ready_for_current_id: bool = _model_configured and String(_configured_model_id).strip_edges() == String(model_id).strip_edges()
 	if model_changed or not model_ready_for_current_id:
@@ -150,6 +158,9 @@ func activate_from_pool(player_node: Node2D, spawn_position: Vector2) -> void:
 	attack_anchor_position = global_position
 	attack_direction = Vector2.DOWN
 	_despawn_notified = false
+	_ensure_behavior()
+	if _behavior_node != null:
+		_behavior_node.reset_state()
 	body.modulate = Color(1, 1, 1, 1)
 	_set_attack_indicator_visible(false)
 	if sprite != null and sprite.has_method("set_dissolve_progress"):
@@ -185,6 +196,8 @@ func deactivate_to_pool(hidden_position: Vector2 = Vector2(-20000.0, -20000.0)) 
 	state_timer = 0.0
 	death_elapsed = 0.0
 	_despawn_notified = false
+	if _behavior_node != null:
+		_behavior_node.on_deactivated()
 	remove_from_group("enemy")
 	remove_from_group("boss")
 	if collision_shape != null:
@@ -214,48 +227,9 @@ func _physics_process(delta: float) -> void:
 
 	attack_cooldown = max(attack_cooldown - delta, 0.0)
 	hit_flash_remaining = max(hit_flash_remaining - delta, 0.0)
-
-	if not is_instance_valid(player):
-		velocity = Vector2.ZERO
-		sprite.set_motion_state(attack_direction, false)
-		_update_visual_state()
-		return
-
-	var to_player: Vector2 = player.global_position - global_position
-	var distance_to_player: float = to_player.length()
-	var direction: Vector2 = Vector2.ZERO if distance_to_player == 0.0 else to_player / distance_to_player
-	var dynamic_trigger_distance: float = _compute_dynamic_attack_distance(attack_trigger_distance)
-
-	match attack_state:
-		AttackState.CHASE:
-			var in_attack_range: bool = distance_to_player <= dynamic_trigger_distance
-			if in_attack_range:
-				velocity = Vector2.ZERO
-				if direction != Vector2.ZERO:
-					attack_direction = direction
-				sprite.set_motion_state(attack_direction, false)
-				if attack_cooldown <= 0.0:
-					_start_windup(attack_direction)
-			else:
-				velocity = direction * move_speed
-				sprite.set_motion_state(direction, direction != Vector2.ZERO)
-			move_and_slide()
-		AttackState.WINDUP:
-			velocity = Vector2.ZERO
-			global_position = attack_anchor_position
-			state_timer = max(state_timer - delta, 0.0)
-			sprite.set_motion_state(attack_direction, false)
-			_update_windup_pose()
-			if state_timer == 0.0:
-				_perform_attack()
-		AttackState.RECOVER:
-			velocity = Vector2.ZERO
-			global_position = attack_anchor_position
-			state_timer = max(state_timer - delta, 0.0)
-			sprite.set_motion_state(attack_direction, false)
-			_update_recover_pose()
-			if state_timer == 0.0:
-				_finish_recover()
+	_ensure_behavior()
+	if _behavior_node != null:
+		_behavior_node.physics_process(delta)
 
 	_update_visual_state()
 	_update_draw_order()
@@ -299,53 +273,6 @@ func _update_visual_state() -> void:
 		return
 
 	body.modulate = Color(1, 1, 1, 1)
-
-
-func _start_windup(direction: Vector2) -> void:
-	attack_state = AttackState.WINDUP
-	state_timer = windup_time
-	attack_direction = direction if direction != Vector2.ZERO else Vector2.DOWN
-	attack_anchor_position = global_position
-	_set_attack_indicator_visible(true)
-	sprite.start_attack_preview(attack_direction)
-	_update_windup_pose()
-
-
-func _perform_attack() -> void:
-	attack_state = AttackState.RECOVER
-	state_timer = recover_time
-	attack_cooldown = attack_interval
-	_set_attack_indicator_visible(false)
-	sprite.play_attack_hit(attack_direction)
-
-	if not is_instance_valid(player):
-		return
-
-	var distance_to_player := global_position.distance_to(player.global_position)
-	var dynamic_reach_distance: float = _compute_dynamic_attack_distance(attack_reach)
-	var can_hit_player := true
-	if player.has_method("can_receive_enemy_damage"):
-		can_hit_player = player.call("can_receive_enemy_damage")
-	if distance_to_player <= dynamic_reach_distance and can_hit_player and player.has_method("receive_damage"):
-		player.receive_damage(touch_damage)
-
-
-func _finish_recover() -> void:
-	attack_state = AttackState.CHASE
-	sprite.stop_attack(attack_direction)
-
-
-func _update_windup_pose() -> void:
-	var progress := 1.0 - state_timer / windup_time
-	attack_indicator.rotation = attack_direction.angle() + PI / 2.0
-	attack_indicator.scale = Vector2.ONE
-	_update_attack_indicator_fill(progress)
-	sprite.set_attack_preview_progress(attack_direction, progress)
-
-
-func _update_recover_pose() -> void:
-	var progress := 1.0 - state_timer / recover_time
-	sprite.set_attack_recover_progress(attack_direction, progress)
 
 
 func _compute_dynamic_attack_distance(base_distance: float) -> float:
@@ -448,6 +375,36 @@ func _sync_enemy_groups() -> void:
 	remove_from_group("boss")
 	if is_boss:
 		add_to_group("boss")
+
+
+func _ensure_behavior() -> void:
+	var clean_behavior_id := String(behavior_id).strip_edges()
+	if clean_behavior_id.is_empty():
+		clean_behavior_id = "melee_chaser"
+		behavior_id = &"melee_chaser"
+	if _behavior_node != null and is_instance_valid(_behavior_node) and String(_configured_behavior_id) == clean_behavior_id:
+		return
+
+	if _behavior_node != null and is_instance_valid(_behavior_node):
+		_behavior_node.queue_free()
+		_behavior_node = null
+
+	var behavior_script := _get_behavior_script(clean_behavior_id)
+	_behavior_node = Node.new()
+	_behavior_node.set_script(behavior_script)
+	_behavior_node.name = "Behavior_%s" % clean_behavior_id
+	add_child(_behavior_node)
+	_configured_behavior_id = StringName(clean_behavior_id)
+	_behavior_node.setup(self)
+
+
+func _get_behavior_script(clean_behavior_id: String) -> Script:
+	match clean_behavior_id:
+		"melee_chaser":
+			return EnemyMeleeChaserBehaviorScript
+		_:
+			push_warning("Unknown enemy behavior_id=%s, fallback to melee_chaser." % clean_behavior_id)
+			return EnemyMeleeChaserBehaviorScript
 
 
 func _request_model_apply() -> void:

@@ -36,3 +36,14 @@
 - `bloodlines.model_id` 对应守护者 2D 资源：`res://assets/heroes/Models_2d/<ID>_备注/`
 - `bloodlines.model_id_point` 对应塔 2D 资源：`res://assets/heroes/point_2d/<ID>_备注/`
 - `enemies.model_id` 对应敌人 2D 资源：`res://assets/enemies/Models_2d/<ID>_备注/`
+- `enemies.behavior_id` 对应敌人行为脚本，当前默认 `melee_chaser`；旧表缺失该字段时自动使用默认行为
+
+## 敌人行为字段
+- `behavior_id=melee_chaser`：普通近战追击行为，敌人追塔、蓄力、命中、恢复
+- 后续远程怪 / Boss / 特殊怪新增行为脚本后，再在 `enemies#怪物.xlsx` 中填对应 ID
+- 不建议把所有特殊规则继续写进 `enemy.gd`；`enemy.gd` 只保留通用生命周期
+
+## 2D 动画配置
+- 每个 2D 模型文件夹可选添加 `anim_config.json`
+- 没有 `anim_config.json` 时，仍按文件名关键词自动识别：`idle/tower`、`run/walk/move`、`attack/shoot/melee/cast`、`death/die`
+- 有 `anim_config.json` 时，可单独配置动画文件、帧率、循环、帧宽高、显示缩放和视觉偏移

@@ -86,3 +86,9 @@
 - 守护者 `model_id` 对应：`assets/heroes/Models_2d/<ID>_备注/`
 - 塔 `model_id_point` 对应：`assets/heroes/point_2d/<ID>_备注/`
 - 文件夹名只用 `_` 前 ID 做匹配，后半段仅作为人工备注。
+- 模型文件夹可选添加 `anim_config.json`，用于单独指定动画文件、帧率、帧尺寸、缩放和视觉偏移；没有配置时按文件名自动识别。
+
+## 敌人行为说明
+- `enemies#怪物.xlsx` 可新增 `behavior_id` 字段；当前不填也能运行，默认 `melee_chaser`。
+- `melee_chaser` 是普通近战追击塔的行为。
+- 后续远程怪、Boss、特殊怪优先新增独立行为脚本，再由表里 `behavior_id` 选择，不继续把差异逻辑堆进 `enemy.gd`。
