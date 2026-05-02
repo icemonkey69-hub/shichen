@@ -822,8 +822,7 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode == KEY_F6:
-			_reload_data_tables()
-			get_tree().reload_current_scene()
+			get_tree().change_scene_to_file("res://scenes/tools/2d_model_viewer.tscn")
 			return
 
 		if not selection_active and event.physical_keycode == KEY_TAB and not game_over:
