@@ -2,13 +2,15 @@ extends CharacterBody2D
 
 const AttributeSystemScript := preload("res://attribute_system.gd")
 const EnemyMeleeChaserBehaviorScript := preload("res://enemy_behaviors/melee_chaser_behavior.gd")
+const EnemyRangedAttackerBehaviorScript := preload("res://enemy_behaviors/ranged_attacker_behavior.gd")
+const EnemyProjectileScene := preload("res://enemy_projectile.tscn")
 
 const ENEMY_TYPE_NORMAL := 1
 const ENEMY_TYPE_BOSS := 3
+const ENEMY_MODEL_ROOT := "res://assets/enemies/Models_2d"
 const DRAW_ORDER_BASE := 2000
 const DRAW_ORDER_MIN := 1
 const DRAW_ORDER_MAX := 4095
-const DEFAULT_ATTACK_RADIUS_SUM := 50.0
 static var _missing_model_warning_ids: Dictionary = {}
 static var _missing_animator_warning_ids: Dictionary = {}
 
@@ -41,9 +43,6 @@ signal despawn_requested(enemy_node: Node2D)
 
 @onready var body: Node2D = $Body
 @onready var sprite: EnemySpriteAnimator = $Body/Sprite
-@onready var attack_indicator: Node2D = $AttackIndicator
-@onready var attack_indicator_fill: Polygon2D = $AttackIndicator/Fill
-@onready var attack_indicator_outline: Line2D = $AttackIndicator/Outline
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
 enum AttackState {
@@ -70,6 +69,7 @@ var _despawn_notified := false
 var _active_in_world := true
 var _behavior_node: Node
 var _configured_behavior_id: StringName = &""
+var _model_dir := ""
 
 
 func _ready() -> void:
@@ -78,8 +78,6 @@ func _ready() -> void:
 	_sync_enemy_groups()
 	if not _pool_mode and not String(model_id).strip_edges().is_empty():
 		_request_model_apply()
-	_update_attack_indicator_shape()
-	_set_attack_indicator_visible(false)
 	_update_draw_order()
 
 
@@ -92,12 +90,15 @@ func apply_enemy_data(data: EnemyData) -> void:
 	enemy_name = data.enemy_name
 	enemy_type = data.enemy_type
 	model_id = data.model_id
-	behavior_id = data.behavior_id
+	_model_dir = _resolve_enemy_model_dir(String(model_id).strip_edges())
+	behavior_id = _get_behavior_id_for_model_dir(_model_dir)
 
 	max_health = maxi(1, data.max_health)
 	health = max_health
 	move_speed = maxf(0.0, data.move_speed)
 	touch_damage = maxi(0, data.touch_damage)
+	attack_trigger_distance = maxf(1.0, data.attack_range)
+	attack_reach = maxf(1.0, data.attack_range)
 	attack_interval = maxf(0.05, data.attack_interval)
 	armor = data.armor
 	magic_resist = data.magic_resist
@@ -125,7 +126,6 @@ func apply_enemy_data(data: EnemyData) -> void:
 		_request_model_apply()
 	else:
 		sprite.set_motion_state(attack_direction, false)
-	_update_attack_indicator_shape()
 
 
 func set_forced_boss_state(enabled: bool) -> void:
@@ -162,7 +162,6 @@ func activate_from_pool(player_node: Node2D, spawn_position: Vector2) -> void:
 	if _behavior_node != null:
 		_behavior_node.reset_state()
 	body.modulate = Color(1, 1, 1, 1)
-	_set_attack_indicator_visible(false)
 	if sprite != null and sprite.has_method("set_dissolve_progress"):
 		sprite.set_dissolve_progress(0.0)
 	if sprite != null and sprite.has_method("set_runtime_active"):
@@ -202,7 +201,6 @@ func deactivate_to_pool(hidden_position: Vector2 = Vector2(-20000.0, -20000.0)) 
 	remove_from_group("boss")
 	if collision_shape != null:
 		collision_shape.disabled = true
-	_set_attack_indicator_visible(false)
 	if sprite != null and sprite.has_method("set_dissolve_progress"):
 		sprite.set_dissolve_progress(0.0)
 	if sprite != null and sprite.has_method("set_runtime_active"):
@@ -213,7 +211,6 @@ func deactivate_to_pool(hidden_position: Vector2 = Vector2(-20000.0, -20000.0)) 
 func _physics_process(delta: float) -> void:
 	if not _model_configured:
 		_request_model_apply()
-		_set_attack_indicator_visible(false)
 		if _active_in_world:
 			visible = false
 			if collision_shape != null:
@@ -276,69 +273,13 @@ func _update_visual_state() -> void:
 
 
 func _compute_dynamic_attack_distance(base_distance: float) -> float:
-	var self_radius: float = _get_collision_radius()
-	var player_radius: float = _get_player_collision_radius()
-	var edge_padding: float = maxf(base_distance - DEFAULT_ATTACK_RADIUS_SUM, 0.0)
-	return self_radius + player_radius + edge_padding
+	return maxf(base_distance, 1.0)
 
 
 func _get_collision_radius() -> float:
 	if collision_shape != null and collision_shape.shape is CircleShape2D:
 		return maxf((collision_shape.shape as CircleShape2D).radius, 1.0)
 	return 16.0
-
-
-func _get_player_collision_radius() -> float:
-	if not is_instance_valid(player):
-		return 34.0
-
-	for child in player.get_children():
-		if child is CollisionShape2D:
-			var player_shape: CollisionShape2D = child as CollisionShape2D
-			if player_shape.shape is CircleShape2D:
-				return maxf((player_shape.shape as CircleShape2D).radius, 1.0)
-	return 34.0
-
-
-func _set_attack_indicator_visible(visible_state: bool) -> void:
-	attack_indicator.visible = visible_state
-	if visible_state:
-		_update_attack_indicator_fill(0.0)
-
-
-func _update_attack_indicator_shape() -> void:
-	var body_radius := 18.0
-	if collision_shape != null and collision_shape.shape is CircleShape2D:
-		body_radius = (collision_shape.shape as CircleShape2D).radius
-
-	var start_offset := body_radius * 0.9
-	var end_offset := _compute_dynamic_attack_distance(attack_reach)
-	var half_width := maxf(body_radius * 0.95, end_offset * 0.32)
-	var shape_points := PackedVector2Array([
-		Vector2(0.0, -start_offset),
-		Vector2(half_width, -end_offset),
-		Vector2(-half_width, -end_offset),
-	])
-	attack_indicator_fill.polygon = shape_points
-	attack_indicator_outline.points = shape_points
-
-
-func _update_attack_indicator_fill(progress: float) -> void:
-	var clamped := clampf(progress, 0.0, 1.0)
-	var body_radius := 18.0
-	if collision_shape != null and collision_shape.shape is CircleShape2D:
-		body_radius = (collision_shape.shape as CircleShape2D).radius
-
-	var start_offset := body_radius * 0.9
-	var dynamic_reach: float = _compute_dynamic_attack_distance(attack_reach)
-	var current_end := lerpf(start_offset, dynamic_reach, clamped)
-	var current_half_width := lerpf(0.0, maxf(body_radius * 0.95, dynamic_reach * 0.32), clamped)
-	attack_indicator_fill.polygon = PackedVector2Array([
-		Vector2(0.0, -start_offset),
-		Vector2(current_half_width, -current_end),
-		Vector2(-current_half_width, -current_end),
-	])
-	attack_indicator_fill.modulate = Color(1.0, 0.98 - clamped * 0.08, 0.98 - clamped * 0.08, 0.22 + clamped * 0.58)
 
 
 func _start_death() -> void:
@@ -349,7 +290,6 @@ func _start_death() -> void:
 	attack_cooldown = 0.0
 	state_timer = 0.0
 	body.modulate = Color(1, 1, 1, 1)
-	_set_attack_indicator_visible(false)
 	remove_from_group("enemy")
 	remove_from_group("boss")
 	if collision_shape != null:
@@ -402,6 +342,8 @@ func _get_behavior_script(clean_behavior_id: String) -> Script:
 	match clean_behavior_id:
 		"melee_chaser":
 			return EnemyMeleeChaserBehaviorScript
+		"ranged_attacker":
+			return EnemyRangedAttackerBehaviorScript
 		_:
 			push_warning("Unknown enemy behavior_id=%s, fallback to melee_chaser." % clean_behavior_id)
 			return EnemyMeleeChaserBehaviorScript
@@ -434,6 +376,11 @@ func _apply_model_from_id() -> void:
 	var target_model_id: String = String(model_id).strip_edges()
 	if target_model_id.is_empty():
 		return
+	_model_dir = _resolve_enemy_model_dir(target_model_id)
+	var model_behavior := _get_behavior_id_for_model_dir(_model_dir)
+	if behavior_id != model_behavior:
+		behavior_id = model_behavior
+		_ensure_behavior()
 
 	if not sprite.has_method("configure_model_id"):
 		var animator_model_key: String = target_model_id
@@ -464,6 +411,108 @@ func _apply_model_from_id() -> void:
 	sprite.set_motion_state(attack_direction, false)
 	if sprite.has_method("play_spawn"):
 		sprite.play_spawn()
+
+
+func get_chase_velocity_to_target(target_position: Vector2, speed: float, desired_distance: float = 0.0) -> Vector2:
+	var to_target := target_position - global_position
+	var distance := to_target.length()
+	if distance <= 0.001:
+		return Vector2.ZERO
+
+	var direction := to_target / distance
+	var separation := _get_enemy_separation_vector()
+	var near_target: bool = desired_distance > 0.0 and distance <= desired_distance * 1.75
+	var tangent := Vector2(-direction.y, direction.x)
+	if get_instance_id() % 2 == 0:
+		tangent = -tangent
+	var steer := direction + separation * 1.35
+	if near_target:
+		steer += tangent * 0.32
+	if steer.length_squared() <= 0.001:
+		steer = direction
+	return steer.normalized() * speed
+
+
+func get_ranged_projectile_texture() -> Texture2D:
+	var model_dir := _model_dir
+	if model_dir.is_empty():
+		model_dir = _resolve_enemy_model_dir(String(model_id).strip_edges())
+	for file_path in _collect_projectile_png_files(model_dir):
+		var texture := load(file_path) as Texture2D
+		if texture != null:
+			return texture
+	return null
+
+
+func spawn_enemy_projectile(direction: Vector2) -> void:
+	if direction == Vector2.ZERO:
+		return
+	var projectile := EnemyProjectileScene.instantiate()
+	projectile.global_position = global_position
+	projectile.direction = direction.normalized()
+	projectile.damage = touch_damage
+	projectile.target = player
+	projectile.texture = get_ranged_projectile_texture()
+	var parent_node := get_parent()
+	if parent_node != null:
+		parent_node.add_child(projectile)
+	else:
+		add_child(projectile)
+
+
+func _get_enemy_separation_vector() -> Vector2:
+	var result := Vector2.ZERO
+	var self_radius := _get_collision_radius()
+	var desired_spacing := maxf(self_radius * 2.35, 34.0)
+	for other in get_tree().get_nodes_in_group("enemy"):
+		if other == self or not is_instance_valid(other):
+			continue
+		if not (other is Node2D):
+			continue
+		var other_node := other as Node2D
+		var away := global_position - other_node.global_position
+		var distance := away.length()
+		if distance <= 0.001 or distance >= desired_spacing:
+			continue
+		result += away / distance * (1.0 - distance / desired_spacing)
+	return result
+
+
+func _resolve_enemy_model_dir(clean_model_id: String) -> String:
+	if clean_model_id.is_empty():
+		return ""
+	var dir := DirAccess.open(ENEMY_MODEL_ROOT)
+	if dir == null:
+		return ""
+	for child_name in dir.get_directories():
+		var id_part := child_name.split("_", false, 1)[0]
+		if id_part == clean_model_id:
+			return "%s/%s" % [ENEMY_MODEL_ROOT, child_name]
+	return ""
+
+
+func _get_behavior_id_for_model_dir(model_dir: String) -> StringName:
+	if not model_dir.is_empty() and model_dir.get_file().contains("远程"):
+		return &"ranged_attacker"
+	return &"melee_chaser"
+
+
+func _collect_projectile_png_files(model_dir: String) -> Array[String]:
+	var results: Array[String] = []
+	if model_dir.is_empty():
+		return results
+	var dir := DirAccess.open(model_dir)
+	if dir == null:
+		return results
+	for file_name in dir.get_files():
+		if file_name.get_extension().to_lower() != "png":
+			continue
+		var lower := file_name.to_lower()
+		if lower.contains("attack") or lower.contains("idle") or lower.contains("run") or lower.contains("death") or lower.contains("hit"):
+			continue
+		results.append("%s/%s" % [model_dir, file_name])
+	results.sort()
+	return results
 
 
 func ensure_model_ready() -> void:

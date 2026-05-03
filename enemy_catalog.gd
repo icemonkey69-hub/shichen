@@ -59,6 +59,7 @@ static func _row_to_enemy_data(row: Dictionary) -> EnemyData:
 	enemy.max_health = maxi(1, _to_int(row.get("max_hp", enemy.max_health), enemy.max_health))
 	enemy.move_speed = maxf(0.0, _to_float(row.get("move_speed", enemy.move_speed), enemy.move_speed))
 	enemy.touch_damage = maxi(0, _to_int(row.get("touch_damage", enemy.touch_damage), enemy.touch_damage))
+	enemy.attack_range = maxf(1.0, _to_float(row.get("attack_range", enemy.attack_range), enemy.attack_range))
 	enemy.collision_radius = maxf(1.0, _to_float(row.get("collision_radius", enemy.collision_radius), enemy.collision_radius))
 	enemy.exp_reward = maxi(0, _to_int(row.get("exp_reward", enemy.exp_reward), enemy.exp_reward))
 	enemy.gold_reward = maxi(0, _to_int(row.get("gold_reward", enemy.gold_reward), enemy.gold_reward))

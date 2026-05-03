@@ -12,6 +12,7 @@ class_name EnemyData
 @export var max_health: int = 20
 @export var move_speed: float = 100.0
 @export var touch_damage: int = 6
+@export var attack_range: float = 88.0
 @export var attack_interval: float = 0.7
 @export var armor: float = 0.0
 @export var magic_resist: float = 0.0
