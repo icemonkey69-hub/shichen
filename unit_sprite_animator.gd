@@ -91,7 +91,7 @@ func set_motion_state(direction: Vector2, is_moving: bool) -> void:
 
 func play_attack(direction: Vector2, _attack_duration: float = 0.0) -> Dictionary:
 	start_attack_preview(direction)
-	return {"hit_ratio": 0.45}
+	return {"hit_ratio": _get_current_hit_ratio()}
 
 
 func start_attack_preview(direction: Vector2) -> void:
@@ -367,7 +367,24 @@ func _build_regions_for_texture(texture: Texture2D) -> Array[Rect2]:
 			regions.append(Rect2(Vector2(frame_size * float(i), 0.0), Vector2(frame_size, frame_size)))
 	else:
 		regions.append(Rect2(Vector2.ZERO, size))
-	return regions
+	return _apply_skip_frames_to_regions(regions, _get_animation_config(_current_state, _last_direction))
+
+
+func get_socket_offset(socket_name: String, direction: Vector2 = Vector2.ZERO, state: String = "") -> Vector2:
+	var socket_state := state if not state.is_empty() else _current_state
+	var socket_direction := direction if direction != Vector2.ZERO else _last_direction
+	var state_config := _get_animation_config(socket_state, socket_direction)
+	if state_config.has(socket_name):
+		return _get_vector2_from_config_value(state_config.get(socket_name), Vector2.ZERO)
+
+	var sockets = _anim_config.get("sockets", {})
+	if sockets is Dictionary and (sockets as Dictionary).has(socket_name):
+		return _get_vector2_from_config_value((sockets as Dictionary).get(socket_name), Vector2.ZERO)
+	return Vector2.ZERO
+
+
+func get_socket_global_position(socket_name: String, direction: Vector2 = Vector2.ZERO, state: String = "") -> Vector2:
+	return global_position + get_socket_offset(socket_name, direction, state)
 
 
 func _resolve_model_dir(model_id: String) -> String:
@@ -557,6 +574,28 @@ func _get_state_fps(state: String) -> float:
 			return DEFAULT_FPS
 
 
+func _get_current_hit_ratio() -> float:
+	var state_config := _get_animation_config(_current_state, _last_direction)
+	var hit_frame := _get_int_from_config(state_config, "hit_frame", 0)
+	if hit_frame <= 0 or _current_regions.is_empty():
+		return 0.45
+	if _current_regions.size() == 1:
+		return 0.0
+	return clampf(float(hit_frame - 1) / float(_current_regions.size() - 1), 0.0, 1.0)
+
+
+func _apply_skip_frames_to_regions(regions: Array[Rect2], state_config: Dictionary) -> Array[Rect2]:
+	var skip_frames := _get_int_array_from_config(state_config, "skip_frames")
+	if skip_frames.is_empty():
+		return regions
+
+	var filtered: Array[Rect2] = []
+	for index in regions.size():
+		if not skip_frames.has(index + 1):
+			filtered.append(regions[index])
+	return filtered if not filtered.is_empty() else regions
+
+
 func _load_anim_config(model_dir: String) -> Dictionary:
 	var config_path := "%s/%s" % [model_dir, ANIM_CONFIG_FILE]
 	if not FileAccess.file_exists(config_path):
@@ -614,6 +653,52 @@ func _get_float_from_config(config: Dictionary, key: String, default_value: floa
 	var text := str(value).strip_edges()
 	if text.is_valid_float():
 		return text.to_float()
+	return default_value
+
+
+func _get_int_from_config(config: Dictionary, key: String, default_value: int) -> int:
+	if not config.has(key):
+		return default_value
+	var value = config.get(key)
+	if value is int:
+		return value
+	if value is float:
+		return int(value)
+	var text := str(value).strip_edges()
+	if text.is_valid_int():
+		return text.to_int()
+	return default_value
+
+
+func _get_int_array_from_config(config: Dictionary, key: String) -> Array[int]:
+	if not config.has(key):
+		return []
+	var value = config.get(key)
+	var result: Array[int] = []
+	if value is Array:
+		for item in value:
+			if item is int or item is float:
+				var numeric_value := int(item)
+				if numeric_value > 0 and not result.has(numeric_value):
+					result.append(numeric_value)
+			elif str(item).strip_edges().is_valid_int():
+				var text_value := str(item).strip_edges().to_int()
+				if text_value > 0 and not result.has(text_value):
+					result.append(text_value)
+	elif value is String:
+		for part in String(value).split(",", false):
+			var clean := part.strip_edges()
+			if clean.is_valid_int():
+				var parsed := clean.to_int()
+				if parsed > 0 and not result.has(parsed):
+					result.append(parsed)
+	result.sort()
+	return result
+
+
+func _get_vector2_from_config_value(value, default_value: Vector2) -> Vector2:
+	if value is Array and (value as Array).size() >= 2:
+		return Vector2(float((value as Array)[0]), float((value as Array)[1]))
 	return default_value
 
 
