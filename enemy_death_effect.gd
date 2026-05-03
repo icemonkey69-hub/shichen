@@ -6,6 +6,8 @@ const DEFAULT_DEATH_MODEL_ID := "0"
 const ANIM_CONFIG_FILE := "anim_config.json"
 const DEFAULT_FPS := 8.0
 const HOLD_AND_FADE_SECONDS := 1.0
+const DEFAULT_DEATH_GRID_COLUMNS := 7
+const DEFAULT_DEATH_GRID_ROWS := 2
 const DEATH_KEYWORDS := ["dead", "death", "die"]
 
 var _sprite: Sprite2D
@@ -137,8 +139,12 @@ func _build_regions(texture: Texture2D) -> Array[Rect2]:
 	var size := texture.get_size()
 	if _frame_width > 0.0 and _frame_height > 0.0:
 		regions = _build_grid_regions(size, int(_frame_width), int(_frame_height))
-	elif int(size.x) * 2 == int(size.y) * 5:
-		regions = _build_grid_regions(size, int(size.x / 5.0), int(size.y / 2.0))
+	elif _is_default_death_grid(size):
+		regions = _build_grid_regions(
+			size,
+			int(size.x / float(DEFAULT_DEATH_GRID_COLUMNS)),
+			int(size.y / float(DEFAULT_DEATH_GRID_ROWS))
+		)
 	elif size.x > size.y and int(size.x) % int(size.y) == 0:
 		var frame_size := int(size.y)
 		var frame_count := int(size.x / size.y)
@@ -147,6 +153,12 @@ func _build_regions(texture: Texture2D) -> Array[Rect2]:
 	else:
 		regions.append(Rect2(Vector2.ZERO, size))
 	return _apply_skip_frames(regions)
+
+
+func _is_default_death_grid(texture_size: Vector2) -> bool:
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
+		return false
+	return int(texture_size.x) * DEFAULT_DEATH_GRID_ROWS == int(texture_size.y) * DEFAULT_DEATH_GRID_COLUMNS
 
 
 func _build_grid_regions(texture_size: Vector2, frame_width: int, frame_height: int) -> Array[Rect2]:
