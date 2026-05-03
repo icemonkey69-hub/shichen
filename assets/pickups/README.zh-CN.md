@@ -2,13 +2,13 @@
 
 ## 资源入口
 - 金币：`res://assets/pickups/gold/Gold_Resource_Highlight.png`
-- 经验：`res://assets/pickups/exp/Meat_Resource.png`
+- 经验：`res://assets/pickups/exp/Exp_Resource_Highlight.png`
 
 外部素材先复制到 `assets/pickups/` 后再由场景或脚本引用，不直接引用 `Tiny Swords (Free Pack)` 原始目录。
 
 ## 表现规则
 - 金币图是横向序列帧，运行时按单帧高度自动切成正方形帧并循环播放。
-- 经验图当前是单帧资源。
+- 经验图使用项目内生成的 6 帧发光晶体序列。
 - 金币和经验都使用 `res://pickup.tscn` / `res://pickup.gd`。
 
 ## 玩法规则

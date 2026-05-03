@@ -437,10 +437,14 @@ func get_ranged_projectile_texture() -> Texture2D:
 	var model_dir := _model_dir
 	if model_dir.is_empty():
 		model_dir = _resolve_enemy_model_dir(String(model_id).strip_edges())
-	for file_path in _collect_projectile_png_files(model_dir):
-		var texture := load(file_path) as Texture2D
-		if texture != null:
-			return texture
+	if model_dir.is_empty():
+		return null
+	var projectile_path := "%s/Projectile.png" % model_dir
+	if not ResourceLoader.exists(projectile_path):
+		return null
+	var texture := load(projectile_path) as Texture2D
+	if texture != null:
+		return texture
 	return null
 
 
@@ -495,24 +499,6 @@ func _get_behavior_id_for_model_dir(model_dir: String) -> StringName:
 	if not model_dir.is_empty() and model_dir.get_file().contains("远程"):
 		return &"ranged_attacker"
 	return &"melee_chaser"
-
-
-func _collect_projectile_png_files(model_dir: String) -> Array[String]:
-	var results: Array[String] = []
-	if model_dir.is_empty():
-		return results
-	var dir := DirAccess.open(model_dir)
-	if dir == null:
-		return results
-	for file_name in dir.get_files():
-		if file_name.get_extension().to_lower() != "png":
-			continue
-		var lower := file_name.to_lower()
-		if lower.contains("attack") or lower.contains("idle") or lower.contains("run") or lower.contains("death") or lower.contains("hit"):
-			continue
-		results.append("%s/%s" % [model_dir, file_name])
-	results.sort()
-	return results
 
 
 func ensure_model_ready() -> void:

@@ -5,6 +5,7 @@ const AttributeSystemScript := preload("res://attribute_system.gd")
 signal projectile_requested(spawn_position: Vector2, direction: Vector2, damage: int, source_stats)
 signal health_changed(current_health: int, max_health: int)
 signal mana_changed(current_mana: int, max_mana: int)
+signal damaged(world_position: Vector2, amount: int)
 signal died
 
 @export var move_speed := 300.0
@@ -381,6 +382,7 @@ func receive_damage(amount: int) -> void:
 	reduced_damage = max(reduced_damage, 1)
 	health = max(health - reduced_damage, 0)
 	damage_cooldown = invulnerability_time
+	damaged.emit(global_position, reduced_damage)
 	health_changed.emit(health, max_health)
 
 	if health == 0:

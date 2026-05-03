@@ -19,7 +19,7 @@ model_root_dir = "res://assets/heroes/Models_2d"
 
 [node name="Camera2D" type="Camera2D" parent="."]
 enabled = false
-position_smoothing_enabled = true
+position_smoothing_enabled = false
 position_smoothing_speed = 8.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

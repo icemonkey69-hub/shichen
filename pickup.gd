@@ -6,7 +6,7 @@ const CARD_CHOICE_REWARD_TYPE: StringName = &"card_choice"
 const CARD_PICKUP_FRAME_TEXTURE: Texture2D = preload("res://assets/ui/card_choice/frames/tier_1_white.png")
 const CARD_PICKUP_ICON_TEXTURE: Texture2D = preload("res://assets/ui/card_choice/icons/sample/titan_heart_icon_v1.png")
 const GOLD_PICKUP_TEXTURE: Texture2D = preload("res://assets/pickups/gold/Gold_Resource_Highlight.png")
-const EXP_PICKUP_TEXTURE: Texture2D = preload("res://assets/pickups/exp/Meat_Resource.png")
+const EXP_PICKUP_TEXTURE: Texture2D = preload("res://assets/pickups/exp/Exp_Resource_Highlight.png")
 
 @export var reward_type: StringName = &"gold"
 @export var amount := 1
@@ -118,7 +118,7 @@ func _update_visual() -> void:
 		main_color = Color(0.35, 0.88, 0.68, 1.0)
 		shadow_color = Color(0.08, 0.28, 0.2, 0.5)
 		resource_texture = EXP_PICKUP_TEXTURE
-		resource_scale = Vector2(0.5, 0.5)
+		resource_scale = Vector2(0.8, 0.8)
 	elif reward_type == &"gold":
 		resource_texture = GOLD_PICKUP_TEXTURE
 		resource_scale = Vector2(0.32, 0.32)
@@ -185,9 +185,27 @@ func _build_texture_regions(texture: Texture2D) -> Array[Rect2]:
 		var frame_count := int(float(width) / float(height))
 		for i in frame_count:
 			regions.append(Rect2(i * height, 0, height, height))
+	elif width > 0 and height > 0 and width != height:
+		var frame_size := _greatest_common_divisor(width, height)
+		if frame_size > 0 and width % frame_size == 0 and height % frame_size == 0:
+			var columns := int(width / frame_size)
+			var rows := int(height / frame_size)
+			for y in rows:
+				for x in columns:
+					regions.append(Rect2(x * frame_size, y * frame_size, frame_size, frame_size))
 	else:
 		regions.append(Rect2(0, 0, width, height))
 	return regions
+
+
+func _greatest_common_divisor(a: int, b: int) -> int:
+	a = absi(a)
+	b = absi(b)
+	while b != 0:
+		var remainder := a % b
+		a = b
+		b = remainder
+	return a
 
 
 func _update_resource_animation(delta: float) -> void:

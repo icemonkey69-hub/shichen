@@ -684,6 +684,7 @@ func _ready() -> void:
 	player.projectile_requested.connect(_on_player_projectile_requested)
 	player.health_changed.connect(_on_player_health_changed)
 	player.mana_changed.connect(_on_player_mana_changed)
+	player.damaged.connect(_on_player_damaged)
 	player.died.connect(_on_player_died)
 	player.set_controls_enabled(false)
 	player.visible = false
@@ -874,6 +875,19 @@ func _on_player_projectile_requested(spawn_position: Vector2, direction: Vector2
 
 func _on_player_health_changed(current_health: int, max_health: int) -> void:
 	_update_hud(current_health, max_health)
+
+
+func _on_player_damaged(world_position: Vector2, amount: int) -> void:
+	if amount <= 0:
+		return
+
+	_spawn_world_floating_text(
+		world_position + Vector2(randf_range(-18.0, 18.0), randf_range(-58.0, -42.0)),
+		"-%d" % amount,
+		Color(1.0, 0.34, 0.22, 1.0),
+		26,
+		0.62
+	)
 
 
 func _on_player_mana_changed(current_mana: int, max_mana: int) -> void:

@@ -15,6 +15,7 @@ var _sprite: Sprite2D
 var _model_id: StringName = &""
 var _model_dir := ""
 var _available_files: Array[String] = []
+var _state_file_cache: Dictionary = {}
 var _anim_config: Dictionary = {}
 var _current_state := "idle"
 var _current_files: Array[String] = []
@@ -60,6 +61,7 @@ func configure_model_id(model_id: StringName) -> bool:
 	_model_id = StringName(clean_id)
 	_model_dir = resolved_dir
 	_available_files = _collect_png_files(_model_dir)
+	_state_file_cache.clear()
 	if _available_files.is_empty():
 		return false
 	_capture_visual_defaults()
@@ -394,8 +396,14 @@ func _collect_png_files_recursive(root: String, results: Array[String]) -> void:
 
 
 func _select_files_for_state(state: String, direction: Vector2) -> Array[String]:
+	var direction_token := _get_direction_token(direction)
+	var cache_key := "%s:%s" % [state, direction_token]
+	if _state_file_cache.has(cache_key):
+		return (_state_file_cache[cache_key] as Array[String]).duplicate()
+
 	var configured_files := _select_configured_files_for_state(state, direction)
 	if not configured_files.is_empty():
+		_state_file_cache[cache_key] = configured_files.duplicate()
 		return configured_files
 
 	var keyword_matches: Array[String] = []
@@ -413,7 +421,9 @@ func _select_files_for_state(state: String, direction: Vector2) -> Array[String]
 
 	var direction_matches := _filter_direction_files(keyword_matches, direction)
 	if not direction_matches.is_empty():
+		_state_file_cache[cache_key] = direction_matches.duplicate()
 		return direction_matches
+	_state_file_cache[cache_key] = keyword_matches.duplicate()
 	return keyword_matches
 
 
