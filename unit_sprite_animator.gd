@@ -31,6 +31,7 @@ var _loop := true
 var _last_direction := Vector2.DOWN
 var _attack_locked := false
 var _attack_started := false
+var _attack_variant_cursor := 0
 var _dead := false
 var _runtime_active := true
 var _dissolve_progress := 0.0
@@ -270,6 +271,10 @@ func _play_state(state: String, direction: Vector2, force_restart := false) -> v
 		state = "idle"
 	if next_files.is_empty():
 		return
+	if state == "attack" and next_files.size() > 1 and (force_restart or state != _current_state):
+		var selected_index := _attack_variant_cursor % next_files.size()
+		_attack_variant_cursor += 1
+		next_files = [next_files[selected_index]]
 
 	var should_restart := force_restart or state != _current_state or next_files != _current_files
 	_current_state = state
