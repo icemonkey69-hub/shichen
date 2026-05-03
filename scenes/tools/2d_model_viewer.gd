@@ -39,8 +39,7 @@ const DIRECTIONS := [
 ]
 const SOCKETS := [
 	{"key": "projectile_socket", "label": "投射物发射点", "button": "投射物"},
-	{"key": "pickup_socket", "label": "拾取吸附点", "button": "拾取"},
-	{"key": "damage_text_socket", "label": "伤害数字点", "button": "伤害"}
+	{"key": "pickup_socket", "label": "拾取吸附点", "button": "拾取"}
 ]
 const SOCKET_PICK_RADIUS := 28.0
 
@@ -1032,8 +1031,7 @@ func _draw_marker_overlay() -> void:
 	var origin_pixel := Vector2(frame_size.x * 0.5, frame_size.y)
 	var colors := {
 		"projectile_socket": Color(1.0, 0.35, 0.22),
-		"pickup_socket": Color(0.3, 1.0, 0.45),
-		"damage_text_socket": Color(1.0, 0.86, 0.25)
+		"pickup_socket": Color(0.3, 1.0, 0.45)
 	}
 	for socket in SOCKETS:
 		var key := String(socket["key"])

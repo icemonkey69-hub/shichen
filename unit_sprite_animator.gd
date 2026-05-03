@@ -94,6 +94,16 @@ func play_attack(direction: Vector2, _attack_duration: float = 0.0) -> Dictionar
 	return {"hit_ratio": _get_current_hit_ratio()}
 
 
+func get_current_hit_delay(default_delay: float) -> float:
+	var state_config := _get_animation_config(_current_state, _last_direction)
+	if _get_int_from_config(state_config, "hit_frame", 0) <= 0:
+		return default_delay
+	var animation_duration := _get_current_animation_duration()
+	if animation_duration <= 0.0:
+		return default_delay
+	return maxf(animation_duration * _get_current_hit_ratio(), 0.01)
+
+
 func start_attack_preview(direction: Vector2) -> void:
 	if _dead:
 		return
@@ -582,6 +592,12 @@ func _get_current_hit_ratio() -> float:
 	if _current_regions.size() == 1:
 		return 0.0
 	return clampf(float(hit_frame - 1) / float(_current_regions.size() - 1), 0.0, 1.0)
+
+
+func _get_current_animation_duration() -> float:
+	if _current_regions.is_empty():
+		return 0.0
+	return float(_current_regions.size()) / maxf(_fps, 0.01)
 
 
 func _apply_skip_frames_to_regions(regions: Array[Rect2], state_config: Dictionary) -> Array[Rect2]:

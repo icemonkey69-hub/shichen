@@ -75,6 +75,8 @@ func _start_windup(direction: Vector2) -> void:
 	enemy.attack_direction = direction if direction != Vector2.ZERO else Vector2.DOWN
 	enemy.attack_anchor_position = enemy.global_position
 	enemy.sprite.start_attack_preview(enemy.attack_direction)
+	if enemy.sprite.has_method("get_current_hit_delay"):
+		enemy.state_timer = float(enemy.sprite.call("get_current_hit_delay", enemy.windup_time))
 
 
 func _perform_attack() -> void:
