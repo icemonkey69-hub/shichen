@@ -43,6 +43,11 @@ const SOCKETS := [
 	{"key": "damage_text_socket", "label": "伤害跳字点", "button": "跳字"}
 ]
 const SOCKET_PICK_RADIUS := 28.0
+const FILMSTRIP_MARGIN := 14.0
+const FILMSTRIP_PADDING := 8.0
+const FILMSTRIP_GAP := 5.0
+const FILMSTRIP_HEIGHT := 104.0
+const FILMSTRIP_MAX_WIDTH_RATIO := 0.42
 
 var category_option: OptionButton
 var model_option: OptionButton
@@ -73,6 +78,7 @@ var socket_button_controls: Dictionary = {}
 
 var current_texture: Texture2D
 var current_atlas := AtlasTexture.new()
+var current_all_regions: Array[Rect2] = []
 var current_regions: Array[Rect2] = []
 var current_region_frame_numbers: Array[int] = []
 var current_sequence_files: Array[String] = []
@@ -582,6 +588,7 @@ func _build_regions(texture: Texture2D) -> Array[Rect2]:
 			regions.append(Rect2(Vector2(frame_size * float(i), 0.0), Vector2(frame_size, frame_size)))
 	else:
 		regions.append(Rect2(Vector2.ZERO, size))
+	current_all_regions = regions.duplicate()
 	return _apply_skip_frames_to_regions(regions)
 
 
@@ -1068,7 +1075,92 @@ func _get_socket_vector(key: String) -> Vector2:
 	return Vector2(float((controls["x"] as SpinBox).value), float((controls["y"] as SpinBox).value))
 
 
+func _get_filmstrip_container_rect() -> Rect2:
+	if marker_overlay == null or current_all_regions.is_empty():
+		return Rect2()
+	var available_width := marker_overlay.size.x - FILMSTRIP_MARGIN * 2.0
+	if available_width < 120.0:
+		return Rect2()
+	var target_width := maxf(300.0, marker_overlay.size.x * FILMSTRIP_MAX_WIDTH_RATIO)
+	var strip_width := minf(available_width, target_width)
+	return Rect2(Vector2(FILMSTRIP_MARGIN, FILMSTRIP_MARGIN), Vector2(strip_width, FILMSTRIP_HEIGHT))
+
+
+func _get_filmstrip_layout() -> Array[Dictionary]:
+	var layout: Array[Dictionary] = []
+	if current_texture == null or current_all_regions.is_empty():
+		return layout
+	var container := _get_filmstrip_container_rect()
+	if container.size == Vector2.ZERO:
+		return layout
+
+	var frame_count := current_all_regions.size()
+	var inner_width := container.size.x - FILMSTRIP_PADDING * 2.0 - FILMSTRIP_GAP * float(maxi(frame_count - 1, 0))
+	if inner_width <= 0.0:
+		return layout
+
+	var slot_width := maxf(inner_width / float(frame_count), 8.0)
+	var slot_height := container.size.y - FILMSTRIP_PADDING * 2.0 - 18.0
+	var slot_top := container.position.y + FILMSTRIP_PADDING
+	var slot_left := container.position.x + FILMSTRIP_PADDING
+	for index in frame_count:
+		var region := current_all_regions[index]
+		var slot := Rect2(
+			Vector2(slot_left + float(index) * (slot_width + FILMSTRIP_GAP), slot_top),
+			Vector2(slot_width, slot_height)
+		)
+		var scale := minf(slot.size.x / region.size.x, slot.size.y / region.size.y)
+		var draw_size := region.size * scale
+		var draw_rect := Rect2(slot.position + (slot.size - draw_size) * 0.5, draw_size)
+		layout.append({
+			"frame": index + 1,
+			"region": region,
+			"slot": slot,
+			"draw_rect": draw_rect
+		})
+	return layout
+
+
+func _draw_filmstrip() -> void:
+	var layout := _get_filmstrip_layout()
+	if layout.is_empty():
+		return
+
+	var container := _get_filmstrip_container_rect()
+	var current_original_frame := _get_current_original_frame_number()
+	var hit_frame := int(hit_frame_spin.value) if hit_frame_spin != null else 0
+	var skipped_frames := _parse_int_list(skip_frames_edit.text if skip_frames_edit != null else "")
+	var font := ThemeDB.fallback_font
+	marker_overlay.draw_rect(container, Color(0.03, 0.03, 0.03, 0.88), true)
+	marker_overlay.draw_rect(container, Color(1.0, 0.96, 0.0), false, 4.0)
+
+	for item in layout:
+		var frame_number := int(item["frame"])
+		var slot := item["slot"] as Rect2
+		var draw_rect := item["draw_rect"] as Rect2
+		var region := item["region"] as Rect2
+		var is_current := frame_number == current_original_frame
+		var is_skipped := skipped_frames.has(frame_number)
+		var is_hit := frame_number == hit_frame
+
+		marker_overlay.draw_rect(slot, Color(0.12, 0.12, 0.12, 1.0), true)
+		marker_overlay.draw_texture_rect_region(current_texture, draw_rect, region)
+		if is_skipped:
+			marker_overlay.draw_rect(slot, Color(0.0, 0.0, 0.0, 0.55), true)
+			marker_overlay.draw_line(slot.position, slot.end, Color(1.0, 0.18, 0.18), 2.0)
+			marker_overlay.draw_line(Vector2(slot.end.x, slot.position.y), Vector2(slot.position.x, slot.end.y), Color(1.0, 0.18, 0.18), 2.0)
+		if is_hit:
+			marker_overlay.draw_rect(slot.grow(2.0), Color(1.0, 0.86, 0.25), false, 3.0)
+		if is_current:
+			marker_overlay.draw_rect(slot.grow(4.0), Color(1.0, 0.18, 0.18), false, 4.0)
+		else:
+			marker_overlay.draw_rect(slot, Color(0.55, 0.55, 0.55, 0.9), false, 1.0)
+		if slot.size.x >= 18.0:
+			marker_overlay.draw_string(font, Vector2(slot.position.x + 2.0, container.end.y - 5.0), str(frame_number), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 12, Color.WHITE)
+
+
 func _draw_marker_overlay() -> void:
+	_draw_filmstrip()
 	if current_regions.is_empty() or marker_overlay == null:
 		return
 
@@ -1102,6 +1194,8 @@ func _draw_marker_overlay() -> void:
 func _on_marker_overlay_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
+			if _try_select_filmstrip_frame(event.position):
+				return
 			dragging_socket_key = _get_selected_socket_key()
 			_set_socket_from_preview(dragging_socket_key, event.position)
 		else:
@@ -1109,6 +1203,36 @@ func _on_marker_overlay_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		var socket_key := dragging_socket_key if not dragging_socket_key.is_empty() else _get_selected_socket_key()
 		_set_socket_from_preview(socket_key, event.position)
+
+
+func _try_select_filmstrip_frame(local_position: Vector2) -> bool:
+	var container := _get_filmstrip_container_rect()
+	if container.size == Vector2.ZERO or not container.has_point(local_position):
+		return false
+
+	for item in _get_filmstrip_layout():
+		var slot := item["slot"] as Rect2
+		if not slot.has_point(local_position):
+			continue
+		var frame_number := int(item["frame"])
+		if not _set_current_frame_by_original_frame(frame_number):
+			_show_status("该帧已被跳过，先清除跳帧再预览", true)
+		return true
+	return true
+
+
+func _set_current_frame_by_original_frame(frame_number: int) -> bool:
+	for index in current_region_frame_numbers.size():
+		if current_region_frame_numbers[index] != frame_number:
+			continue
+		current_frame = index
+		frame_elapsed = 0.0
+		playing = false
+		if play_button != null:
+			play_button.text = "播放"
+		_apply_current_frame()
+		return true
+	return false
 
 
 func _set_socket_from_preview(socket_key: String, local_position: Vector2) -> void:
@@ -1221,6 +1345,7 @@ func _toggle_playing() -> void:
 
 func _clear_preview() -> void:
 	current_texture = null
+	current_all_regions.clear()
 	current_regions.clear()
 	current_sequence_files.clear()
 	current_file_index = 0
