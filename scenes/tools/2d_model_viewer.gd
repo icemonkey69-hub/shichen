@@ -183,12 +183,12 @@ func _build_ui() -> void:
 
 	state_option = OptionButton.new()
 	state_option.custom_minimum_size = Vector2(150, 34)
-	state_option.item_selected.connect(func(_index: int) -> void: _refresh_action_preview())
+	state_option.item_selected.connect(func(_index: int) -> void: _on_state_or_direction_selected())
 	action_controls.add_child(state_option)
 
 	direction_option = OptionButton.new()
 	direction_option.custom_minimum_size = Vector2(150, 34)
-	direction_option.item_selected.connect(func(_index: int) -> void: _refresh_action_preview())
+	direction_option.item_selected.connect(func(_index: int) -> void: _on_state_or_direction_selected())
 	action_controls.add_child(direction_option)
 
 	active_socket_option = OptionButton.new()
@@ -624,7 +624,7 @@ func _apply_current_frame() -> void:
 	var texture_size := current_texture.get_size()
 	var frame_size := current_regions[current_frame].size
 	var original_frame_number := _get_current_original_frame_number()
-	var hit_frame := int(hit_frame_spin.value) if hit_frame_spin != null else 0
+	var hit_frame := int(hit_frame_spin.value) if hit_frame_spin != null and _state_uses_hit_frame(_get_selected_state()) else 0
 	var hit_text := "未设置" if hit_frame <= 0 else str(hit_frame)
 	frame_label.text = "文件 %d / %d    显示帧 %d / %d    原始帧 %d    命中帧 %s    PNG %dx%d    单帧 %dx%d    FPS %.0f" % [
 		current_file_index + 1,
@@ -691,6 +691,12 @@ func _add_current_frame_to_skip_list() -> void:
 
 func _set_hit_frame_to_current_frame() -> void:
 	if hit_frame_spin == null or current_regions.is_empty():
+		return
+	if not _state_uses_hit_frame(_get_selected_state()):
+		hit_frame_spin.value = 0
+		_show_status("只有攻击状态需要配置命中帧", true)
+		if marker_overlay != null:
+			marker_overlay.queue_redraw()
 		return
 	hit_frame_spin.value = _get_current_original_frame_number()
 	_apply_current_frame()
@@ -768,6 +774,11 @@ func _select_png_option_for_path(file_path: String) -> void:
 func _select_direction(index: int) -> void:
 	index = clampi(index, 0, DIRECTIONS.size() - 1)
 	direction_option.select(index)
+	_on_state_or_direction_selected()
+
+
+func _on_state_or_direction_selected() -> void:
+	_apply_config_to_editor()
 	_refresh_action_preview()
 
 
@@ -874,6 +885,10 @@ func _get_state_keywords(state: String) -> PackedStringArray:
 			return PackedStringArray(["idle", "stand", "tower"])
 
 
+func _state_uses_hit_frame(state: String) -> bool:
+	return state == "attack"
+
+
 func _update_action_match_label(matched_files: Array[String]) -> void:
 	if action_match_label == null:
 		return
@@ -941,7 +956,7 @@ func _apply_config_to_editor() -> void:
 	var state_config := _get_animation_config(state, direction)
 	fps_spin.value = _get_float_from_config(state_config, "fps", _get_default_fps(state))
 	loop_check.button_pressed = _get_bool_from_config(state_config, "loop", state != "attack" and state != "death")
-	hit_frame_spin.value = _get_int_from_config(state_config, "hit_frame", 0)
+	hit_frame_spin.value = _get_int_from_config(state_config, "hit_frame", 0) if _state_uses_hit_frame(state) else 0
 	frame_width_spin.value = _get_int_from_config(state_config, "frame_width", 0)
 	frame_height_spin.value = _get_int_from_config(state_config, "frame_height", 0)
 	skip_frames_edit.text = _format_int_list(_get_int_array_from_config(state_config, "skip_frames"))
@@ -1013,7 +1028,10 @@ func _save_current_config() -> void:
 	state_config["loop"] = loop_check.button_pressed
 	state_config["frame_width"] = int(frame_width_spin.value)
 	state_config["frame_height"] = int(frame_height_spin.value)
-	state_config["hit_frame"] = int(hit_frame_spin.value)
+	if _state_uses_hit_frame(state):
+		state_config["hit_frame"] = int(hit_frame_spin.value)
+	else:
+		state_config.erase("hit_frame")
 	state_config["skip_frames"] = _parse_int_list(skip_frames_edit.text)
 	state_config["projectile_socket"] = _get_socket_array("projectile_socket")
 
@@ -1128,11 +1146,10 @@ func _draw_filmstrip() -> void:
 
 	var container := _get_filmstrip_container_rect()
 	var current_original_frame := _get_current_original_frame_number()
-	var hit_frame := int(hit_frame_spin.value) if hit_frame_spin != null else 0
+	var hit_frame := int(hit_frame_spin.value) if hit_frame_spin != null and _state_uses_hit_frame(_get_selected_state()) else 0
 	var skipped_frames := _parse_int_list(skip_frames_edit.text if skip_frames_edit != null else "")
 	var font := ThemeDB.fallback_font
 	marker_overlay.draw_rect(container, Color(0.03, 0.03, 0.03, 0.88), true)
-	marker_overlay.draw_rect(container, Color(1.0, 0.96, 0.0), false, 4.0)
 
 	for item in layout:
 		var frame_number := int(item["frame"])
