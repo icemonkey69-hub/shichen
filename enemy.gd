@@ -15,7 +15,7 @@ static var _missing_model_warning_ids: Dictionary = {}
 static var _missing_animator_warning_ids: Dictionary = {}
 
 signal died(world_position: Vector2, reward_info: Dictionary)
-signal damaged(world_position: Vector2, amount: int)
+signal damaged(world_position: Vector2, amount: int, text_position: Vector2)
 signal despawn_requested(enemy_node: Node2D)
 
 @export var enemy_id: StringName = &"1"
@@ -235,7 +235,7 @@ func take_damage(amount: int) -> void:
 	hit_flash_remaining = hit_flash_time
 	if sprite != null and sprite.has_method("play_hit"):
 		sprite.play_hit()
-	damaged.emit(global_position, amount)
+	damaged.emit(global_position, amount, _get_damage_text_position())
 
 	if health == 0:
 		_start_death()
@@ -512,6 +512,12 @@ func _build_reward_info() -> Dictionary:
 		"gold": gold_reward,
 		"exp": exp_reward,
 	}
+
+
+func _get_damage_text_position() -> Vector2:
+	if sprite != null and sprite.has_method("get_socket_global_position"):
+		return sprite.call("get_socket_global_position", "damage_text_socket", attack_direction, "hit") as Vector2
+	return global_position
 
 
 func _update_draw_order() -> void:

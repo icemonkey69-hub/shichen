@@ -3966,12 +3966,16 @@ func _apply_transient_message_action(action: Dictionary) -> void:
 		hud.hide_message()
 
 
-func _on_enemy_damaged(world_position: Vector2, amount: int) -> void:
+func _on_enemy_damaged(world_position: Vector2, amount: int, text_position: Vector2 = Vector2.INF) -> void:
 	if amount <= 0:
 		return
 
+	if text_position == Vector2.INF:
+		push_error("Enemy damage text position is required; configure damage_text_socket in anim_config.json.")
+		return
+
 	_spawn_world_floating_text(
-		world_position + Vector2(randf_range(-12.0, 12.0), randf_range(-20.0, -8.0)),
+		text_position,
 		str(amount),
 		Color(0.96, 0.22, 0.22, 1.0),
 		24,

@@ -24,6 +24,7 @@ var _current_frame_height := 0.0
 var _current_file_index := 0
 var _current_texture: Texture2D
 var _current_regions: Array[Rect2] = []
+var _current_region_frame_numbers: Array[int] = []
 var _frame_index := 0
 var _frame_elapsed := 0.0
 var _fps := DEFAULT_FPS
@@ -361,6 +362,7 @@ func _apply_frame() -> void:
 
 func _build_regions_for_texture(texture: Texture2D) -> Array[Rect2]:
 	var regions: Array[Rect2] = []
+	_current_region_frame_numbers.clear()
 	var size := texture.get_size()
 	if _current_frame_width > 0.0 and _current_frame_height > 0.0:
 		var frame_width := int(_current_frame_width)
@@ -384,17 +386,25 @@ func get_socket_offset(socket_name: String, direction: Vector2 = Vector2.ZERO, s
 	var socket_state := state if not state.is_empty() else _current_state
 	var socket_direction := direction if direction != Vector2.ZERO else _last_direction
 	var state_config := _get_animation_config(socket_state, socket_direction)
+	var has_socket := false
+	var offset := Vector2.ZERO
 	if state_config.has(socket_name):
-		return _get_vector2_from_config_value(state_config.get(socket_name), Vector2.ZERO)
-
-	var sockets = _anim_config.get("sockets", {})
-	if sockets is Dictionary and (sockets as Dictionary).has(socket_name):
-		return _get_vector2_from_config_value((sockets as Dictionary).get(socket_name), Vector2.ZERO)
-	return Vector2.ZERO
+		has_socket = true
+		offset = _get_vector2_from_config_value(state_config.get(socket_name), Vector2.ZERO)
+	else:
+		var sockets = _anim_config.get("sockets", {})
+		if sockets is Dictionary and (sockets as Dictionary).has(socket_name):
+			has_socket = true
+			offset = _get_vector2_from_config_value((sockets as Dictionary).get(socket_name), Vector2.ZERO)
+	if not has_socket:
+		push_error("Missing required socket '%s' in anim_config.json for model_dir=%s" % [socket_name, _model_dir])
+	if socket_direction.x < -0.01:
+		offset.x = -offset.x
+	return offset
 
 
 func get_socket_global_position(socket_name: String, direction: Vector2 = Vector2.ZERO, state: String = "") -> Vector2:
-	return global_position + get_socket_offset(socket_name, direction, state)
+	return global_position + visual_offset + get_socket_offset(socket_name, direction, state)
 
 
 func _resolve_model_dir(model_id: String) -> String:
@@ -591,7 +601,8 @@ func _get_current_hit_ratio() -> float:
 		return 0.45
 	if _current_regions.size() == 1:
 		return 0.0
-	return clampf(float(hit_frame - 1) / float(_current_regions.size() - 1), 0.0, 1.0)
+	var displayed_index := _get_displayed_index_for_original_frame(hit_frame)
+	return clampf(float(displayed_index) / float(_current_regions.size() - 1), 0.0, 1.0)
 
 
 func _get_current_animation_duration() -> float:
@@ -603,13 +614,29 @@ func _get_current_animation_duration() -> float:
 func _apply_skip_frames_to_regions(regions: Array[Rect2], state_config: Dictionary) -> Array[Rect2]:
 	var skip_frames := _get_int_array_from_config(state_config, "skip_frames")
 	if skip_frames.is_empty():
+		for index in regions.size():
+			_current_region_frame_numbers.append(index + 1)
 		return regions
 
 	var filtered: Array[Rect2] = []
+	var frame_numbers: Array[int] = []
 	for index in regions.size():
 		if not skip_frames.has(index + 1):
 			filtered.append(regions[index])
-	return filtered if not filtered.is_empty() else regions
+			frame_numbers.append(index + 1)
+	if filtered.is_empty():
+		for index in regions.size():
+			_current_region_frame_numbers.append(index + 1)
+		return regions
+	_current_region_frame_numbers = frame_numbers
+	return filtered
+
+
+func _get_displayed_index_for_original_frame(original_frame: int) -> int:
+	for index in _current_region_frame_numbers.size():
+		if _current_region_frame_numbers[index] >= original_frame:
+			return index
+	return maxi(_current_regions.size() - 1, 0)
 
 
 func _load_anim_config(model_dir: String) -> Dictionary:

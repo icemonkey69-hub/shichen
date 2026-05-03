@@ -39,7 +39,8 @@ const DIRECTIONS := [
 ]
 const SOCKETS := [
 	{"key": "projectile_socket", "label": "投射物发射点", "button": "投射物"},
-	{"key": "pickup_socket", "label": "拾取吸附点", "button": "拾取"}
+	{"key": "pickup_socket", "label": "拾取吸附点", "button": "拾取"},
+	{"key": "damage_text_socket", "label": "伤害跳字点", "button": "跳字"}
 ]
 const SOCKET_PICK_RADIUS := 28.0
 
@@ -73,6 +74,7 @@ var socket_button_controls: Dictionary = {}
 var current_texture: Texture2D
 var current_atlas := AtlasTexture.new()
 var current_regions: Array[Rect2] = []
+var current_region_frame_numbers: Array[int] = []
 var current_sequence_files: Array[String] = []
 var current_file_index := 0
 var current_frame := 0
@@ -215,6 +217,16 @@ func _build_ui() -> void:
 	skip_current_button.text = "跳过当前帧"
 	skip_current_button.pressed.connect(_add_current_frame_to_skip_list)
 	action_controls.add_child(skip_current_button)
+
+	var set_hit_frame_button := Button.new()
+	set_hit_frame_button.text = "当前帧设为命中帧"
+	set_hit_frame_button.pressed.connect(_set_hit_frame_to_current_frame)
+	action_controls.add_child(set_hit_frame_button)
+
+	var clear_skip_button := Button.new()
+	clear_skip_button.text = "清空跳帧"
+	clear_skip_button.pressed.connect(_clear_skip_frames)
+	action_controls.add_child(clear_skip_button)
 
 	var reload_button := Button.new()
 	reload_button.text = "刷新"
@@ -553,6 +565,7 @@ func _collect_png_files_recursive(root_path: String, results: Array[String]) -> 
 
 func _build_regions(texture: Texture2D) -> Array[Rect2]:
 	var regions: Array[Rect2] = []
+	current_region_frame_numbers.clear()
 	var size := texture.get_size()
 	var configured_width := int(frame_width_spin.value) if frame_width_spin != null else 0
 	var configured_height := int(frame_height_spin.value) if frame_height_spin != null else 0
@@ -575,13 +588,22 @@ func _build_regions(texture: Texture2D) -> Array[Rect2]:
 func _apply_skip_frames_to_regions(regions: Array[Rect2]) -> Array[Rect2]:
 	var skip_frames := _parse_int_list(skip_frames_edit.text if skip_frames_edit != null else "")
 	if skip_frames.is_empty():
+		for index in regions.size():
+			current_region_frame_numbers.append(index + 1)
 		return regions
 
 	var filtered: Array[Rect2] = []
+	var frame_numbers: Array[int] = []
 	for index in regions.size():
 		if not skip_frames.has(index + 1):
 			filtered.append(regions[index])
-	return filtered if not filtered.is_empty() else regions
+			frame_numbers.append(index + 1)
+	if filtered.is_empty():
+		for index in regions.size():
+			current_region_frame_numbers.append(index + 1)
+		return regions
+	current_region_frame_numbers = frame_numbers
+	return filtered
 
 
 func _apply_current_frame() -> void:
@@ -594,11 +616,16 @@ func _apply_current_frame() -> void:
 	preview.texture = current_atlas
 	var texture_size := current_texture.get_size()
 	var frame_size := current_regions[current_frame].size
-	frame_label.text = "文件 %d / %d    帧 %d / %d    PNG %dx%d    单帧 %dx%d    FPS %.0f" % [
+	var original_frame_number := _get_current_original_frame_number()
+	var hit_frame := int(hit_frame_spin.value) if hit_frame_spin != null else 0
+	var hit_text := "未设置" if hit_frame <= 0 else str(hit_frame)
+	frame_label.text = "文件 %d / %d    显示帧 %d / %d    原始帧 %d    命中帧 %s    PNG %dx%d    单帧 %dx%d    FPS %.0f" % [
 		current_file_index + 1,
 		maxi(current_sequence_files.size(), 1),
 		current_frame + 1,
 		current_regions.size(),
+		original_frame_number,
+		hit_text,
 		int(texture_size.x),
 		int(texture_size.y),
 		int(frame_size.x),
@@ -646,13 +673,35 @@ func _step_next_frame() -> void:
 
 func _add_current_frame_to_skip_list() -> void:
 	var skip_frames := _parse_int_list(skip_frames_edit.text)
-	var frame_number := current_frame + 1
+	var frame_number := _get_current_original_frame_number()
 	if not skip_frames.has(frame_number):
 		skip_frames.append(frame_number)
 		skip_frames.sort()
 	skip_frames_edit.text = _format_int_list(skip_frames)
 	_reload_current_sequence_file()
 	_show_status("已加入跳过帧，保存后生效到运行时", false)
+
+
+func _set_hit_frame_to_current_frame() -> void:
+	if hit_frame_spin == null or current_regions.is_empty():
+		return
+	hit_frame_spin.value = _get_current_original_frame_number()
+	_apply_current_frame()
+	_show_status("已将当前原始帧设为命中帧", false)
+
+
+func _clear_skip_frames() -> void:
+	if skip_frames_edit == null:
+		return
+	skip_frames_edit.text = ""
+	_reload_current_sequence_file()
+	_show_status("已清空跳过帧", false)
+
+
+func _get_current_original_frame_number() -> int:
+	if current_region_frame_numbers.size() > current_frame:
+		return current_region_frame_numbers[current_frame]
+	return current_frame + 1
 
 
 func _refresh_action_preview() -> void:
@@ -1031,7 +1080,8 @@ func _draw_marker_overlay() -> void:
 	var origin_pixel := Vector2(frame_size.x * 0.5, frame_size.y)
 	var colors := {
 		"projectile_socket": Color(1.0, 0.35, 0.22),
-		"pickup_socket": Color(0.3, 1.0, 0.45)
+		"pickup_socket": Color(0.3, 1.0, 0.45),
+		"damage_text_socket": Color(1.0, 0.86, 0.25)
 	}
 	for socket in SOCKETS:
 		var key := String(socket["key"])
@@ -1052,10 +1102,7 @@ func _draw_marker_overlay() -> void:
 func _on_marker_overlay_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
-			dragging_socket_key = _pick_socket_key_at_position(event.position)
-			if dragging_socket_key.is_empty():
-				dragging_socket_key = _get_selected_socket_key()
-			_select_socket_option_by_key(dragging_socket_key)
+			dragging_socket_key = _get_selected_socket_key()
 			_set_socket_from_preview(dragging_socket_key, event.position)
 		else:
 			dragging_socket_key = ""
