@@ -577,6 +577,8 @@ func _process_attack(delta: float, input_direction: Vector2) -> void:
 		attack_elapsed = 0.0
 		attack_fire_time = 0.0
 		attack_cycle_duration = 0.0
+		if current_hero_model != null:
+			current_hero_model.cancel_attack()
 
 
 func _cancel_attack(refund_cooldown: bool) -> void:

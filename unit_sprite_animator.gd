@@ -282,7 +282,7 @@ func _play_state(state: String, direction: Vector2, force_restart := false) -> v
 		state = "idle"
 	if next_files.is_empty():
 		return
-	if state == "attack" and next_files.size() > 1 and (force_restart or state != _current_state):
+	if state == "attack" and next_files.size() > 1:
 		var selected_index := _attack_variant_cursor % next_files.size()
 		_attack_variant_cursor += 1
 		next_files = [next_files[selected_index]]
