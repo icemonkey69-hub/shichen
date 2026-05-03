@@ -781,8 +781,6 @@ func _get_pickup_target() -> Node2D:
 
 
 func _get_camera_subject() -> Node2D:
-	if guardian != null and is_instance_valid(guardian) and guardian.visible:
-		return guardian
 	return player as Node2D
 
 
@@ -2894,6 +2892,8 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 		player.set_tower_mode(true)
 	if player.has_method("set_tower_anchor_position"):
 		player.set_tower_anchor_position(_get_tower_anchor_position())
+	if player.has_method("set_camera_enabled"):
+		player.set_camera_enabled(true)
 	if weapon_growth_runtime != null and weapon_growth_runtime.is_available():
 		_push_runtime_bonus_values_to_player(false)
 	else:
@@ -2903,7 +2903,7 @@ func _begin_battle_with_hero(hero: HeroData, bloodline_option: Dictionary = {}) 
 		guardian.configure_model_id(hero.model_id)
 		guardian.global_position = _get_guardian_start_position()
 		guardian.visible = true
-		guardian.set_camera_enabled(true)
+		guardian.set_camera_enabled(false)
 		guardian.set_controls_enabled(true)
 	if card_collection_button != null:
 		card_collection_button.visible = true

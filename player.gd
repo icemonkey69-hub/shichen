@@ -204,6 +204,11 @@ func set_tower_mode(is_enabled: bool) -> void:
 		camera.enabled = not tower_mode
 
 
+func set_camera_enabled(is_enabled: bool) -> void:
+	if camera != null:
+		camera.enabled = is_enabled
+
+
 func set_tower_anchor_position(anchor_position: Vector2) -> void:
 	tower_anchor_position = anchor_position
 	if tower_mode:
