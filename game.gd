@@ -6,6 +6,7 @@ const PICKUP_SCENE := preload("res://pickup.tscn")
 const FLOATING_TEXT_SCENE := preload("res://floating_text.tscn")
 const COIN_BURST_EFFECT_SCENE := preload("res://coin_burst_effect.tscn")
 const CardPickupBurstEffectScript := preload("res://card_pickup_burst_effect.gd")
+const EnemyDeathEffectScript := preload("res://enemy_death_effect.gd")
 const AttributeSystemScript := preload("res://attribute_system.gd")
 const RuntimeEnemySnapshotScript := preload("res://systems/runtime_enemy_snapshot.gd")
 const DataTableProviderScript := preload("res://systems/data_table_provider.gd")
@@ -1173,6 +1174,7 @@ func _on_enemy_died(_world_position: Vector2, reward_info: Dictionary = {}) -> v
 	_invalidate_runtime_enemy_snapshot()
 	kill_count += 1
 	_apply_card_passives_on_kill()
+	_spawn_enemy_death_animation(_world_position, reward_info)
 	_spawn_enemy_death_feedback(_world_position, reward_info)
 	_try_spawn_card_choice_pickup_from_enemy_death(_world_position, reward_info)
 	_spawn_kill_reward_pickups(_world_position, reward_info)
@@ -3987,6 +3989,20 @@ func _spawn_enemy_death_feedback(world_position: Vector2, reward_info: Dictionar
 	var gold_amount := int(reward_info.get("gold", 0))
 	if gold_amount > 0:
 		_spawn_coin_burst_effect(world_position + Vector2(0, -8), clampf(0.9 + gold_amount / 18.0, 0.9, 2.0))
+
+
+func _spawn_enemy_death_animation(world_position: Vector2, reward_info: Dictionary) -> void:
+	if effects == null:
+		return
+	var effect := EnemyDeathEffectScript.new()
+	effects.add_child(effect)
+	var model_id := StringName(str(reward_info.get("model_id", "")))
+	var direction := Vector2.DOWN
+	var raw_direction = reward_info.get("death_direction", Vector2.DOWN)
+	if raw_direction is Vector2:
+		direction = raw_direction as Vector2
+	if not effect.setup(model_id, world_position, direction):
+		effect.queue_free()
 
 
 func _spawn_kill_reward_pickups(world_position: Vector2, reward_info: Dictionary) -> void:

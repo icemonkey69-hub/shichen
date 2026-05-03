@@ -550,7 +550,7 @@ func _get_state_keywords(state: String) -> PackedStringArray:
 		"attack":
 			return PackedStringArray(["attack", "shoot", "melee", "cast"])
 		"death":
-			return PackedStringArray(["death", "die"])
+			return PackedStringArray(["dead", "death", "die"])
 		"hit":
 			return PackedStringArray(["hit", "damage"])
 		"spawn":

@@ -34,7 +34,6 @@ signal despawn_requested(enemy_node: Node2D)
 @export var windup_time := 0.75
 @export var recover_time := 0.35
 @export var hit_flash_time := 0.12
-@export var dissolve_duration := 1.5
 @export var armor := 0.0
 @export var magic_resist := 0.0
 @export var exp_reward := 0
@@ -59,7 +58,6 @@ var hit_flash_remaining := 0.0
 var attack_state := AttackState.CHASE
 var state_timer := 0.0
 var attack_direction := Vector2.DOWN
-var death_elapsed := 0.0
 var attack_anchor_position := Vector2.ZERO
 var _model_configured := false
 var _model_apply_pending := false
@@ -154,7 +152,6 @@ func activate_from_pool(player_node: Node2D, spawn_position: Vector2) -> void:
 	attack_cooldown = 0.0
 	hit_flash_remaining = 0.0
 	state_timer = 0.0
-	death_elapsed = 0.0
 	attack_anchor_position = global_position
 	attack_direction = Vector2.DOWN
 	_despawn_notified = false
@@ -193,7 +190,6 @@ func deactivate_to_pool(hidden_position: Vector2 = Vector2(-20000.0, -20000.0)) 
 	attack_cooldown = 0.0
 	hit_flash_remaining = 0.0
 	state_timer = 0.0
-	death_elapsed = 0.0
 	_despawn_notified = false
 	if _behavior_node != null:
 		_behavior_node.on_deactivated()
@@ -218,7 +214,6 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if attack_state == AttackState.DEAD:
-		_process_death(delta)
 		_update_draw_order()
 		return
 
@@ -284,30 +279,29 @@ func _get_collision_radius() -> float:
 
 func _start_death() -> void:
 	attack_state = AttackState.DEAD
-	death_elapsed = 0.0
 	_despawn_notified = false
 	velocity = Vector2.ZERO
 	attack_cooldown = 0.0
 	state_timer = 0.0
 	body.modulate = Color(1, 1, 1, 1)
+	var death_position := global_position
+	var reward_info := _build_reward_info()
 	remove_from_group("enemy")
 	remove_from_group("boss")
 	if collision_shape != null:
 		collision_shape.disabled = true
-	sprite.play_death()
-	died.emit(global_position, _build_reward_info())
+	died.emit(death_position, reward_info)
+	call_deferred("_finish_death_despawn")
 
 
-func _process_death(delta: float) -> void:
-	death_elapsed += delta
-	var dissolve_t := clampf(death_elapsed / dissolve_duration, 0.0, 1.0)
-	sprite.set_dissolve_progress(dissolve_t)
-	if dissolve_t >= 1.0 and not _despawn_notified:
-		_despawn_notified = true
-		if _pool_mode:
-			despawn_requested.emit(self)
-			return
-		queue_free()
+func _finish_death_despawn() -> void:
+	if _despawn_notified:
+		return
+	_despawn_notified = true
+	if _pool_mode:
+		despawn_requested.emit(self)
+		return
+	queue_free()
 
 
 func _sync_enemy_groups() -> void:
@@ -513,6 +507,8 @@ func _build_reward_info() -> Dictionary:
 		"enemy_id": String(enemy_id),
 		"enemy_name": enemy_name,
 		"enemy_type": enemy_type,
+		"model_id": String(model_id),
+		"death_direction": attack_direction,
 		"gold": gold_reward,
 		"exp": exp_reward,
 	}
