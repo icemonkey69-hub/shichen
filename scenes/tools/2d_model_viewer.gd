@@ -38,10 +38,9 @@ const DIRECTIONS := [
 	{"label": "W+A 左上", "vector": Vector2(-1, -1)}
 ]
 const SOCKETS := [
-	{"key": "projectile_socket", "label": "投射物发射点"},
-	{"key": "pickup_socket", "label": "拾取吸附点"},
-	{"key": "damage_text_socket", "label": "伤害数字点"},
-	{"key": "effect_socket", "label": "特效点"}
+	{"key": "projectile_socket", "label": "投射物发射点", "button": "投射物"},
+	{"key": "pickup_socket", "label": "拾取吸附点", "button": "拾取"},
+	{"key": "damage_text_socket", "label": "伤害数字点", "button": "伤害"}
 ]
 const SOCKET_PICK_RADIUS := 28.0
 
@@ -70,6 +69,7 @@ var visual_offset_x_spin: SpinBox
 var visual_offset_y_spin: SpinBox
 var visual_ground_offset_spin: SpinBox
 var socket_controls: Dictionary = {}
+var socket_button_controls: Dictionary = {}
 
 var current_texture: Texture2D
 var current_atlas := AtlasTexture.new()
@@ -189,7 +189,13 @@ func _build_ui() -> void:
 	for socket in SOCKETS:
 		active_socket_option.add_item("%s" % socket["label"])
 	active_socket_option.select(0)
+	active_socket_option.visible = false
 	action_controls.add_child(active_socket_option)
+
+	var socket_button_row := HBoxContainer.new()
+	socket_button_row.add_theme_constant_override("separation", 4)
+	action_controls.add_child(socket_button_row)
+	_add_socket_buttons(socket_button_row)
 
 	play_button = Button.new()
 	play_button.text = "暂停"
@@ -354,10 +360,32 @@ func _add_spin_row(parent: GridContainer, label_text: String, min_value: float, 
 	return spin
 
 
+func _add_socket_buttons(parent: BoxContainer) -> void:
+	for socket in SOCKETS:
+		var key := String(socket["key"])
+		var button := Button.new()
+		button.text = String(socket["button"])
+		button.toggle_mode = true
+		button.custom_minimum_size = Vector2(70, 34)
+		button.pressed.connect(func() -> void: _select_socket_option_by_key(key))
+		parent.add_child(button)
+		socket_button_controls[key] = button
+	_update_socket_button_states()
+
+
 func _add_socket_editor(parent: VBoxContainer, key: String, label_text: String) -> void:
+	var title_bar := HBoxContainer.new()
+	parent.add_child(title_bar)
+
 	var title := Label.new()
 	title.text = label_text
-	parent.add_child(title)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_bar.add_child(title)
+
+	var select_button := Button.new()
+	select_button.text = "选中"
+	select_button.pressed.connect(func() -> void: _select_socket_option_by_key(key))
+	title_bar.add_child(select_button)
 
 	var row := GridContainer.new()
 	row.columns = 4
@@ -933,7 +961,6 @@ func _save_current_config() -> void:
 	state_config["hit_frame"] = int(hit_frame_spin.value)
 	state_config["skip_frames"] = _parse_int_list(skip_frames_edit.text)
 	state_config["projectile_socket"] = _get_socket_array("projectile_socket")
-	state_config["effect_socket"] = _get_socket_array("effect_socket")
 
 	var config_path := "%s/%s" % [current_model_path, ANIM_CONFIG_FILE]
 	var file := FileAccess.open(config_path, FileAccess.WRITE)
@@ -1006,8 +1033,7 @@ func _draw_marker_overlay() -> void:
 	var colors := {
 		"projectile_socket": Color(1.0, 0.35, 0.22),
 		"pickup_socket": Color(0.3, 1.0, 0.45),
-		"damage_text_socket": Color(1.0, 0.86, 0.25),
-		"effect_socket": Color(0.35, 0.75, 1.0)
+		"damage_text_socket": Color(1.0, 0.86, 0.25)
 	}
 	for socket in SOCKETS:
 		var key := String(socket["key"])
@@ -1093,7 +1119,20 @@ func _select_socket_option_by_key(socket_key: String) -> void:
 	for index in SOCKETS.size():
 		if String(SOCKETS[index]["key"]) == socket_key:
 			active_socket_option.select(index)
+			_update_socket_button_states()
+			if marker_overlay != null:
+				marker_overlay.queue_redraw()
 			return
+
+
+func _update_socket_button_states() -> void:
+	var selected_key := _get_selected_socket_key()
+	for socket in SOCKETS:
+		var key := String(socket["key"])
+		if not socket_button_controls.has(key):
+			continue
+		var button := socket_button_controls[key] as Button
+		button.button_pressed = key == selected_key
 
 
 func _get_preview_draw_rect() -> Rect2:
