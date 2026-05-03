@@ -43,6 +43,7 @@ const SOCKETS := [
 	{"key": "damage_text_socket", "label": "伤害数字点"},
 	{"key": "effect_socket", "label": "特效点"}
 ]
+const SOCKET_PICK_RADIUS := 28.0
 
 var category_option: OptionButton
 var model_option: OptionButton
@@ -84,6 +85,7 @@ var png_files: Array[String] = []
 var current_model_path := ""
 var current_anim_config: Dictionary = {}
 var applying_config := false
+var dragging_socket_key := ""
 
 
 func _ready() -> void:
@@ -1013,33 +1015,85 @@ func _draw_marker_overlay() -> void:
 		var pixel := origin_pixel + socket_offset
 		var position := rect.position + Vector2(pixel.x / frame_size.x * rect.size.x, pixel.y / frame_size.y * rect.size.y)
 		var color := colors.get(key, Color.WHITE) as Color
-		marker_overlay.draw_circle(position, 5.0, color)
-		marker_overlay.draw_line(position + Vector2(-10, 0), position + Vector2(10, 0), color, 2.0)
-		marker_overlay.draw_line(position + Vector2(0, -10), position + Vector2(0, 10), color, 2.0)
+		var selected := key == _get_selected_socket_key()
+		var marker_radius := 7.0 if selected else 5.0
+		var line_length := 14.0 if selected else 10.0
+		var line_width := 3.0 if selected else 2.0
+		marker_overlay.draw_circle(position, marker_radius, color)
+		marker_overlay.draw_line(position + Vector2(-line_length, 0), position + Vector2(line_length, 0), color, line_width)
+		marker_overlay.draw_line(position + Vector2(0, -line_length), position + Vector2(0, line_length), color, line_width)
 		marker_overlay.draw_string(ThemeDB.fallback_font, position + Vector2(8, -8), String(socket["label"]), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 13, color)
 
 
 func _on_marker_overlay_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		_set_active_socket_from_preview(event.position)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			dragging_socket_key = _pick_socket_key_at_position(event.position)
+			if dragging_socket_key.is_empty():
+				dragging_socket_key = _get_selected_socket_key()
+			_select_socket_option_by_key(dragging_socket_key)
+			_set_socket_from_preview(dragging_socket_key, event.position)
+		else:
+			dragging_socket_key = ""
 	elif event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		_set_active_socket_from_preview(event.position)
+		var socket_key := dragging_socket_key if not dragging_socket_key.is_empty() else _get_selected_socket_key()
+		_set_socket_from_preview(socket_key, event.position)
 
 
-func _set_active_socket_from_preview(local_position: Vector2) -> void:
+func _set_socket_from_preview(socket_key: String, local_position: Vector2) -> void:
+	if socket_key.is_empty():
+		return
 	if current_regions.is_empty():
 		return
 	var rect := _get_preview_draw_rect()
 	if rect.size == Vector2.ZERO or not rect.has_point(local_position):
 		return
 
-	var socket_key := String(SOCKETS[clampi(active_socket_option.selected, 0, SOCKETS.size() - 1)]["key"])
 	var frame_size := current_regions[current_frame].size
 	var normalized := (local_position - rect.position) / rect.size
 	var pixel := Vector2(normalized.x * frame_size.x, normalized.y * frame_size.y)
 	var socket := pixel - Vector2(frame_size.x * 0.5, frame_size.y)
 	_set_socket_control_value(socket_key, Vector2(roundf(socket.x), roundf(socket.y)))
 	marker_overlay.queue_redraw()
+
+
+func _pick_socket_key_at_position(local_position: Vector2) -> String:
+	if current_regions.is_empty():
+		return ""
+	var nearest_key := ""
+	var nearest_distance := SOCKET_PICK_RADIUS
+	for socket in SOCKETS:
+		var key := String(socket["key"])
+		var marker_position := _get_socket_marker_position(key)
+		if marker_position == Vector2.INF:
+			continue
+		var distance := local_position.distance_to(marker_position)
+		if distance <= nearest_distance:
+			nearest_distance = distance
+			nearest_key = key
+	return nearest_key
+
+
+func _get_socket_marker_position(key: String) -> Vector2:
+	var rect := _get_preview_draw_rect()
+	if rect.size == Vector2.ZERO or current_regions.is_empty():
+		return Vector2.INF
+	var frame_size := current_regions[current_frame].size
+	var origin_pixel := Vector2(frame_size.x * 0.5, frame_size.y)
+	var socket_offset := _get_socket_vector(key)
+	var pixel := origin_pixel + socket_offset
+	return rect.position + Vector2(pixel.x / frame_size.x * rect.size.x, pixel.y / frame_size.y * rect.size.y)
+
+
+func _get_selected_socket_key() -> String:
+	return String(SOCKETS[clampi(active_socket_option.selected, 0, SOCKETS.size() - 1)]["key"])
+
+
+func _select_socket_option_by_key(socket_key: String) -> void:
+	for index in SOCKETS.size():
+		if String(SOCKETS[index]["key"]) == socket_key:
+			active_socket_option.select(index)
+			return
 
 
 func _get_preview_draw_rect() -> Rect2:
