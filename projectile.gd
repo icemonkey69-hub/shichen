@@ -43,16 +43,17 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 		return
 
+	if _is_valid_target(target):
+		if _segment_distance_squared(previous_position, global_position, target.global_position) <= hit_radius * hit_radius:
+			_hit_enemy(target)
+		return
+
 	for enemy in _get_enemy_nodes_for_current_physics_frame():
 		if not is_instance_valid(enemy):
 			continue
 
 		if _segment_distance_squared(previous_position, global_position, enemy.global_position) <= hit_radius * hit_radius:
-			if enemy.has_method("take_projectile_hit"):
-				enemy.take_projectile_hit(damage, source_stats)
-			else:
-				enemy.take_damage(damage)
-			queue_free()
+			_hit_enemy(enemy)
 			return
 
 
@@ -66,6 +67,14 @@ func _get_enemy_nodes_for_current_physics_frame() -> Array:
 
 func _is_valid_target(candidate: Node2D) -> bool:
 	return candidate != null and is_instance_valid(candidate) and candidate.is_inside_tree()
+
+
+func _hit_enemy(enemy: Node2D) -> void:
+	if enemy.has_method("take_projectile_hit"):
+		enemy.take_projectile_hit(damage, source_stats)
+	else:
+		enemy.take_damage(damage)
+	queue_free()
 
 
 func _segment_distance_squared(a: Vector2, b: Vector2, point: Vector2) -> float:
