@@ -484,6 +484,8 @@ func _select_configured_files_for_state(state: String, direction: Vector2) -> Ar
 			_append_configured_file(configured_files, str(raw_file))
 	else:
 		_append_configured_file(configured_files, str(raw_files))
+	if _state_requires_directional_file(state):
+		configured_files = _filter_direction_files(configured_files, direction, state)
 	return configured_files
 
 

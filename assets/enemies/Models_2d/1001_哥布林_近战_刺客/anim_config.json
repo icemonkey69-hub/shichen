@@ -1,0 +1,41 @@
+{
+	"directions": {
+		"right": {
+			"attack": {
+				"files": [
+					"Thief_Attack.png"
+				],
+				"fps": 12.0,
+				"frame_height": 0,
+				"frame_width": 0,
+				"hit_frame": 3,
+				"loop": false,
+				"projectile_socket": [
+					75,
+					-96
+				],
+				"skip_frames": []
+			}
+		}
+	},
+	"display_scale": 1.0,
+	"sockets": {
+		"damage_text_socket": [
+			20,
+			-142
+		],
+		"pickup_socket": [
+			12,
+			-88
+		],
+		"projectile_socket": [
+			75,
+			-96
+		]
+	},
+	"visual_ground_offset": 10.0,
+	"visual_offset": [
+		0.0,
+		0.0
+	]
+}
