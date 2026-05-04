@@ -461,10 +461,13 @@ func _select_files_for_state(state: String, direction: Vector2) -> Array[String]
 	if keyword_matches.is_empty():
 		return []
 
-	var direction_matches := _filter_direction_files(keyword_matches, direction)
+	var direction_matches := _filter_direction_files(keyword_matches, direction, state)
 	if not direction_matches.is_empty():
 		_state_file_cache[cache_key] = direction_matches.duplicate()
 		return direction_matches
+	if _state_requires_directional_file(state):
+		_state_file_cache[cache_key] = []
+		return []
 	_state_file_cache[cache_key] = keyword_matches.duplicate()
 	return keyword_matches
 
@@ -518,21 +521,36 @@ func _get_animation_config(state: String, direction: Vector2) -> Dictionary:
 	return result
 
 
-func _filter_direction_files(files: Array[String], direction: Vector2) -> Array[String]:
+func _filter_direction_files(files: Array[String], direction: Vector2, state: String) -> Array[String]:
 	var token := _get_direction_token(direction)
 	if token.is_empty():
 		return []
 	var matches: Array[String] = []
 	for file_path in files:
-		var lower_name := file_path.get_file().to_lower()
-		if lower_name.contains(token):
+		if _get_file_direction_token(file_path) == token:
 			matches.append(file_path)
-	if matches.is_empty() and token == "left":
+	if matches.is_empty() and token == "right" and _state_requires_directional_file(state):
 		for file_path in files:
-			var lower_name := file_path.get_file().to_lower()
-			if lower_name.contains("right"):
+			if _get_file_direction_token(file_path).is_empty():
 				matches.append(file_path)
 	return matches
+
+
+func _get_file_direction_token(file_path: String) -> String:
+	var name := file_path.get_file().get_basename().to_lower()
+	name = name.replace("-", "_").replace(" ", "_")
+	var parts := name.split("_", false)
+	if parts.has("downright") or (parts.has("down") and parts.has("right")):
+		return "downright"
+	if parts.has("upright") or (parts.has("up") and parts.has("right")):
+		return "upright"
+	if parts.has("down"):
+		return "down"
+	if parts.has("up"):
+		return "up"
+	if parts.has("right"):
+		return "right"
+	return ""
 
 
 func _get_direction_token(direction: Vector2) -> String:
@@ -577,6 +595,10 @@ func _get_state_keywords(state: String) -> PackedStringArray:
 			return PackedStringArray(["spawn"])
 		_:
 			return PackedStringArray(["idle", "stand", "tower"])
+
+
+func _state_requires_directional_file(state: String) -> bool:
+	return state == "run" or state == "attack"
 
 
 func _get_state_fps(state: String) -> float:
