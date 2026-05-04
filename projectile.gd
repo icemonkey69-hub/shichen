@@ -5,6 +5,7 @@ extends Node2D
 @export var damage := 1
 @export var hit_radius := 16.0
 @export var play_area := Rect2(-640.0, -360.0, 1280.0, 720.0)
+@export var turn_speed := 12.0
 
 @onready var body: Node2D = $Body
 
@@ -13,6 +14,7 @@ static var _enemy_query_nodes: Array = []
 
 var direction := Vector2.UP
 var source_stats
+var target: Node2D
 
 
 func _ready() -> void:
@@ -23,7 +25,13 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	var previous_position := global_position
+	if _is_valid_target(target):
+		var desired_direction := (target.global_position - global_position).normalized()
+		if desired_direction != Vector2.ZERO:
+			direction = direction.slerp(desired_direction, clampf(turn_speed * delta, 0.0, 1.0)).normalized()
 	global_position += direction * speed * delta
+	body.rotation = direction.angle() + PI / 2.0
 	lifetime -= delta
 
 	if lifetime <= 0.0:
@@ -39,7 +47,7 @@ func _physics_process(delta: float) -> void:
 		if not is_instance_valid(enemy):
 			continue
 
-		if global_position.distance_squared_to(enemy.global_position) <= hit_radius * hit_radius:
+		if _segment_distance_squared(previous_position, global_position, enemy.global_position) <= hit_radius * hit_radius:
 			if enemy.has_method("take_projectile_hit"):
 				enemy.take_projectile_hit(damage, source_stats)
 			else:
@@ -54,3 +62,17 @@ func _get_enemy_nodes_for_current_physics_frame() -> Array:
 		_enemy_query_frame = current_frame
 		_enemy_query_nodes = get_tree().get_nodes_in_group("enemy")
 	return _enemy_query_nodes
+
+
+func _is_valid_target(candidate: Node2D) -> bool:
+	return candidate != null and is_instance_valid(candidate) and candidate.is_inside_tree()
+
+
+func _segment_distance_squared(a: Vector2, b: Vector2, point: Vector2) -> float:
+	var segment := b - a
+	var length_squared := segment.length_squared()
+	if length_squared <= 0.0001:
+		return point.distance_squared_to(b)
+	var t := clampf((point - a).dot(segment) / length_squared, 0.0, 1.0)
+	var closest := a + segment * t
+	return point.distance_squared_to(closest)

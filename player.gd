@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 const AttributeSystemScript := preload("res://attribute_system.gd")
 
-signal projectile_requested(spawn_position: Vector2, direction: Vector2, damage: int, source_stats)
+signal projectile_requested(spawn_position: Vector2, direction: Vector2, damage: int, source_stats, target: Node2D)
 signal health_changed(current_health: int, max_health: int)
 signal mana_changed(current_mana: int, max_mana: int)
 signal damaged(world_position: Vector2, amount: int)
@@ -80,6 +80,7 @@ var attack_hit_times: Array[float] = []
 var attack_next_hit_index := 0
 var attack_direction := Vector2.DOWN
 var attack_cycle_duration := 0.0
+var attack_target: Node2D
 var combat_stats
 var runtime_bonus_values: Dictionary = {}
 var _enemy_query_frame := -1
@@ -246,6 +247,7 @@ func apply_hero_data(data: HeroData) -> void:
 	attack_hit_times.clear()
 	attack_next_hit_index = 0
 	attack_direction = Vector2.DOWN
+	attack_target = null
 	attack_cycle_duration = 0.0
 	jump_elapsed = 0.0
 	jump_phase = 0
@@ -444,6 +446,7 @@ func respawn(respawn_position: Vector2, invulnerability: float = 1.5) -> void:
 	attack_hit_times.clear()
 	attack_next_hit_index = 0
 	attack_cycle_duration = 0.0
+	attack_target = null
 	jump_elapsed = 0.0
 	jump_phase = 0
 	jump_cooldown_remaining = 0.0
@@ -522,6 +525,75 @@ func _get_nearest_enemy() -> Node2D:
 	return nearest_enemy
 
 
+func _get_nearest_enemy_in_range() -> Node2D:
+	var nearest_enemy := _get_nearest_enemy()
+	if nearest_enemy == null:
+		return null
+	if global_position.distance_squared_to(nearest_enemy.global_position) > attack_range * attack_range:
+		return null
+	return nearest_enemy
+
+
+func _perform_basic_attack_hit() -> void:
+	var target := attack_target
+	if not _is_valid_attack_target(target):
+		target = _get_nearest_enemy_in_range()
+		attack_target = target
+	if target == null:
+		return
+
+	if _is_ranged_tower_attack():
+		var spawn_position := _get_attack_projectile_spawn_position()
+		var direction := (target.global_position - spawn_position).normalized()
+		if direction == Vector2.ZERO:
+			direction = attack_direction
+		projectile_requested.emit(
+			spawn_position,
+			direction,
+			attack_damage,
+			combat_stats.duplicate_stats() if combat_stats != null else null,
+			target
+		)
+		return
+
+	if target.has_method("take_projectile_hit"):
+		target.call("take_projectile_hit", attack_damage, combat_stats.duplicate_stats() if combat_stats != null else null)
+	elif target.has_method("take_damage"):
+		target.call("take_damage", attack_damage)
+
+
+func _is_valid_attack_target(target: Node2D) -> bool:
+	if target == null or not is_instance_valid(target):
+		return false
+	if not target.is_inside_tree():
+		return false
+	return global_position.distance_squared_to(target.global_position) <= attack_range * attack_range
+
+
+func _get_attack_projectile_spawn_position() -> Vector2:
+	if current_hero_model != null and current_hero_model.has_method("get_socket_global_position"):
+		return current_hero_model.get_socket_global_position("projectile_socket", attack_direction, "attack")
+	return global_position + attack_direction * PROJECTILE_SPAWN_DISTANCE
+
+
+func _is_ranged_tower_attack() -> bool:
+	var tower_model_id := String(hero_data.model_id_point if hero_data != null else &"").strip_edges()
+	if tower_model_id.is_empty() and hero_data != null:
+		tower_model_id = String(hero_data.model_id).strip_edges()
+	if tower_model_id.is_empty():
+		return false
+	var dir := DirAccess.open(HeroModelCatalog.TOWER_MODEL_ROOT)
+	if dir == null:
+		return false
+	for child_name in dir.get_directories():
+		var id_part := child_name.split("_", false)[0] if child_name.find("_") >= 0 else child_name
+		if id_part != tower_model_id:
+			continue
+		var lower_name := child_name.to_lower()
+		return lower_name.contains("弓") or lower_name.contains("远程") or lower_name.contains("archer") or lower_name.contains("ranged")
+	return false
+
+
 func _update_facing(direction: Vector2) -> void:
 	if direction == Vector2.ZERO:
 		return
@@ -548,6 +620,7 @@ func _start_attack(direction: Vector2) -> void:
 	attack_cycle_duration = maxf(attack_interval, MIN_ATTACK_CYCLE)
 	attack_cooldown = attack_cycle_duration
 	attack_direction = direction
+	attack_target = _get_nearest_enemy_in_range()
 	var hit_ratios: Array[float] = [ATTACK_RELEASE_FRAME / ATTACK_TOTAL_FRAMES]
 
 	if current_hero_model != null:
@@ -584,12 +657,7 @@ func _process_attack(delta: float, input_direction: Vector2) -> void:
 
 	attack_elapsed += delta
 	while attack_next_hit_index < attack_hit_times.size() and attack_elapsed >= attack_hit_times[attack_next_hit_index]:
-		projectile_requested.emit(
-			global_position + attack_direction * PROJECTILE_SPAWN_DISTANCE,
-			attack_direction,
-			attack_damage,
-			combat_stats.duplicate_stats() if combat_stats != null else null
-		)
+		_perform_basic_attack_hit()
 		attack_next_hit_index += 1
 	attack_pending_projectile = attack_next_hit_index < attack_hit_times.size()
 	attack_fire_time = attack_hit_times[attack_next_hit_index] if attack_pending_projectile else 0.0
@@ -601,6 +669,7 @@ func _process_attack(delta: float, input_direction: Vector2) -> void:
 		attack_hit_times.clear()
 		attack_next_hit_index = 0
 		attack_cycle_duration = 0.0
+		attack_target = null
 		if current_hero_model != null:
 			current_hero_model.cancel_attack()
 
@@ -616,6 +685,7 @@ func _cancel_attack(refund_cooldown: bool) -> void:
 	attack_hit_times.clear()
 	attack_next_hit_index = 0
 	attack_cycle_duration = 0.0
+	attack_target = null
 	if refund_cooldown:
 		attack_cooldown = 0.0
 

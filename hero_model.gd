@@ -29,6 +29,14 @@ func play_attack(direction: Vector2, attack_duration: float) -> Dictionary:
 	return _play_attack_recursive(self, direction, attack_duration)
 
 
+func get_socket_global_position(socket_name: String, direction: Vector2 = Vector2.ZERO, state: String = "") -> Vector2:
+	var result := _get_socket_global_position_recursive(self, socket_name, direction, state)
+	if result != Vector2.INF:
+		return result
+	push_error("Missing socket '%s' on hero model." % socket_name)
+	return global_position
+
+
 func cancel_attack() -> void:
 	_cancel_attack_recursive(self)
 
@@ -159,6 +167,19 @@ func _play_attack_recursive(node: Node, direction: Vector2, attack_duration: flo
 		if result.is_empty() and raw_result is Dictionary:
 			result = (raw_result as Dictionary).duplicate(true)
 	return result
+
+
+func _get_socket_global_position_recursive(node: Node, socket_name: String, direction: Vector2, state: String) -> Vector2:
+	for child in node.get_children():
+		var child_position := _get_socket_global_position_recursive(child, socket_name, direction, state)
+		if child_position != Vector2.INF:
+			return child_position
+
+	if node.has_method("get_socket_global_position") and node != self:
+		var raw_position: Variant = node.call("get_socket_global_position", socket_name, direction, state)
+		if raw_position is Vector2:
+			return raw_position as Vector2
+	return Vector2.INF
 
 
 func _cancel_attack_recursive(node: Node) -> void:

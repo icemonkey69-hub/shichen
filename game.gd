@@ -862,12 +862,13 @@ func _unhandled_input(event: InputEvent) -> void:
 				_confirm_current_hero_selection()
 
 
-func _on_player_projectile_requested(spawn_position: Vector2, direction: Vector2, damage: int, source_stats) -> void:
+func _on_player_projectile_requested(spawn_position: Vector2, direction: Vector2, damage: int, source_stats, target: Node2D = null) -> void:
 	var projectile = PROJECTILE_SCENE.instantiate()
 	projectile.global_position = spawn_position
 	projectile.direction = direction
 	projectile.damage = damage
 	projectile.source_stats = source_stats
+	projectile.target = target
 	projectile.play_area = play_area
 	projectiles.add_child(projectile)
 
