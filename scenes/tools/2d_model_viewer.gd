@@ -93,6 +93,7 @@ var current_model_path := ""
 var current_anim_config: Dictionary = {}
 var applying_config := false
 var dragging_socket_key := ""
+var refreshing_direction_options := false
 
 
 func _ready() -> void:
@@ -175,6 +176,7 @@ func _build_ui() -> void:
 	png_option = OptionButton.new()
 	png_option.custom_minimum_size = Vector2(300, 34)
 	png_option.item_selected.connect(_on_png_selected)
+	png_option.visible = false
 	controls.add_child(png_option)
 
 	var action_controls := HBoxContainer.new()
@@ -448,6 +450,7 @@ func _load_categories() -> void:
 	for direction in DIRECTIONS:
 		direction_option.add_item(String(direction["label"]))
 	direction_option.select(4)
+	_refresh_direction_option_labels()
 
 	category_option.clear()
 	for category in CATEGORIES:
@@ -721,12 +724,14 @@ func _refresh_action_preview() -> void:
 	if current_model_path.is_empty() or png_files.is_empty():
 		return
 
+	_refresh_direction_option_labels()
 	_apply_config_to_editor()
 	var state := _get_selected_state()
 	var direction := _get_selected_direction()
 	var matched_files := _select_files_for_state(state, direction)
 	_update_action_match_label(matched_files)
 	if matched_files.is_empty():
+		_clear_sequence_preview("暂无匹配：当前动作/方向没有 PNG")
 		_show_status("该方向/动作没有匹配 PNG", true)
 		return
 
@@ -738,6 +743,21 @@ func _refresh_action_preview() -> void:
 	_load_sequence_file(0)
 	_select_png_option_for_path(matched_files[0])
 	_show_status("按动作匹配预览", false)
+
+
+func _clear_sequence_preview(message: String) -> void:
+	current_texture = null
+	current_all_regions.clear()
+	current_regions.clear()
+	current_region_frame_numbers.clear()
+	current_sequence_files.clear()
+	current_file_index = 0
+	current_frame = 0
+	preview.texture = null
+	path_label.text = message
+	frame_label.text = ""
+	if marker_overlay != null:
+		marker_overlay.queue_redraw()
 
 
 func _reload_current_sequence_file() -> void:
@@ -778,8 +798,30 @@ func _select_direction(index: int) -> void:
 
 
 func _on_state_or_direction_selected() -> void:
+	if refreshing_direction_options:
+		return
 	_apply_config_to_editor()
 	_refresh_action_preview()
+
+
+func _refresh_direction_option_labels() -> void:
+	if direction_option == null or state_option == null:
+		return
+	if png_files.is_empty():
+		return
+
+	refreshing_direction_options = true
+	var selected_index := clampi(direction_option.selected, 0, DIRECTIONS.size() - 1)
+	var state := _get_selected_state()
+	for index in DIRECTIONS.size():
+		var direction := DIRECTIONS[index] as Dictionary
+		var label := String(direction["label"])
+		var files := _select_files_for_state(state, direction["vector"] as Vector2)
+		if files.is_empty():
+			label = "%s（暂无）" % label
+		direction_option.set_item_text(index, label)
+	direction_option.select(selected_index)
+	refreshing_direction_options = false
 
 
 func _select_files_for_state(state: String, direction: Vector2) -> Array[String]:
