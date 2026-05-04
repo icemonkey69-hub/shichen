@@ -472,15 +472,16 @@ func _select_files_for_state(state: String, direction: Vector2) -> Array[String]
 	if keyword_matches.is_empty() and state == "idle":
 		keyword_matches = _available_files.duplicate()
 	if keyword_matches.is_empty():
-		return []
+		return _empty_string_array()
 
 	var direction_matches := _filter_direction_files(keyword_matches, direction, state)
 	if not direction_matches.is_empty():
 		_state_file_cache[cache_key] = direction_matches.duplicate()
 		return direction_matches
 	if _state_requires_directional_file(state):
-		_state_file_cache[cache_key] = []
-		return []
+		var empty_files := _empty_string_array()
+		_state_file_cache[cache_key] = empty_files
+		return empty_files
 	_state_file_cache[cache_key] = keyword_matches.duplicate()
 	return keyword_matches
 
@@ -488,7 +489,7 @@ func _select_files_for_state(state: String, direction: Vector2) -> Array[String]
 func _select_configured_files_for_state(state: String, direction: Vector2) -> Array[String]:
 	var state_config := _get_animation_config(state, direction)
 	if state_config.is_empty():
-		return []
+		return _empty_string_array()
 
 	var raw_files = state_config.get("files", state_config.get("file", []))
 	var configured_files: Array[String] = []
@@ -539,7 +540,7 @@ func _get_animation_config(state: String, direction: Vector2) -> Dictionary:
 func _filter_direction_files(files: Array[String], direction: Vector2, state: String) -> Array[String]:
 	var token := _get_direction_token(direction)
 	if token.is_empty():
-		return []
+		return _empty_string_array()
 	var matches: Array[String] = []
 	for file_path in files:
 		if _get_file_direction_token(file_path) == token:
@@ -549,6 +550,11 @@ func _filter_direction_files(files: Array[String], direction: Vector2, state: St
 			if _get_file_direction_token(file_path).is_empty():
 				matches.append(file_path)
 	return matches
+
+
+func _empty_string_array() -> Array[String]:
+	var result: Array[String] = []
+	return result
 
 
 func _get_file_direction_token(file_path: String) -> String:
