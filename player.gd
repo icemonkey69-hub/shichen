@@ -76,6 +76,8 @@ var attack_in_progress := false
 var attack_pending_projectile := false
 var attack_elapsed := 0.0
 var attack_fire_time := 0.0
+var attack_hit_times: Array[float] = []
+var attack_next_hit_index := 0
 var attack_direction := Vector2.DOWN
 var attack_cycle_duration := 0.0
 var combat_stats
@@ -241,6 +243,8 @@ func apply_hero_data(data: HeroData) -> void:
 	attack_pending_projectile = false
 	attack_elapsed = 0.0
 	attack_fire_time = 0.0
+	attack_hit_times.clear()
+	attack_next_hit_index = 0
 	attack_direction = Vector2.DOWN
 	attack_cycle_duration = 0.0
 	jump_elapsed = 0.0
@@ -437,6 +441,8 @@ func respawn(respawn_position: Vector2, invulnerability: float = 1.5) -> void:
 	attack_pending_projectile = false
 	attack_elapsed = 0.0
 	attack_fire_time = 0.0
+	attack_hit_times.clear()
+	attack_next_hit_index = 0
 	attack_cycle_duration = 0.0
 	jump_elapsed = 0.0
 	jump_phase = 0
@@ -538,20 +544,34 @@ func _update_model_animation(input_direction: Vector2) -> void:
 
 func _start_attack(direction: Vector2) -> void:
 	attack_in_progress = true
-	attack_pending_projectile = true
 	attack_elapsed = 0.0
 	attack_cycle_duration = maxf(attack_interval, MIN_ATTACK_CYCLE)
 	attack_cooldown = attack_cycle_duration
 	attack_direction = direction
-	var hit_ratio := ATTACK_RELEASE_FRAME / ATTACK_TOTAL_FRAMES
+	var hit_ratios: Array[float] = [ATTACK_RELEASE_FRAME / ATTACK_TOTAL_FRAMES]
 
 	if current_hero_model != null:
 		var timing_variant: Variant = current_hero_model.play_attack(direction, attack_cycle_duration)
 		if timing_variant is Dictionary:
 			var timing: Dictionary = timing_variant as Dictionary
-			hit_ratio = clampf(float(timing.get("hit_ratio", hit_ratio)), 0.0, 1.0)
+			if timing.has("hit_ratios") and timing["hit_ratios"] is Array:
+				hit_ratios.clear()
+				for ratio_value in timing["hit_ratios"]:
+					hit_ratios.append(clampf(float(ratio_value), 0.0, 1.0))
+			else:
+				hit_ratios = [clampf(float(timing.get("hit_ratio", hit_ratios[0])), 0.0, 1.0)]
 
-	attack_fire_time = attack_cycle_duration * hit_ratio
+	hit_ratios.sort()
+	attack_hit_times.clear()
+	for ratio in hit_ratios:
+		var hit_time := attack_cycle_duration * ratio
+		if not attack_hit_times.has(hit_time):
+			attack_hit_times.append(hit_time)
+	if attack_hit_times.is_empty():
+		attack_hit_times.append(attack_cycle_duration * (ATTACK_RELEASE_FRAME / ATTACK_TOTAL_FRAMES))
+	attack_next_hit_index = 0
+	attack_pending_projectile = true
+	attack_fire_time = attack_hit_times[0]
 
 
 func _process_attack(delta: float, input_direction: Vector2) -> void:
@@ -563,19 +583,23 @@ func _process_attack(delta: float, input_direction: Vector2) -> void:
 		return
 
 	attack_elapsed += delta
-	if attack_pending_projectile and attack_elapsed >= attack_fire_time:
-		attack_pending_projectile = false
+	while attack_next_hit_index < attack_hit_times.size() and attack_elapsed >= attack_hit_times[attack_next_hit_index]:
 		projectile_requested.emit(
 			global_position + attack_direction * PROJECTILE_SPAWN_DISTANCE,
 			attack_direction,
 			attack_damage,
 			combat_stats.duplicate_stats() if combat_stats != null else null
 		)
+		attack_next_hit_index += 1
+	attack_pending_projectile = attack_next_hit_index < attack_hit_times.size()
+	attack_fire_time = attack_hit_times[attack_next_hit_index] if attack_pending_projectile else 0.0
 
 	if attack_elapsed >= attack_cycle_duration:
 		attack_in_progress = false
 		attack_elapsed = 0.0
 		attack_fire_time = 0.0
+		attack_hit_times.clear()
+		attack_next_hit_index = 0
 		attack_cycle_duration = 0.0
 		if current_hero_model != null:
 			current_hero_model.cancel_attack()
@@ -589,6 +613,8 @@ func _cancel_attack(refund_cooldown: bool) -> void:
 	attack_pending_projectile = false
 	attack_elapsed = 0.0
 	attack_fire_time = 0.0
+	attack_hit_times.clear()
+	attack_next_hit_index = 0
 	attack_cycle_duration = 0.0
 	if refund_cooldown:
 		attack_cooldown = 0.0

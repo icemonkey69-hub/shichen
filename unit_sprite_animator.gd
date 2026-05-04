@@ -92,17 +92,30 @@ func set_motion_state(direction: Vector2, is_moving: bool) -> void:
 
 func play_attack(direction: Vector2, _attack_duration: float = 0.0) -> Dictionary:
 	start_attack_preview(direction)
-	return {"hit_ratio": _get_current_hit_ratio()}
+	var hit_ratios := get_current_hit_ratios()
+	return {
+		"hit_ratio": hit_ratios[0] if not hit_ratios.is_empty() else 0.45,
+		"hit_ratios": hit_ratios
+	}
 
 
 func get_current_hit_delay(default_delay: float) -> float:
+	var delays := get_current_hit_delays(default_delay)
+	return delays[0] if not delays.is_empty() else default_delay
+
+
+func get_current_hit_delays(default_delay: float) -> Array[float]:
 	var state_config := _get_animation_config(_current_state, _last_direction)
-	if _get_int_from_config(state_config, "hit_frame", 0) <= 0:
-		return default_delay
+	var hit_frames := _get_hit_frames_from_config(state_config)
+	if hit_frames.is_empty():
+		return [default_delay]
 	var animation_duration := _get_current_animation_duration()
 	if animation_duration <= 0.0:
-		return default_delay
-	return maxf(animation_duration * _get_current_hit_ratio(), 0.01)
+		return [default_delay]
+	var delays: Array[float] = []
+	for ratio in get_current_hit_ratios():
+		delays.append(maxf(animation_duration * ratio, 0.01))
+	return delays
 
 
 func start_attack_preview(direction: Vector2) -> void:
@@ -618,15 +631,21 @@ func _get_state_fps(state: String) -> float:
 			return DEFAULT_FPS
 
 
-func _get_current_hit_ratio() -> float:
+func get_current_hit_ratios() -> Array[float]:
 	var state_config := _get_animation_config(_current_state, _last_direction)
-	var hit_frame := _get_int_from_config(state_config, "hit_frame", 0)
-	if hit_frame <= 0 or _current_regions.is_empty():
-		return 0.45
+	var hit_frames := _get_hit_frames_from_config(state_config)
+	if hit_frames.is_empty() or _current_regions.is_empty():
+		return [0.45]
 	if _current_regions.size() == 1:
-		return 0.0
-	var displayed_index := _get_displayed_index_for_original_frame(hit_frame)
-	return clampf(float(displayed_index) / float(_current_regions.size() - 1), 0.0, 1.0)
+		return [0.0]
+	var ratios: Array[float] = []
+	for hit_frame in hit_frames:
+		var displayed_index := _get_displayed_index_for_original_frame(hit_frame)
+		var ratio := clampf(float(displayed_index) / float(_current_regions.size() - 1), 0.0, 1.0)
+		if not ratios.has(ratio):
+			ratios.append(ratio)
+	ratios.sort()
+	return ratios
 
 
 func _get_current_animation_duration() -> float:
@@ -760,6 +779,15 @@ func _get_int_array_from_config(config: Dictionary, key: String) -> Array[int]:
 				if parsed > 0 and not result.has(parsed):
 					result.append(parsed)
 	result.sort()
+	return result
+
+
+func _get_hit_frames_from_config(config: Dictionary) -> Array[int]:
+	var result := _get_int_array_from_config(config, "hit_frames")
+	if result.is_empty():
+		var legacy_frame := _get_int_from_config(config, "hit_frame", 0)
+		if legacy_frame > 0:
+			result.append(legacy_frame)
 	return result
 
 

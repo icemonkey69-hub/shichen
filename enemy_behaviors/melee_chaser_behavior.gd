@@ -6,6 +6,10 @@ const STATE_WINDUP := 1
 const STATE_RECOVER := 2
 const STATE_DEAD := 3
 
+var attack_hit_delays: Array[float] = []
+var attack_hit_index := 0
+var attack_window_duration := 0.0
+
 
 func reset_state() -> void:
 	if enemy == null:
@@ -15,6 +19,9 @@ func reset_state() -> void:
 	enemy.state_timer = 0.0
 	enemy.attack_anchor_position = enemy.global_position
 	enemy.attack_direction = Vector2.DOWN
+	attack_hit_delays.clear()
+	attack_hit_index = 0
+	attack_window_duration = 0.0
 	if enemy.sprite != null:
 		enemy.sprite.stop_attack(enemy.attack_direction)
 
@@ -54,8 +61,9 @@ func physics_process(delta: float) -> void:
 			enemy.state_timer = max(enemy.state_timer - delta, 0.0)
 			enemy.sprite.set_motion_state(enemy.attack_direction, false)
 			_update_windup_pose()
+			_process_attack_hits()
 			if enemy.state_timer == 0.0:
-				_perform_attack()
+				_start_recover()
 		STATE_RECOVER:
 			enemy.velocity = Vector2.ZERO
 			enemy.global_position = enemy.attack_anchor_position
@@ -76,15 +84,23 @@ func _start_windup(direction: Vector2) -> void:
 	enemy.attack_direction = direction if direction != Vector2.ZERO else Vector2.DOWN
 	enemy.attack_anchor_position = enemy.global_position
 	enemy.sprite.start_attack_preview(enemy.attack_direction)
+	attack_hit_delays = [enemy.windup_time]
 	if enemy.sprite.has_method("get_current_hit_delay"):
-		enemy.state_timer = float(enemy.sprite.call("get_current_hit_delay", enemy.windup_time))
+		attack_hit_delays = _read_hit_delays(enemy.sprite.call("get_current_hit_delays", enemy.windup_time) if enemy.sprite.has_method("get_current_hit_delays") else [enemy.sprite.call("get_current_hit_delay", enemy.windup_time)])
+	attack_window_duration = maxf(enemy.windup_time, attack_hit_delays[attack_hit_delays.size() - 1] if not attack_hit_delays.is_empty() else enemy.windup_time)
+	enemy.state_timer = attack_window_duration
+	attack_hit_index = 0
 	_update_windup_pose()
 
 
-func _perform_attack() -> void:
-	enemy.attack_state = STATE_RECOVER
-	enemy.state_timer = enemy.recover_time
-	enemy.attack_cooldown = enemy.attack_interval
+func _process_attack_hits() -> void:
+	var elapsed: float = attack_window_duration - enemy.state_timer
+	while attack_hit_index < attack_hit_delays.size() and elapsed >= attack_hit_delays[attack_hit_index]:
+		_perform_attack_hit()
+		attack_hit_index += 1
+
+
+func _perform_attack_hit() -> void:
 	enemy.sprite.play_attack_hit(enemy.attack_direction)
 
 	if not is_instance_valid(enemy.player):
@@ -99,16 +115,38 @@ func _perform_attack() -> void:
 		enemy.player.receive_damage(enemy.touch_damage)
 
 
+func _start_recover() -> void:
+	enemy.attack_state = STATE_RECOVER
+	enemy.state_timer = enemy.recover_time
+	enemy.attack_cooldown = enemy.attack_interval
+	attack_hit_delays.clear()
+	attack_hit_index = 0
+	attack_window_duration = 0.0
+
+
 func _finish_recover() -> void:
 	enemy.attack_state = STATE_CHASE
 	enemy.sprite.stop_attack(enemy.attack_direction)
 
 
 func _update_windup_pose() -> void:
-	var progress: float = 1.0 - enemy.state_timer / enemy.windup_time
+	var progress: float = 1.0 - enemy.state_timer / maxf(attack_window_duration, 0.001)
 	enemy.sprite.set_attack_preview_progress(enemy.attack_direction, progress)
 
 
 func _update_recover_pose() -> void:
 	var progress: float = 1.0 - enemy.state_timer / enemy.recover_time
 	enemy.sprite.set_attack_recover_progress(enemy.attack_direction, progress)
+
+
+func _read_hit_delays(raw_value) -> Array[float]:
+	var result: Array[float] = []
+	if raw_value is Array:
+		for item in raw_value:
+			var delay: float = maxf(float(item), 0.01)
+			if not result.has(delay):
+				result.append(delay)
+	else:
+		result.append(maxf(float(raw_value), 0.01))
+	result.sort()
+	return result

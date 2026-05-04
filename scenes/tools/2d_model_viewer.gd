@@ -65,7 +65,7 @@ var action_match_label: RichTextLabel
 var play_button: Button
 var fps_spin: SpinBox
 var loop_check: CheckBox
-var hit_frame_spin: SpinBox
+var hit_frames_edit: LineEdit
 var skip_frames_edit: LineEdit
 var frame_width_spin: SpinBox
 var frame_height_spin: SpinBox
@@ -226,10 +226,10 @@ func _build_ui() -> void:
 	skip_current_button.pressed.connect(_add_current_frame_to_skip_list)
 	action_controls.add_child(skip_current_button)
 
-	var set_hit_frame_button := Button.new()
-	set_hit_frame_button.text = "当前帧设为命中帧"
-	set_hit_frame_button.pressed.connect(_set_hit_frame_to_current_frame)
-	action_controls.add_child(set_hit_frame_button)
+	var toggle_hit_frame_button := Button.new()
+	toggle_hit_frame_button.text = "切换当前命中帧"
+	toggle_hit_frame_button.pressed.connect(_toggle_current_hit_frame)
+	action_controls.add_child(toggle_hit_frame_button)
 
 	var clear_skip_button := Button.new()
 	clear_skip_button.text = "清空跳帧"
@@ -298,7 +298,6 @@ func _build_ui() -> void:
 	editor.add_child(frame_grid)
 
 	fps_spin = _add_spin_row(frame_grid, "FPS", 1.0, 60.0, 1.0, 8.0)
-	hit_frame_spin = _add_spin_row(frame_grid, "命中帧(1起)", 0.0, 300.0, 1.0, 0.0)
 	frame_width_spin = _add_spin_row(frame_grid, "帧宽(0自动)", 0.0, 2048.0, 1.0, 0.0)
 	frame_height_spin = _add_spin_row(frame_grid, "帧高(0自动)", 0.0, 2048.0, 1.0, 0.0)
 	frame_width_spin.value_changed.connect(func(_value: float) -> void: _on_frame_layout_changed())
@@ -308,6 +307,15 @@ func _build_ui() -> void:
 	loop_check.text = "循环播放"
 	loop_check.toggled.connect(func(_pressed: bool) -> void: _on_editor_value_changed())
 	editor.add_child(loop_check)
+
+	var hit_frames_label := Label.new()
+	hit_frames_label.text = "命中帧(逗号分隔，1起)"
+	editor.add_child(hit_frames_label)
+	hit_frames_edit = LineEdit.new()
+	hit_frames_edit.placeholder_text = "例如：3, 6"
+	hit_frames_edit.text_changed.connect(func(_text: String) -> void: _on_editor_value_changed())
+	hit_frames_edit.text_changed.connect(func(_text: String) -> void: _on_frame_layout_changed())
+	editor.add_child(hit_frames_edit)
 
 	var skip_label := Label.new()
 	skip_label.text = "跳过帧(逗号分隔，1起)"
@@ -627,8 +635,8 @@ func _apply_current_frame() -> void:
 	var texture_size := current_texture.get_size()
 	var frame_size := current_regions[current_frame].size
 	var original_frame_number := _get_current_original_frame_number()
-	var hit_frame := int(hit_frame_spin.value) if hit_frame_spin != null and _state_uses_hit_frame(_get_selected_state()) else 0
-	var hit_text := "未设置" if hit_frame <= 0 else str(hit_frame)
+	var hit_frames := _get_current_hit_frames()
+	var hit_text := "未设置" if hit_frames.is_empty() else _format_int_list(hit_frames)
 	frame_label.text = "文件 %d / %d    显示帧 %d / %d    原始帧 %d    命中帧 %s    PNG %dx%d    单帧 %dx%d    FPS %.0f" % [
 		current_file_index + 1,
 		maxi(current_sequence_files.size(), 1),
@@ -692,18 +700,26 @@ func _add_current_frame_to_skip_list() -> void:
 	_show_status("已加入跳过帧，保存后生效到运行时", false)
 
 
-func _set_hit_frame_to_current_frame() -> void:
-	if hit_frame_spin == null or current_regions.is_empty():
+func _toggle_current_hit_frame() -> void:
+	if hit_frames_edit == null or current_regions.is_empty():
 		return
 	if not _state_uses_hit_frame(_get_selected_state()):
-		hit_frame_spin.value = 0
+		hit_frames_edit.text = ""
 		_show_status("只有攻击状态需要配置命中帧", true)
 		if marker_overlay != null:
 			marker_overlay.queue_redraw()
 		return
-	hit_frame_spin.value = _get_current_original_frame_number()
+	var frame_number := _get_current_original_frame_number()
+	var hit_frames := _parse_int_list(hit_frames_edit.text)
+	if hit_frames.has(frame_number):
+		hit_frames.erase(frame_number)
+		_show_status("已取消当前命中帧", false)
+	else:
+		hit_frames.append(frame_number)
+		hit_frames.sort()
+		_show_status("已加入当前命中帧", false)
+	hit_frames_edit.text = _format_int_list(hit_frames)
 	_apply_current_frame()
-	_show_status("已将当前原始帧设为命中帧", false)
 
 
 func _clear_skip_frames() -> void:
@@ -718,6 +734,12 @@ func _get_current_original_frame_number() -> int:
 	if current_region_frame_numbers.size() > current_frame:
 		return current_region_frame_numbers[current_frame]
 	return current_frame + 1
+
+
+func _get_current_hit_frames() -> Array[int]:
+	if hit_frames_edit == null or not _state_uses_hit_frame(_get_selected_state()):
+		return []
+	return _parse_int_list(hit_frames_edit.text)
 
 
 func _refresh_action_preview() -> void:
@@ -1026,7 +1048,7 @@ func _apply_config_to_editor() -> void:
 	var state_config := _get_animation_config(state, direction)
 	fps_spin.value = _get_float_from_config(state_config, "fps", _get_default_fps(state))
 	loop_check.button_pressed = _get_bool_from_config(state_config, "loop", state != "attack" and state != "death")
-	hit_frame_spin.value = _get_int_from_config(state_config, "hit_frame", 0) if _state_uses_hit_frame(state) else 0
+	hit_frames_edit.text = _format_int_list(_get_hit_frames_from_config(state_config)) if _state_uses_hit_frame(state) else ""
 	frame_width_spin.value = _get_int_from_config(state_config, "frame_width", 0)
 	frame_height_spin.value = _get_int_from_config(state_config, "frame_height", 0)
 	skip_frames_edit.text = _format_int_list(_get_int_array_from_config(state_config, "skip_frames"))
@@ -1099,9 +1121,11 @@ func _save_current_config() -> void:
 	state_config["frame_width"] = int(frame_width_spin.value)
 	state_config["frame_height"] = int(frame_height_spin.value)
 	if _state_uses_hit_frame(state):
-		state_config["hit_frame"] = int(hit_frame_spin.value)
+		state_config["hit_frames"] = _parse_int_list(hit_frames_edit.text)
+		state_config.erase("hit_frame")
 	else:
 		state_config.erase("hit_frame")
+		state_config.erase("hit_frames")
 	state_config["skip_frames"] = _parse_int_list(skip_frames_edit.text)
 	state_config["projectile_socket"] = _get_socket_array("projectile_socket")
 
@@ -1216,7 +1240,7 @@ func _draw_filmstrip() -> void:
 
 	var container := _get_filmstrip_container_rect()
 	var current_original_frame := _get_current_original_frame_number()
-	var hit_frame := int(hit_frame_spin.value) if hit_frame_spin != null and _state_uses_hit_frame(_get_selected_state()) else 0
+	var hit_frames := _get_current_hit_frames()
 	var skipped_frames := _parse_int_list(skip_frames_edit.text if skip_frames_edit != null else "")
 	var font := ThemeDB.fallback_font
 	marker_overlay.draw_rect(container, Color(0.03, 0.03, 0.03, 0.88), true)
@@ -1228,7 +1252,7 @@ func _draw_filmstrip() -> void:
 		var region := item["region"] as Rect2
 		var is_current := frame_number == current_original_frame
 		var is_skipped := skipped_frames.has(frame_number)
-		var is_hit := frame_number == hit_frame
+		var is_hit := hit_frames.has(frame_number)
 
 		marker_overlay.draw_rect(slot, Color(0.12, 0.12, 0.12, 1.0), true)
 		marker_overlay.draw_texture_rect_region(current_texture, draw_rect, region)
@@ -1512,6 +1536,15 @@ func _get_int_array_from_config(config: Dictionary, key: String) -> Array[int]:
 				result.append(str(item).strip_edges().to_int())
 	elif value is String:
 		result = _parse_int_list(value)
+	return result
+
+
+func _get_hit_frames_from_config(config: Dictionary) -> Array[int]:
+	var result := _get_int_array_from_config(config, "hit_frames")
+	if result.is_empty():
+		var legacy_frame := _get_int_from_config(config, "hit_frame", 0)
+		if legacy_frame > 0:
+			result.append(legacy_frame)
 	return result
 
 
